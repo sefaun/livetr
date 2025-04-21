@@ -1,0 +1,63 @@
+{
+  "name": "livetr",
+  "version": "1.0.0",
+  "author": "SEFA UN",
+  "description": "This is Livetr Desktop App",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "electron": "node scripts/startElectron.js",
+    "setup": "electron-builder",
+    "set-commonjs": "node scripts/setCommonJS.js",
+    "set-module": "node scripts/setModule.js"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@tailwindcss/vite": "^4.0.13",
+    "element-plus": "^2.9.6",
+    "sass": "^1.85.1",
+    "tailwindcss": "^4.0.13",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "electron": "^35.0.1",
+    "electron-builder": "^24.13.3",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0",
+    "vue-tsc": "^2.2.4"
+  },
+  "build": {
+    "electronVersion": "35.0.1",
+    "appId": "com.livetr.id",
+    "productName": "Livetr",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "icon": "public/icon-260x260.png",
+      "target": [
+        "nsis"
+      ]
+    },
+    "mac": {
+      "icon": "public/icon-260x260.png",
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "icon": "public/icon-260x260.png",
+      "target": [
+        "AppImage"
+      ]
+    }
+  }
+}

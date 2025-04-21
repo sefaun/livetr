@@ -1,0 +1,28 @@
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': #00df30,
+    ),
+    'info': (
+      'base': #1f74ff,
+    ),
+  )
+);
+
+@use 'element-plus/theme-chalk/src/index.scss' as *;
+
+.el-select__popper.el-popper {
+  z-index: 2200 !important;
+}
+
+.el-popover.el-popper {
+  z-index: 2200 !important;
+}
+
+.el-notification {
+  z-index: 3000 !important;
+}
+
+.el-popper {
+  z-index: 2200 !important;
+}
