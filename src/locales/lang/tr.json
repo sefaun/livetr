@@ -1,5 +1,8 @@
 {
   "turkish": "Türkçe",
   "english": "İngilizce",
-  "studio": "Stüdyo"
+  "studio": "Stüdyo",
+  "text": "Metin",
+  "image": "Resim",
+  "video": "Video"
 }

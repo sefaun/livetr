@@ -1,5 +1,8 @@
 {
   "turkish": "Turkish",
   "english": "English",
-  "studio": "Studio"
+  "studio": "Studio",
+  "text": "Text",
+  "image": "Image",
+  "video": "Video"
 }
