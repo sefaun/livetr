@@ -6,5 +6,7 @@
     --primary-color: #00df30;
     --studio-navbar-height: 64px;
     --studio-footer-height: 120px;
+    --wire-dark-color: rgb(207, 211, 220);
+    --wire-color: rgb(71 85 105);
   }
 }

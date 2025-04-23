@@ -1,11 +1,10 @@
 import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
-import { screenRef, nodes } from '@/state'
+import { screenRef } from '@/state'
 import { useEventEmitter } from '@/composables/EventEmitter'
 import { nodeEvents, emitterEvents } from '@/composables/events'
-import { useSelection } from '@/composables/Selection'
-import { ctrlOrMetaKey, activeStyles, passiveStyles } from '@/composables/utils'
+import { activeStyles, passiveStyles } from '@/composables/utils'
 import type {
   TNode,
   TNodeEventListenerData,
@@ -17,10 +16,11 @@ import type {
 
 export function useNode(data: TuseNodeOptions) {
   const EE = useEventEmitter().getEventEmitter()
-  const selection = useSelection()
-  const nodeElement: Ref<HTMLDivElement> = ref()
+  const nodeElement: Ref<HTMLElement> = ref()
   const options: Ref<TNode> = ref(cloneDeep(data.options))
-  let nodeMoveStatus = false
+  let startPosition = { x: 0, y: 0 }
+  let shiftPosition = { x: 0, y: 0 }
+  let movePosition = { x: 0, y: 0 }
 
   function getNodeOptions() {
     return options.value
@@ -28,14 +28,6 @@ export function useNode(data: TuseNodeOptions) {
 
   function getNodeElement() {
     return nodeElement.value
-  }
-
-  function getNodeMoveStatus() {
-    return nodeMoveStatus
-  }
-
-  function setNodeMoveStatus(value: boolean) {
-    nodeMoveStatus = value
   }
 
   function sendZindexMessage() {
@@ -47,55 +39,67 @@ export function useNode(data: TuseNodeOptions) {
     })
   }
 
-  function controlNodes(event: MouseEvent) {
-    for (const id of selection.getNodeSelection().length > 1 ? selection.getNodeSelection() : [options.value.id]) {
-      nodes.value[id].nodeMove(event.movementX, event.movementY)
+  function setNodePosition(pageX: number, pageY: number): void {
+    movePosition.x = pageX - shiftPosition.x
+    movePosition.y = pageY - shiftPosition.y
+
+    //Sol Taraftan Sınırlama
+    if (movePosition.x < 0) {
+      movePosition.x = 0
     }
+    //Yukarı Taraftan Sınırlama
+    if (movePosition.y < 0) {
+      movePosition.y = 0
+    }
+    //Sağ Taraftan Sınırlama
+    if (
+      movePosition.x >
+      screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width
+    ) {
+      movePosition.x = screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width
+    }
+    //Aşağı Taraftan Sınırlama
+    if (
+      movePosition.y >
+      screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height
+    ) {
+      movePosition.y = screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height
+    }
+
+    options.value.position.x = movePosition.x
+    options.value.position.y = movePosition.y
   }
 
-  function selectionOperations(event: MouseEvent) {
-    if (ctrlOrMetaKey(event)) {
-      if (!selection.getNodeSelection().includes(options.value.id)) {
-        selection.setNodeSelection(options.value.id)
-      } else {
-        selection.removeNodeSelectionById(options.value.id)
-      }
-      return
-    }
-
-    if (!ctrlOrMetaKey(event) && !getNodeMoveStatus()) {
-      selection.clearSelections()
-      selection.setNodeSelection(options.value.id)
-      return
-    }
-
-    if (ctrlOrMetaKey(event) && !getNodeMoveStatus()) {
-      if (!selection.getNodeSelection().includes(options.value.id)) {
-        selection.setNodeSelection(options.value.id)
-      } else {
-        selection.removeNodeSelectionById(options.value.id)
-      }
-      return
-    }
+  function setStartingPoints(x: number, y: number): void {
+    startPosition.x = x
+    startPosition.y = y
   }
 
-  function mouseDown(_event: MouseEvent) {
+  function mouseDown(event: MouseEvent) {
     sendZindexMessage()
     activeStyles()
     options.value.style.zIndex = '1001'
+
+    setStartingPoints(event.clientX, event.clientY)
+    shiftPosition.x = startPosition.x - nodeElement.value.getBoundingClientRect().left
+    shiftPosition.y = startPosition.y - nodeElement.value.getBoundingClientRect().top
+    setNodePosition(
+      event.pageX - screenRef.value.getBoundingClientRect().left,
+      event.pageY - screenRef.value.getBoundingClientRect().top
+    )
     screenRef.value.addEventListener('mousemove', mouseMove)
   }
 
   function mouseMove(event: MouseEvent) {
     event.preventDefault()
-    setNodeMoveStatus(true)
-    controlNodes(event)
+    setNodePosition(
+      event.clientX - screenRef.value.getBoundingClientRect().left,
+      event.clientY - screenRef.value.getBoundingClientRect().top
+    )
   }
 
-  function mouseUp(event: MouseEvent) {
+  function mouseUp(_event: MouseEvent) {
     passiveStyles()
-    selectionOperations(event)
-    setNodeMoveStatus(false)
     screenRef.value.removeEventListener('mousemove', mouseMove)
   }
 
@@ -104,12 +108,7 @@ export function useNode(data: TuseNodeOptions) {
     options.value.style.zIndex = '1001'
   }
 
-  function nodeMove(x: number, y: number) {
-    options.value.position.x = x + options.value.position.x
-    options.value.position.y = y + options.value.position.y
-  }
-
-  function setNodeElement(element: HTMLDivElement) {
+  function setNodeElement(element: HTMLElement) {
     nodeElement.value = element
   }
 
@@ -123,9 +122,6 @@ export function useNode(data: TuseNodeOptions) {
         if ((message.data as TNodeEventMessage<TNodeZIndexMessage>).id != options.value.id) {
           options.value.style.zIndex = '1000'
         }
-        break
-
-      default:
         break
     }
   }
@@ -155,7 +151,6 @@ export function useNode(data: TuseNodeOptions) {
     mouseMove,
     mouseUp,
     contextMenu,
-    nodeMove,
     setNodeElement,
     start,
     destroy,

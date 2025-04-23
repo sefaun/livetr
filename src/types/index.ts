@@ -14,12 +14,12 @@ export type TuseNodeOptions = {
 }
 export type TNode = {
   id: string
-  type: string
+  type: TScreenNodeTypes
   position: {
     x: number
     y: number
   }
-  style: CSSStyleDeclaration
+  style: Partial<CSSStyleDeclaration>
 }
 
 export type TNodeEvents = ValueOf<typeof nodeEvents>
