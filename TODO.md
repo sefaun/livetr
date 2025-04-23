@@ -1,0 +1,1 @@
+- ekrana eklenenler canvasa çizilecek.

@@ -23,3 +23,8 @@ export const nodeData = {
     zIndex: '1000',
   },
 } as TNode
+
+export const mediaTypes = {
+  img: 'img',
+  video: 'video',
+} as const
