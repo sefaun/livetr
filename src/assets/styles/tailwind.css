@@ -4,5 +4,7 @@
 @layer base {
   :root {
     --primary-color: #00df30;
+    --studio-navbar-height: 64px;
+    --studio-footer-height: 120px;
   }
 }

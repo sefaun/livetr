@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { ref } from 'vue'
-import type { TTheme } from '@remote-uart/shared'
+import type { TTheme } from '@/types'
 
 const themeStatus: Ref<boolean> = ref(false)
 
