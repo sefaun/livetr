@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import type { TNode, TuseNode } from '@/types'
 import { screenNodeTypes } from '@/enums'
 
+export const canvasRef = ref<HTMLCanvasElement>()
 export const screenRef = ref<HTMLElement>()
 
 export const studioData = ref({

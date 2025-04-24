@@ -11,6 +11,10 @@ export type TMediaTypes = ValueOf<typeof mediaTypes>
 export type TScreenNodeTypes = ValueOf<typeof screenNodeTypes>
 export type TuseNode = ReturnType<typeof useNode>
 
+export type TTextNodeData = {
+  text: string
+}
+
 export type TImageNodeData = {
   src: string
 }
@@ -23,7 +27,7 @@ export type TNode = {
     y: number
   }
   style: Partial<CSSStyleDeclaration>
-  data: TImageNodeData
+  data: TTextNodeData | TImageNodeData
 }
 
 export type TuseNodeOptions = {
