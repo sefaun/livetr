@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { canvasRef, nodes } from '@/state'
 import { screenNodeTypes } from '@/enums'
 import type { TNode, TTextNodeData } from '@/types'
+import { cloneDeep } from 'lodash'
 
 const ctx = ref<CanvasRenderingContext2D | null>()
 
@@ -39,10 +40,11 @@ export function useCanvasRendering() {
     }
 
     clearScreen()
-
-    screenNodes = Object.entries(nodes.value)
-      .sort((a, b) => Number(a[1].getNodeOptions().style.zIndex) - Number(b[1].getNodeOptions().style.zIndex))
-      .map(([key, value]) => ({ key, options: value.getNodeOptions(), element: value.getNodeElement() }))
+    screenNodes = cloneDeep(
+      Object.entries(nodes.value)
+        .sort((a, b) => Number(a[1].getNodeOptions().style.zIndex) - Number(b[1].getNodeOptions().style.zIndex))
+        .map(([key, value]) => ({ key, options: value.getNodeOptions(), element: value.getNodeElement() }))
+    )
 
     for (const { options, element } of screenNodes) {
       switch (options.type) {
@@ -51,6 +53,7 @@ export function useCanvasRendering() {
           break
 
         case screenNodeTypes.image:
+        case screenNodeTypes.background:
           ctx.value.drawImage(
             element.querySelector('img'),
             options.position.x,

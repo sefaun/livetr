@@ -16,6 +16,17 @@ export type TTextNodeData = {
 }
 
 export type TImageNodeData = {
+  title: string
+  src: string
+}
+
+export type TVideoNodeData = {
+  title: string
+  src: string
+}
+
+export type TBackgroundNodeData = {
+  title: string
   src: string
 }
 
@@ -27,7 +38,7 @@ export type TNode = {
     y: number
   }
   style: Partial<CSSStyleDeclaration>
-  data: TTextNodeData | TImageNodeData
+  data: TTextNodeData | TImageNodeData | TVideoNodeData | TBackgroundNodeData
 }
 
 export type TuseNodeOptions = {

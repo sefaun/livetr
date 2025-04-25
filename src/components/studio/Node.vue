@@ -1,7 +1,7 @@
 <template>
   <div
     ref="nodeRef"
-    class="absolute w-[100px] h-[100px] z-[1000] select-none"
+    class="absolute w-full h-full z-1000 select-none"
     :style="{ left: `${nodeOptions.position.x}px`, top: `${nodeOptions.position.y}px`, ...nodeOptions.style as any }"
     @mousedown.stop.left="node.mouseDown"
     @mouseup.stop.left="node.mouseUp"
@@ -10,7 +10,6 @@
     @dragenter.prevent.stop
     @dragover.prevent.stop
     @dragleave.prevent.stop
-    @drop.prevent.stop
   >
     <slot />
   </div>

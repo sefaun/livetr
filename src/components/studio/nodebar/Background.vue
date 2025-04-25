@@ -8,7 +8,7 @@
       class="w-full flex p-2 border border-gray-300 rounded-md cursor-move gap-2"
     >
       <div class="w-12 h-12">
-        <MediaRender :type="mediaTypes.video" :src="node.data.src" mediaClass="object-cover rounded-md" />
+        <MediaRender :type="mediaTypes.img" :src="node.data.src" mediaClass="object-cover rounded-md" />
       </div>
       <div class="flex items-center">{{ node.data.title }}</div>
     </div>
@@ -22,5 +22,5 @@ import { mediaTypes, screenNodeTypes } from '@/enums'
 import MediaRender from '@/components/MediaRender.vue'
 
 const dragdrop = useDragDrop()
-const nodes = defaultNodes.filter((item) => item.type == screenNodeTypes.video)
+const nodes = defaultNodes.filter((item) => item.type == screenNodeTypes.background)
 </script>

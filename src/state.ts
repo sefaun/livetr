@@ -25,8 +25,40 @@ export const defaultNodes = [
       height: '150px',
     },
     data: {
-      title: 'Klasik Sanatlar',
+      title: 'Klasik Resim',
       src: 'https://www.klasiksanatlar.com/img/sayfalar/b/1_1598452306_resim.png',
+    },
+  },
+  // {
+  //   id: window.crypto.randomUUID(),
+  //   type: screenNodeTypes.video,
+  //   position: {
+  //     x: 0,
+  //     y: 0,
+  //   },
+  //   style: {
+  //     zIndex: '1000',
+  //     width: '150px',
+  //     height: '150px',
+  //   },
+  //   data: {
+  //     title: 'Klasik Video',
+  //     src: '../../../assets/bigbuckbunny.mp4',
+  //   },
+  // },
+  {
+    id: window.crypto.randomUUID(),
+    type: screenNodeTypes.background,
+    position: {
+      x: 0,
+      y: 0,
+    },
+    style: {
+      zIndex: '999',
+    },
+    data: {
+      title: 'Arka Plan',
+      src: 'https://www.manzara.gen.tr/w1/Güzel-Resimler-28.jpg',
     },
   },
 ]

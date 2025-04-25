@@ -2,7 +2,7 @@
   <div class="w-full h-full">
     <component
       v-show="loadStatus"
-      v-on="$attrs"
+      v-bind="$attrs"
       :is="props.type"
       :class="props.mediaClass"
       :src="props.src"
@@ -29,6 +29,10 @@ import { VideoPlay, Camera } from '@element-plus/icons-vue'
 import { ElIcon } from 'element-plus'
 import { mediaTypes } from '@/enums'
 import type { TMediaTypes } from '@/types'
+
+defineOptions({
+  inheritAttrs: false,
+})
 
 const props = defineProps({
   type: {

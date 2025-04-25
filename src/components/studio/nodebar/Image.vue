@@ -3,7 +3,7 @@
     <div
       v-for="node of nodes"
       :id="node.id"
-      @dragstart="dragdrop.dragstart"
+      @dragstart="dragdrop.dragstart($event, node)"
       draggable="true"
       class="w-full flex p-2 border border-gray-300 rounded-md cursor-move gap-2"
     >
