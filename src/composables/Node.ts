@@ -13,7 +13,6 @@ import type {
   TNodeZIndexMessage,
   TuseNodeOptions,
 } from '@/types'
-import { screenNodeTypes } from '@/enums'
 
 export function useNode(data: TuseNodeOptions) {
   const EE = useEventEmitter().getEventEmitter()
@@ -80,8 +79,7 @@ export function useNode(data: TuseNodeOptions) {
     sendZindexMessage()
     activeStyles()
 
-    //Arka plan hep en arkada kalsın diye
-    options.value.style.zIndex = options.value.type == screenNodeTypes.background ? '999' : '1001'
+    options.value.style.zIndex = '1001'
 
     setStartingPoints(event.clientX, event.clientY)
     shiftPosition.x = startPosition.x - nodeElement.value.getBoundingClientRect().left
@@ -123,7 +121,7 @@ export function useNode(data: TuseNodeOptions) {
     switch (message.event) {
       case nodeEvents.zIndex:
         if ((message.data as TNodeEventMessage<TNodeZIndexMessage>).id != options.value.id) {
-          options.value.style.zIndex = options.value.type == screenNodeTypes.background ? '999' : '1000'
+          options.value.style.zIndex = '1000'
         }
         break
     }

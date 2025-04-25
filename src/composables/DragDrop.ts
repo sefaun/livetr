@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
-import { nodeData, screenNodeTypes } from '@/enums'
+import { nodeData } from '@/enums'
 import { studioData } from '@/state'
 import type { TScreenNodeTypes, TNode } from '@/types'
 
@@ -8,6 +8,14 @@ const dragNode = ref<TNode>()
 
 export function useDragDrop() {
   const item = 'item' as const
+
+  function nondragdrop(_event: MouseEvent, node: TNode) {
+    setDragNode(cloneDeep(node))
+    createNode({
+      x: 0,
+      y: 0,
+    })
+  }
 
   function dragstart(event: DragEvent, node: TNode): void {
     if (event.dataTransfer) {
@@ -30,18 +38,25 @@ export function useDragDrop() {
 
   function drop(event: DragEvent): void {
     if (event.dataTransfer) {
-      const node = cloneDeep(nodeData)
-      const nodeContent = getDragNode()
-
-      node.id = window.crypto.randomUUID()
-      node.type = nodeContent.type as TScreenNodeTypes
-      node.position.x = nodeContent.type == screenNodeTypes.background ? 0 : event.offsetX
-      node.position.y = nodeContent.type == screenNodeTypes.background ? 0 : event.offsetY
-      node.data = nodeContent.data
-      node.style = nodeContent.style
-
-      studioData.value.nodes.push(node)
+      createNode({
+        x: event.offsetX,
+        y: event.offsetY,
+      })
     }
+  }
+
+  function createNode(opts: { x: number; y: number }) {
+    const node = cloneDeep(nodeData)
+    const nodeContent = getDragNode()
+
+    node.id = window.crypto.randomUUID()
+    node.type = nodeContent.type as TScreenNodeTypes
+    node.position.x = opts.x
+    node.position.y = opts.y
+    node.data = nodeContent.data
+    node.style = nodeContent.style
+
+    studioData.value.nodes.push(node)
   }
 
   function getDragNode() {
@@ -53,6 +68,7 @@ export function useDragDrop() {
   }
 
   return {
+    nondragdrop,
     dragstart,
     dragenter,
     dragover,

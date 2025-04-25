@@ -3,8 +3,8 @@
     ref="nodeRef"
     class="absolute w-full h-full z-1000 select-none"
     :style="{ left: `${nodeOptions.position.x}px`, top: `${nodeOptions.position.y}px`, ...nodeOptions.style as any }"
-    @mousedown.stop.left="node.mouseDown"
-    @mouseup.stop.left="node.mouseUp"
+    @mousedown.stop.left="mouseDown"
+    @mouseup.stop.left="mouseUp"
     @contextmenu.prevent.stop="node.contextMenu"
     @dragstart.prevent.stop
     @dragenter.prevent.stop
@@ -20,6 +20,7 @@ import type { PropType } from 'vue'
 import { ref, onBeforeUnmount, onMounted } from 'vue'
 import { nodes } from '@/state'
 import { useNode } from '@/composables/Node'
+import { screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
 
 const props = defineProps({
@@ -37,14 +38,34 @@ const node = useNode({
 })
 const nodeOptions = node.getNodeOptions()
 
+function mouseDown(event: MouseEvent) {
+  if (nodeOptions.type == screenNodeTypes.background) {
+    return
+  }
+
+  node.mouseDown(event)
+}
+
+function mouseUp(event: MouseEvent) {
+  if (nodeOptions.type == screenNodeTypes.background) {
+    return
+  }
+
+  node.mouseUp(event)
+}
+
 onMounted(() => {
   node.setNodeElement(nodeRef.value)
-  node.start()
+  if (nodeOptions.type != screenNodeTypes.background) {
+    node.start()
+  }
   nodes.value[props.data.id] = node
 })
 
 onBeforeUnmount(() => {
-  node.destroy()
+  if (nodeOptions.type != screenNodeTypes.background) {
+    node.destroy()
+  }
   delete nodes.value[props.data.id]
 })
 </script>

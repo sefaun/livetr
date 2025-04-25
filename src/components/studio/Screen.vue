@@ -9,6 +9,7 @@
   >
     <Node v-for="node of studioData.nodes" :data="node" :key="node.id">
       <NodeImage v-if="node.type == screenNodeTypes.image" :data="node"></NodeImage>
+      <NodeVideo v-if="node.type == screenNodeTypes.video" :data="node"></NodeVideo>
       <NodeBackground v-if="node.type == screenNodeTypes.background" :data="node"></NodeBackground>
     </Node>
   </div>
@@ -20,6 +21,7 @@ import { useDragDrop } from '@/composables/DragDrop'
 import { screenNodeTypes } from '@/enums'
 import Node from '@/components/studio/Node.vue'
 import NodeImage from '@/components/studio/nodes/Image.vue'
+import NodeVideo from '@/components/studio/nodes/Video.vue'
 import NodeBackground from '@/components/studio/nodes/Background.vue'
 
 const dragdrop = useDragDrop()
