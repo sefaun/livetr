@@ -17,8 +17,12 @@ const stream = ref<MediaStream>()
 
 onMounted(async () => {
   stream.value = await navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: { deviceId: { exact: props.id } },
+    audio: false,
+    video: {
+      deviceId: {
+        exact: props.id,
+      },
+    },
   })
 
   videoRef.value.srcObject = stream.value

@@ -5,6 +5,18 @@ export const localeNames = {
   en: 'en',
 } as const
 
+export const channels = {
+  youtube: 'youtube',
+  twitch: 'twitch',
+} as const
+
+export const channelRTMP = {
+  youtube: import.meta.env.VITE_YOUTUBE_RTMP,
+  twitch: import.meta.env.VITE_TWITCH_RTMP,
+} as const
+
+export const fps = [30, 60] as const
+
 export const screenNodeTypes = {
   text: 'text',
   image: 'image',

@@ -1,13 +1,13 @@
 <template>
   <div class="w-full h-full">
-    <LiveMedia :liveId="sourceId" class="object-fill" />
+    <LiveMedia :liveId="liveId" class="object-fill" />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { ref } from 'vue'
-import type { TSourceMediaNodeData, TNode } from '@/types'
+import type { TLiveCameraNodeData, TNode } from '@/types'
 import LiveMedia from '@/components/LiveMedia.vue'
 
 const props = defineProps({
@@ -18,5 +18,5 @@ const props = defineProps({
   },
 })
 
-const sourceId = ref((props.data.data as TSourceMediaNodeData).id)
+const liveId = ref((props.data.data as TLiveCameraNodeData).id)
 </script>

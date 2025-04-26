@@ -5,5 +5,13 @@
   "text": "Metin",
   "image": "Resim",
   "video": "Video",
-  "background": "Arka Plan"
+  "background": "Arka Plan",
+  "select_channel": "Kanal Seçiniz",
+  "start_live": "Yayın Başlat",
+  "enter_live_key": "Yayın Anahtarını Giriniz",
+  "stream_info": "Yayın Bilgileri",
+  "channel": "Kanal",
+  "stream_key": "Yayın Anahtarı",
+  "stream_started": "Yayın Başladı",
+  "stream_ended": "Yayın Sonlandırıldı"
 }

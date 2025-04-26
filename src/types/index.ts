@@ -1,15 +1,21 @@
 import { nodeEvents } from '@/composables/events'
 import { useNode } from '@/composables/Node'
-import { localeNames, mediaTypes, screenNodeTypes } from '@/enums'
+import { channels, localeNames, mediaTypes, screenNodeTypes } from '@/enums'
 
 export type ValueOf<T> = T[keyof T]
 
 export type TTheme = 'dark' | 'light'
 export type TLocale = ValueOf<typeof localeNames>
 export type TMediaTypes = ValueOf<typeof mediaTypes>
-
+export type TChannels = ValueOf<typeof channels>
 export type TScreenNodeTypes = ValueOf<typeof screenNodeTypes>
 export type TuseNode = ReturnType<typeof useNode>
+
+export type TLiveOptions = {
+  rtmp: string
+  fps: number
+  rtmpKey: string
+}
 
 export type TTextNodeData = {
   text: string
@@ -26,13 +32,13 @@ export type TVideoNodeData = {
 }
 
 export type TSourceMediaNodeData = {
-  title: string
   id: string
+  title: string
 }
 
 export type TLiveCameraNodeData = {
-  title: string
   id: string
+  title: string
 }
 
 export type TBackgroundNodeData = {

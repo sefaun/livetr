@@ -62,7 +62,7 @@ async function liveMedia() {
   loaded(true)
 
   stream = await navigator.mediaDevices.getUserMedia({
-    audio: false,
+    audio: props.liveId ? true : false,
     video: props.liveId
       ? { deviceId: { exact: props.liveId } }
       : ({

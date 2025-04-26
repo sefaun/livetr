@@ -5,5 +5,13 @@
   "text": "Text",
   "image": "Image",
   "video": "Video",
-  "background": "Background"
+  "background": "Background",
+  "select_channel": "Select Channel",
+  "start_live": "Start Stream",
+  "enter_live_key": "Enter Stream Key",
+  "stream_info": "Stream Informations",
+  "channel": "Channel",
+  "stream_key": "Stream Key",
+  "stream_started": "Stream Started",
+  "stream_ended": "Stream Ended"
 }
