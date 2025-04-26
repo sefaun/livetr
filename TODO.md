@@ -1,3 +1,3 @@
-- Canlı yayın açarken hangi platform için olacağı seçilmeli.
 - ffmpeg ile canlı yayın başlatma işlemleri yapılmalı.
 - ekolayzer ayarları için geliştirme yapılmalı
+- düzenleme yapılan ekrandaki boyutlar canvasa doğru aktarılmalı.

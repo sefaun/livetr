@@ -2,9 +2,9 @@
   <div class="relative w-full h-screen z-9">
     <StudioNavbar></StudioNavbar>
     <router-view></router-view>
-    <div class="fixed bottom-2 right-2 z-10 border border-amber-300">
-      <canvas ref="canvasRef" width="800" height="600"></canvas>
-    </div>
+  </div>
+  <div v-show="canvasRendering.getCanvasStatus()" class="fixed bottom-2 right-2 z-10 border border-amber-300">
+    <canvas ref="canvasRef" width="1280" height="720"></canvas>
   </div>
 </template>
 
@@ -19,5 +19,6 @@ const canvasRendering = useCanvasRendering()
 onMounted(() => {
   canvasRendering.setCtx(canvasRef.value)
   canvasRendering.render()
+  canvasRendering.canvasPreview()
 })
 </script>

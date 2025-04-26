@@ -1,10 +1,12 @@
 import { ref } from 'vue'
+import { cloneDeep } from 'lodash'
 import { canvasRef, nodes } from '@/state'
 import { screenNodeTypes } from '@/enums'
+import { ctrlOrMetaKey } from '@/composables/utils'
 import type { TNode, TTextNodeData } from '@/types'
-import { cloneDeep } from 'lodash'
 
 const ctx = ref<CanvasRenderingContext2D | null>()
+const canvasStatus = ref(false)
 
 export function useCanvasRendering() {
   let screenNodes: {
@@ -17,9 +19,17 @@ export function useCanvasRendering() {
     return ctx.value
   }
 
+  function getCanvasStatus() {
+    return canvasStatus.value
+  }
+
   function setCtx(value: HTMLCanvasElement) {
     ctx.value = value.getContext('2d')
     clearScreen()
+  }
+
+  function setCanvasStatus(value: boolean) {
+    canvasStatus.value = value
   }
 
   function clearScreen() {
@@ -64,6 +74,7 @@ export function useCanvasRendering() {
           break
 
         case screenNodeTypes.video:
+        case screenNodeTypes.sourceMedia:
           ctx.value.drawImage(
             element.querySelector('video'),
             options.position.x,
@@ -76,9 +87,20 @@ export function useCanvasRendering() {
     }
   }
 
+  function canvasPreview() {
+    window.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (ctrlOrMetaKey(event as any) && event.code == 'KeyP') {
+        event.preventDefault()
+        setCanvasStatus(!getCanvasStatus())
+      }
+    })
+  }
+
   return {
+    getCanvasStatus,
     getCtx,
     setCtx,
     render,
+    canvasPreview,
   }
 }

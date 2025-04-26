@@ -10,11 +10,12 @@
   <div
     class="w-full h-[var(--studio-footer-height)] border-t-2 border-[var(--wire-color)] dark:border-[--wire-dark-color] p-2 overflow-x-auto"
   >
-    asd
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
 import Screen from '@/components/studio/Screen.vue'
 import NodeBar from '@/components/studio/NodeBar.vue'
+import Footer from '@/components/studio/Footer.vue'
 </script>

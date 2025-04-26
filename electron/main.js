@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require('electron/main')
 const path = require('node:path')
+const operations = require('./operations')
 
 const development = process.env.NODE_MODE == 'development'
 let splashWindow
@@ -25,10 +26,10 @@ function createSplashWindow() {
 function createWindow() {
   const win = new BrowserWindow({
     title: 'Livetr',
-    width: 720,
-    height: 400,
-    minWidth: 720,
-    minHeight: 400,
+    width: 1500,
+    height: 900,
+    minWidth: 1500,
+    minHeight: 900,
     autoHideMenuBar: true,
     titleBarStyle: 'default',
     transparent: false,
@@ -42,14 +43,16 @@ function createWindow() {
   })
 
   if (development) {
-    win.loadURL('http://localhost:3001')
+    win.loadURL('http://localhost:3001/#/studio')
   } else {
-    win.loadURL(path.join(__dirname, '../dist/index.html'))
+    win.loadURL(path.join(__dirname, '../dist/index.html/#/studio'))
   }
 
   win.webContents.openDevTools({
     mode: 'detach',
   })
+
+  operations(win)
 
   win.on('ready-to-show', () => {
     setTimeout(() => {

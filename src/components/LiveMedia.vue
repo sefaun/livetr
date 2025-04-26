@@ -1,12 +1,12 @@
 <template>
   <div class="w-full h-full">
-    <component
+    <video
+      ref="mediaRef"
       v-show="loadStatus"
       v-bind="$attrs"
-      :is="props.type"
-      :src="props.src"
       @load="loaded(true)"
       @error="loaded(false)"
+      autoplay
       class="w-full h-full"
     />
     <div
@@ -14,34 +14,26 @@
       class="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md"
     >
       <ElIcon :size="props.iconSize" :color="props.iconColor">
-        <Camera v-if="props.type == mediaTypes.img" />
-        <VideoPlay v-if="props.type == mediaTypes.video" />
+        <VideoPlay />
       </ElIcon>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { PropType } from 'vue'
-import { VideoPlay, Camera } from '@element-plus/icons-vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { VideoPlay } from '@element-plus/icons-vue'
 import { ElIcon } from 'element-plus'
-import { mediaTypes } from '@/enums'
-import type { TMediaTypes } from '@/types'
 
 defineOptions({
   inheritAttrs: false,
 })
 
 const props = defineProps({
-  type: {
-    type: String as PropType<TMediaTypes>,
-    default: 'img',
-  },
-  src: {
+  sourceId: {
     type: String,
     default: '',
-    required: true,
+    required: false,
   },
   iconSize: {
     type: Number,
@@ -53,9 +45,39 @@ const props = defineProps({
   },
 })
 
+let stream: MediaStream
+const mediaRef = ref()
 const loadStatus = ref(true)
 
 function loaded(value: boolean) {
   loadStatus.value = value
 }
+
+async function liveMedia() {
+  loaded(true)
+
+  stream = await navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: {
+      mandatory: {
+        chromeMediaSource: 'desktop',
+        chromeMediaSourceId: props.sourceId,
+      },
+    },
+  })
+
+  mediaRef.value.srcObject = stream
+  mediaRef.value.play()
+}
+
+onMounted(() => {
+  liveMedia()
+})
+
+onBeforeUnmount(() => {
+  if (stream) {
+    stream.getTracks().forEach((track) => track.stop())
+    mediaRef.value.srcObject = null
+  }
+})
 </script>

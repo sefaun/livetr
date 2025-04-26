@@ -9,6 +9,7 @@ export const screenNodeTypes = {
   text: 'text',
   image: 'image',
   video: 'video',
+  sourceMedia: 'sourceMedia',
   background: 'background',
 } as const
 
