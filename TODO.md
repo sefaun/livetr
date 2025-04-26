@@ -1,3 +1,4 @@
-- ffmpeg ile canlı yayın başlatma işlemleri yapılmalı.
 - ekolayzer ayarları için geliştirme yapılmalı
-- düzenleme yapılan ekrandaki boyutlar canvasa doğru aktarılmalı.
+- özel video resim ve metin ekleme için geliştirme yapılmalı
+- ekrana konan nodelar için resize özelliği olmalı
+- ekrandaki node silinebilmeli

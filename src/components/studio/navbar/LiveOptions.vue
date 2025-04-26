@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElInput, ElSelect, ElOption } from 'element-plus'
 import { useLive } from '@/composables/Live'
@@ -40,7 +40,7 @@ import { channelRTMP, channels, fps } from '@/enums'
 
 const { t } = useI18n()
 const live = useLive()
-const key = ref('')
+const key = ref(live.getLiveOptions().rtmpKey)
 const fpsData = ref(live.getLiveOptions().fps)
 
 function changedChannel() {
@@ -66,8 +66,4 @@ function changedKey() {
     rtmpKey: key.value,
   })
 }
-
-onMounted(() => {
-  key.value = localStorage.getItem(import.meta.env.VITE_RTMP_KEY) ?? ''
-})
 </script>

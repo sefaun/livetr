@@ -5,13 +5,13 @@
   <ElSkeleton class="w-64 h-full" :loading="loading.get()" animated>
     <template #template>
       <div class="flex h-full gap-2">
-        <ElSkeletonItem variant="image" class="!w-36 !h-full !rounded-md" />
-        <ElSkeletonItem variant="image" class="!w-36 !h-full !rounded-md" />
-        <ElSkeletonItem variant="image" class="!w-36 !h-full !rounded-md" />
+        <ElSkeletonItem variant="image" class="!w-28 !h-full !rounded-md" />
+        <ElSkeletonItem variant="image" class="!w-28 !h-full !rounded-md" />
+        <ElSkeletonItem variant="image" class="!w-28 !h-full !rounded-md" />
       </div>
     </template>
   </ElSkeleton>
-  <div v-if="!loading.get()" class="flex gap-2">
+  <div v-if="!loading.get()" class="flex items-center gap-2">
     <div
       v-for="source of filteredLive"
       @dragstart="
@@ -22,16 +22,14 @@
         })
       "
       draggable="true"
-      class="border border-[var(--wire-color)] dark:border-[--wire-dark-color] rounded-md cursor-pointer"
+      class="h-fit border border-[var(--wire-color)] dark:border-[--wire-dark-color] rounded-md cursor-pointer p-1"
     >
       <ElTooltip :content="source.label" :hide-after="0" effect="dark" placement="top">
-        <div class="flex justify-center items-center">
-          <div class="w-28 h-20">
-            <div class="w-full h-full">
-              <LivePreview :id="source.deviceId" class="w-full h-full rounded-md" />
-            </div>
-            <div class="text-xs truncate px-2 text-center">{{ source.label }}</div>
+        <div class="w-28">
+          <div>
+            <LivePreview :id="source.deviceId" class="!w-28 !h-20 !rounded-md" />
           </div>
+          <div class="text-xs truncate px-2 text-center mt-1">{{ source.label }}</div>
         </div>
       </ElTooltip>
     </div>
@@ -45,16 +43,14 @@
         })
       "
       draggable="true"
-      class="border border-[var(--wire-color)] dark:border-[--wire-dark-color] rounded-md cursor-pointer"
+      class="h-fit border border-[var(--wire-color)] dark:border-[--wire-dark-color] rounded-md cursor-pointer p-1"
     >
       <ElTooltip :content="source.name" :hide-after="0" effect="dark" placement="top">
-        <div class="flex justify-center items-center">
-          <div class="w-28 h-20">
-            <div class="w-full h-full">
-              <img :src="source.thumbnail" class="w-full h-full rounded-md" />
-            </div>
-            <div class="text-xs truncate px-2 text-center">{{ source.name }}</div>
+        <div class="w-28">
+          <div>
+            <img :src="source.thumbnail" class="w-28 h-20 rounded-md" />
           </div>
+          <div class="text-xs truncate px-2 text-center mt-1">{{ source.name }}</div>
         </div>
       </ElTooltip>
     </div>
@@ -111,8 +107,8 @@ async function createLiveMedia(
     type: source.type,
     style: {
       zIndex: '1000',
-      width: '200px',
-      height: '200px',
+      width: '100%',
+      height: '100%',
     },
     data: {
       id: source.id,
@@ -129,6 +125,8 @@ async function refreshLiveMedias() {
 }
 
 onMounted(() => {
-  refreshLiveMedias()
+  setTimeout(() => {
+    refreshLiveMedias()
+  }, 2000)
 })
 </script>

@@ -7,14 +7,16 @@
     <div class="flex items-center gap-2">
       <Theme />
       <Language />
-      <ElButton :icon="Setting" @click.left="setStreamInformationModal(true)" circle></ElButton>
+      <ElButton :icon="Setting" @click.left="setStreamInformationModal(true)">
+        {{ t('stream_settings') }}
+      </ElButton>
       <Live />
     </div>
   </div>
   <ElDialog
     v-model="streamInformationModal"
-    :title="t('stream_info')"
-    width="600px"
+    :title="t('stream_settings')"
+    width="550px"
     @closed="setStreamInformationModal(false)"
   >
     <LiveOptions v-if="streamInformationModal" />

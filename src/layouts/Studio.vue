@@ -3,7 +3,10 @@
     <StudioNavbar></StudioNavbar>
     <router-view></router-view>
   </div>
-  <div v-show="canvasRendering.getCanvasStatus()" class="fixed bottom-2 right-2 z-10 border border-amber-300">
+  <div
+    :class="canvasRendering.getCanvasStatus() ? 'left-1' : 'left-[9999px]'"
+    class="fixed bottom-1 z-10 border border-amber-300"
+  >
     <canvas ref="canvasRef" width="1280" height="720"></canvas>
   </div>
 </template>

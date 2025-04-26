@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
 import { screenRef } from '@/state'
 import { useEventEmitter } from '@/composables/EventEmitter'
-import { nodeEvents, emitterEvents } from '@/composables/events'
+import { nodeEvents, emitterEvents } from '@/enums'
 import { activeStyles, passiveStyles } from '@/composables/utils'
 import type {
   TNode,

@@ -1,9 +1,13 @@
 <template>
-  <video ref="videoRef" class="w-full h-full rounded-md" />
+  <video ref="videoRef" v-bind="$attrs" class="w-full h-full rounded-md" />
 </template>
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+
+defineOptions({
+  inheritAttrs: false,
+})
 
 const props = defineProps({
   id: {

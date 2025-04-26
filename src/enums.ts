@@ -42,3 +42,22 @@ export const mediaTypes = {
   img: 'img',
   video: 'video',
 } as const
+
+export const emitterEvents = {
+  screen: {
+    groundMouseUp: 'groundMouseUp',
+  },
+  node: {
+    mouseDown: 'mouseDown',
+  },
+} as const
+
+export const nodeEvents = {
+  zIndex: 'zIndex',
+} as const
+
+export const liveConnectionTypes = {
+  connect: 'connect',
+  connecting: 'connecting',
+  connected: 'connected',
+} as const
