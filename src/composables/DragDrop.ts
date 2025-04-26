@@ -8,6 +8,7 @@ const dragNode = ref<TNode>()
 
 export function useDragDrop() {
   const item = 'item' as const
+  const nodeItem = 'nodeItem' as const
 
   function nondragdrop(_event: MouseEvent, node: TNode) {
     setDragNode(cloneDeep(node))
@@ -20,7 +21,7 @@ export function useDragDrop() {
   function dragstart(event: DragEvent, node: TNode): void {
     if (event.dataTransfer) {
       setDragNode(cloneDeep(node))
-      event.dataTransfer.setData(item, '')
+      event.dataTransfer.setData(item, nodeItem)
     }
   }
 
@@ -38,10 +39,12 @@ export function useDragDrop() {
 
   function drop(event: DragEvent): void {
     if (event.dataTransfer) {
-      createNode({
-        x: event.offsetX,
-        y: event.offsetY,
-      })
+      if (event.dataTransfer.getData(item) == nodeItem) {
+        createNode({
+          x: event.offsetX,
+          y: event.offsetY,
+        })
+      }
     }
   }
 

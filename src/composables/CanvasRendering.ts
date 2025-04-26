@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
 import { canvasRef, nodes } from '@/state'
 import { screenNodeTypes } from '@/enums'
-import { ctrlOrMetaKey } from '@/composables/utils'
+import { ctrlOrMetaKey, fixPositionHeightForCanvas, fixPositionWidthForCanvas } from '@/composables/utils'
 import type { TNode, TTextNodeData } from '@/types'
 
 const ctx = ref<CanvasRenderingContext2D | null>()
@@ -59,17 +59,21 @@ export function useCanvasRendering() {
     for (const { options, element } of screenNodes) {
       switch (options.type) {
         case screenNodeTypes.text:
-          ctx.value.fillText((options.data as TTextNodeData).text || '', options.position.x, options.position.y)
+          ctx.value.fillText(
+            (options.data as TTextNodeData).text || '',
+            fixPositionWidthForCanvas(options.position.x),
+            fixPositionHeightForCanvas(options.position.y)
+          )
           break
 
         case screenNodeTypes.image:
         case screenNodeTypes.background:
           ctx.value.drawImage(
             element.querySelector('img'),
-            options.position.x,
-            options.position.y,
-            element.getBoundingClientRect().width,
-            element.getBoundingClientRect().height
+            fixPositionWidthForCanvas(options.position.x),
+            fixPositionHeightForCanvas(options.position.y),
+            fixPositionWidthForCanvas(element.getBoundingClientRect().width),
+            fixPositionHeightForCanvas(element.getBoundingClientRect().height)
           )
           break
 
@@ -78,10 +82,10 @@ export function useCanvasRendering() {
         case screenNodeTypes.liveCamera:
           ctx.value.drawImage(
             element.querySelector('video'),
-            options.position.x,
-            options.position.y,
-            element.getBoundingClientRect().width,
-            element.getBoundingClientRect().height
+            fixPositionWidthForCanvas(options.position.x),
+            fixPositionHeightForCanvas(options.position.y),
+            fixPositionWidthForCanvas(element.getBoundingClientRect().width),
+            fixPositionHeightForCanvas(element.getBoundingClientRect().height)
           )
           break
       }

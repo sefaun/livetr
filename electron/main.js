@@ -8,7 +8,7 @@ let splashWindow
 function createSplashWindow() {
   splashWindow = new BrowserWindow({
     width: 400,
-    height: 200,
+    height: 140,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -28,8 +28,7 @@ function createWindow() {
     title: 'Livetr',
     width: 1500,
     height: 900,
-    minWidth: 1500,
-    minHeight: 900,
+    resizable: false,
     autoHideMenuBar: true,
     titleBarStyle: 'default',
     transparent: false,
