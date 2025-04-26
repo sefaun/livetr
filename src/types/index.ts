@@ -30,6 +30,11 @@ export type TSourceMediaNodeData = {
   id: string
 }
 
+export type TLiveCameraNodeData = {
+  title: string
+  id: string
+}
+
 export type TBackgroundNodeData = {
   title: string
   src: string
@@ -59,3 +64,9 @@ export type TNodeZIndexMessage = {
 export type TNodeEventMessage<T> = T
 
 export type TNodeEventListenerData = TNodeZIndexMessage
+
+export type TLocalSource = {
+  id: string
+  name: string
+  thumbnail: string
+}

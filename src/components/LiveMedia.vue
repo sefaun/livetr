@@ -22,8 +22,8 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { VideoPlay } from '@element-plus/icons-vue'
 import { ElIcon } from 'element-plus'
+import { VideoPlay } from '@element-plus/icons-vue'
 
 defineOptions({
   inheritAttrs: false,
@@ -31,6 +31,11 @@ defineOptions({
 
 const props = defineProps({
   sourceId: {
+    type: String,
+    default: '',
+    required: false,
+  },
+  liveId: {
     type: String,
     default: '',
     required: false,
@@ -58,12 +63,14 @@ async function liveMedia() {
 
   stream = await navigator.mediaDevices.getUserMedia({
     audio: false,
-    video: {
-      mandatory: {
-        chromeMediaSource: 'desktop',
-        chromeMediaSourceId: props.sourceId,
-      },
-    },
+    video: props.liveId
+      ? { deviceId: { exact: props.liveId } }
+      : ({
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: props.sourceId,
+          },
+        } as any),
   })
 
   mediaRef.value.srcObject = stream

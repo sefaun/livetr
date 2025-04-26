@@ -39,7 +39,7 @@ export function useCanvasRendering() {
       canvasRef.value.getBoundingClientRect().width,
       canvasRef.value.getBoundingClientRect().height
     )
-    ctx.value.fillStyle = 'white'
+    ctx.value.fillStyle = 'black'
     ctx.value.font = '24px sans-serif'
   }
 
@@ -75,6 +75,7 @@ export function useCanvasRendering() {
 
         case screenNodeTypes.video:
         case screenNodeTypes.sourceMedia:
+        case screenNodeTypes.liveCamera:
           ctx.value.drawImage(
             element.querySelector('video'),
             options.position.x,

@@ -11,6 +11,7 @@
       <NodeImage v-if="node.type == screenNodeTypes.image" :data="node"></NodeImage>
       <NodeVideo v-if="node.type == screenNodeTypes.video" :data="node"></NodeVideo>
       <NodeSourceMedia v-if="node.type == screenNodeTypes.sourceMedia" :data="node"></NodeSourceMedia>
+      <NodeLiveCamera v-if="node.type == screenNodeTypes.liveCamera" :data="node"></NodeLiveCamera>
       <NodeBackground v-if="node.type == screenNodeTypes.background" :data="node"></NodeBackground>
     </Node>
   </div>
@@ -24,6 +25,7 @@ import Node from '@/components/studio/Node.vue'
 import NodeImage from '@/components/studio/nodes/Image.vue'
 import NodeVideo from '@/components/studio/nodes/Video.vue'
 import NodeSourceMedia from '@/components/studio/nodes/SourceMedia.vue'
+import NodeLiveCamera from '@/components/studio/nodes/LiveCamera.vue'
 import NodeBackground from '@/components/studio/nodes/Background.vue'
 
 const dragdrop = useDragDrop()
