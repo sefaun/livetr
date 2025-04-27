@@ -1,16 +1,17 @@
 <template>
   <div
     ref="nodeRef"
-    class="absolute w-full h-full z-1000 select-none border-2 border-[var(--primary-color)] resize-both"
+    class="absolute w-full h-full z-1000 select-none border-2 border-[var(--primary-color)] resize-both resizable"
     :style="{ left: `${nodeOptions.position.x}px`, top: `${nodeOptions.position.y}px`, ...nodeOptions.style as any }"
     @mousedown.stop.left="mouseDown"
-    @mouseup.stop.left="mouseUp"
+    @mouseup.prevent.left="mouseUp"
     @contextmenu.prevent.stop="node.contextMenu"
     @dragstart.prevent.stop
     @dragenter.prevent.stop
     @dragover.prevent.stop
     @dragleave.prevent.stop
   >
+    <Resize :nodeOptions="nodeOptions"></Resize>
     <slot />
   </div>
 </template>
@@ -20,6 +21,7 @@ import type { PropType } from 'vue'
 import { ref, onBeforeUnmount, onMounted } from 'vue'
 import { nodes } from '@/state'
 import { useNode } from '@/composables/Node'
+import Resize from '@/components/studio/Resize.vue'
 import { screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
 
