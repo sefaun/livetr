@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { onMounted, defineProps } from 'vue'
+import { onMounted, defineProps, nextTick } from 'vue'
 import type { TNode } from '@/types'
 
 const props = defineProps({
@@ -20,13 +20,20 @@ const props = defineProps({
     default: {},
     required: true,
   },
+  nodeRef: {
+    type: HTMLElement,
+  },
 })
+
+let resizable: HTMLElement = props.nodeRef
 
 onMounted(() => {
-  globalresize()
+  nextTick(() => {
+    resizable = props.nodeRef
+    globalresize()
+  })
 })
 
-let resizable: HTMLElement
 let resizers: NodeListOf<HTMLElement>
 let originalWidth = 0
 let originalHeight = 0
@@ -37,8 +44,7 @@ let originalMouseY = 0
 let activeResizer: HTMLElement | null = null
 
 function globalresize() {
-  resizable = document.querySelector('.resizable')!
-  resizers = document.querySelectorAll('.resizer')
+  resizers = props.nodeRef.querySelectorAll('.resizer')
 
   resizers.forEach((resizer) => {
     resizer.addEventListener('mousedown', function (e) {
@@ -46,8 +52,8 @@ function globalresize() {
 
       activeResizer = resizer
 
-      originalWidth =parseFloat(getComputedStyle(resizable).width)
-      originalHeight = parseFloat(getComputedStyle(resizable).height)
+      originalWidth = parseFloat(getComputedStyle(resizable, null).getPropertyValue('width').replace('px', ''))
+      originalHeight = parseFloat(getComputedStyle(resizable, null).getPropertyValue('height').replace('px', ''))
       originalX = resizable.getBoundingClientRect().left
       originalY = resizable.getBoundingClientRect().top
       originalMouseX = e.pageX

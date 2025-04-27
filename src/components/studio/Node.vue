@@ -11,7 +11,7 @@
     @dragover.prevent.stop
     @dragleave.prevent.stop
   >
-    <Resize :nodeOptions="nodeOptions"></Resize>
+    <Resize :nodeOptions="nodeOptions" :nodeRef="node.getNodeElement()"></Resize>
     <slot />
   </div>
 </template>
