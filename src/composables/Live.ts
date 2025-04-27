@@ -3,8 +3,9 @@ import type { Stream } from 'node:stream'
 import { useI18n } from 'vue-i18n'
 import { ElNotification } from 'element-plus'
 import type Ffmpeg from 'fluent-ffmpeg'
-import { canvasRef, channel } from '@/state'
-import { liveConnectionTypes } from '@/enums'
+import { useAudio } from '@/composables/Audio'
+import { canvasRef, channel, nodes } from '@/state'
+import { liveConnectionTypes, screenNodeTypes } from '@/enums'
 import type { TLiveConnectionTypes, TLiveOptions } from '@/types'
 const { PassThrough } = window.require('node:stream') as typeof import('node:stream')
 const ffmpeg = window.require('fluent-ffmpeg') as typeof import('fluent-ffmpeg')
@@ -24,6 +25,7 @@ let ffmpegProcess: Ffmpeg.FfmpegCommand
 
 export function useLive() {
   const { t } = useI18n()
+  const audio = useAudio()
 
   function getLiveStatus() {
     return liveStatus.value
@@ -70,9 +72,25 @@ export function useLive() {
     ffmpeg.setFfmpegPath(ffmpegPath as unknown as string)
     inputStream = new PassThrough()
     const canvasStream = canvasRef.value.captureStream(liveOptions.value.fps)
-    mediaRecorder = new MediaRecorder(canvasStream, {
-      mimeType: 'video/webm; codecs=vp8,opus',
-    })
+
+    audio.start()
+
+    for (const node of Object.values(nodes.value)) {
+      if (
+        node.getNodeOptions().type == screenNodeTypes.video ||
+        node.getNodeOptions().type == screenNodeTypes.sourceMedia ||
+        node.getNodeOptions().type == screenNodeTypes.liveCamera
+      ) {
+        audio.audioConnect(node.getNodeElement().querySelector('video'))
+      }
+    }
+
+    audio
+      .getAudioDestination()
+      .stream.getAudioTracks()
+      .forEach((track) => {
+        canvasStream.addTrack(track)
+      })
 
     // ffmpeg başlat
     ffmpegProcess = ffmpeg()
@@ -88,11 +106,11 @@ export function useLive() {
         '-maxrate 800k',
         '-bufsize 1600k',
         '-b:a 64k', // ses bitrate
-        '-r 24', // fps 24 yeterli olabilir
         '-pix_fmt yuv420p',
         '-vf scale=640:360',
       ])
       .format('flv')
+      .fps(liveOptions.value.fps)
       .output(liveOptions.value.rtmp + liveOptions.value.rtmpKey)
       .on('start', () => {
         setLiveStatus(liveConnectionTypes.connected)
@@ -103,6 +121,7 @@ export function useLive() {
       })
       .on('end', () => {
         setLiveStatus(liveConnectionTypes.connect)
+        audio.destroy()
         ElNotification({
           type: 'info',
           message: t('stream_ended'),
@@ -110,23 +129,21 @@ export function useLive() {
       })
       .on('error', (err) => {
         setLiveStatus(liveConnectionTypes.connect)
+        audio.destroy()
         ElNotification({
           type: 'error',
           message: err.message,
         })
       })
+      .run()
 
-    // MediaRecorder veri geldiğinde inputStream'e yaz
-    let ffmpegStarted = false
+    mediaRecorder = new MediaRecorder(canvasStream, {
+      mimeType: 'video/webm; codecs=vp8,opus',
+    })
 
     mediaRecorder.ondataavailable = async (event) => {
       if (event.data && event.data.size > 0 && inputStream) {
         inputStream.write(Buffer.from(await event.data.arrayBuffer()))
-
-        if (!ffmpegStarted) {
-          ffmpegProcess.run()
-          ffmpegStarted = true
-        }
       }
     }
 
@@ -142,6 +159,7 @@ export function useLive() {
 
   function endStream() {
     setLiveStatus(liveConnectionTypes.connect)
+    audio.destroy()
 
     if (mediaRecorder && mediaRecorder.state != 'inactive') {
       mediaRecorder.stop()
@@ -156,9 +174,7 @@ export function useLive() {
     if (ffmpegProcess) {
       try {
         ffmpegProcess.kill('SIGINT')
-      } catch (e) {
-        console.error('Failed to kill ffmpeg process', e)
-      }
+      } catch (error) {}
       ffmpegProcess = null
     }
 

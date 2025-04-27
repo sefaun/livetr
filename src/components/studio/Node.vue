@@ -1,7 +1,7 @@
 <template>
   <div
     ref="nodeRef"
-    class="absolute w-full h-full z-1000 select-none border-2 border-[#00ff44] resize-both"
+    class="absolute w-full h-full z-1000 select-none border-2 border-[var(--primary-color)] resize-both"
     :style="{ left: `${nodeOptions.position.x}px`, top: `${nodeOptions.position.y}px`, ...nodeOptions.style as any }"
     @mousedown.stop.left="mouseDown"
     @mouseup.stop.left="mouseUp"

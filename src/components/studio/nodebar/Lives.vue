@@ -107,8 +107,8 @@ async function createLiveMedia(
     type: source.type,
     style: {
       zIndex: '1000',
-      width: '100%',
-      height: '100%',
+      width: '300px',
+      height: '300px',
     },
     data: {
       id: source.id,
