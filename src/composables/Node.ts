@@ -3,24 +3,19 @@ import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
 import { screenRef } from '@/state'
 import { useEventEmitter } from '@/composables/EventEmitter'
-import { nodeEvents, emitterEvents } from '@/enums'
+import { useSelection } from '@/composables/Selection'
 import { activeStyles, passiveStyles } from '@/composables/utils'
-import type {
-  TNode,
-  TNodeEventListenerData,
-  TNodeEventMessage,
-  TNodeEvents,
-  TNodeZIndexMessage,
-  TuseNodeOptions,
-} from '@/types'
+import { emitterEvents } from '@/enums'
+import type { TNode, TuseNodeOptions } from '@/types'
 
 export function useNode(data: TuseNodeOptions) {
   const EE = useEventEmitter().getEventEmitter()
+  const selection = useSelection()
   const nodeElement: Ref<HTMLElement> = ref()
   const options: Ref<TNode> = ref(cloneDeep(data.options))
   let startPosition = { x: 0, y: 0 }
   let shiftPosition = { x: 0, y: 0 }
-  let movePosition = { x: 0, y: 0 }
+  let currentPosition = { x: 0, y: 0 }
 
   function getNodeOptions() {
     return options.value
@@ -30,44 +25,35 @@ export function useNode(data: TuseNodeOptions) {
     return nodeElement.value
   }
 
-  function sendZindexMessage() {
-    EE.emit(emitterEvents.node.mouseDown, {
-      event: 'zIndex',
-      data: {
-        id: options.value.id,
-      },
-    })
+  function setCurrentPosition(x: number = options.value.position.x, y: number = options.value.position.y) {
+    currentPosition.x = x
+    currentPosition.y = y
+
+    //Sol Taraftan Sınırlama
+    if (x < 0) {
+      currentPosition.x = 0
+    }
+    //Yukarı Taraftan Sınırlama
+    if (y < 0) {
+      currentPosition.y = 0
+    }
+    //Sağ Taraftan Sınırlama
+    if (x > screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width) {
+      currentPosition.x =
+        screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width
+    }
+    //Aşağı Taraftan Sınırlama
+    if (y > screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height) {
+      currentPosition.y =
+        screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height
+    }
+
+    options.value.position.x = currentPosition.x
+    options.value.position.y = currentPosition.y
   }
 
   function setNodePosition(pageX: number, pageY: number): void {
-    movePosition.x = pageX - shiftPosition.x
-    movePosition.y = pageY - shiftPosition.y
-
-    //Sol Taraftan Sınırlama
-    if (movePosition.x < 0) {
-      movePosition.x = 0
-    }
-    //Yukarı Taraftan Sınırlama
-    if (movePosition.y < 0) {
-      movePosition.y = 0
-    }
-    //Sağ Taraftan Sınırlama
-    if (
-      movePosition.x >
-      screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width
-    ) {
-      movePosition.x = screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width
-    }
-    //Aşağı Taraftan Sınırlama
-    if (
-      movePosition.y >
-      screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height
-    ) {
-      movePosition.y = screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height
-    }
-
-    options.value.position.x = movePosition.x
-    options.value.position.y = movePosition.y
+    setCurrentPosition(pageX - shiftPosition.x, pageY - shiftPosition.y)
   }
 
   function setStartingPoints(x: number, y: number): void {
@@ -75,11 +61,18 @@ export function useNode(data: TuseNodeOptions) {
     startPosition.y = y
   }
 
-  function mouseDown(event: MouseEvent) {
-    sendZindexMessage()
-    activeStyles()
+  function select() {
+    selection.clear()
+    selection.add(options.value.id)
+  }
 
-    options.value.style.zIndex = '1001'
+  function click(_event: MouseEvent) {
+    select()
+  }
+
+  function mouseDown(event: MouseEvent) {
+    activeStyles()
+    select()
 
     setStartingPoints(event.clientX, event.clientY)
     shiftPosition.x = startPosition.x - nodeElement.value.getBoundingClientRect().left
@@ -104,10 +97,7 @@ export function useNode(data: TuseNodeOptions) {
     screenRef.value.removeEventListener('mousemove', mouseMove)
   }
 
-  function contextMenu(_event: MouseEvent) {
-    sendZindexMessage()
-    options.value.style.zIndex = '1001'
-  }
+  function contextMenu(_event: MouseEvent) {}
 
   function setNodeElement(element: HTMLElement) {
     nodeElement.value = element
@@ -117,24 +107,12 @@ export function useNode(data: TuseNodeOptions) {
     screenRef.value.removeEventListener('mousemove', mouseMove)
   }
 
-  function mouseDownEvent(message: { event: TNodeEvents; data?: TNodeEventListenerData }) {
-    switch (message.event) {
-      case nodeEvents.zIndex:
-        if ((message.data as TNodeEventMessage<TNodeZIndexMessage>).id != options.value.id) {
-          options.value.style.zIndex = '1000'
-        }
-        break
-    }
-  }
-
   function startEmitterListener() {
     EE.on(emitterEvents.screen.groundMouseUp, groundMouseUp)
-    EE.on(emitterEvents.node.mouseDown, mouseDownEvent)
   }
 
   function destroyEmitterListener() {
     EE.removeListener(emitterEvents.screen.groundMouseUp, groundMouseUp)
-    EE.removeListener(emitterEvents.node.mouseDown, mouseDownEvent)
   }
 
   function start() {
@@ -148,11 +126,13 @@ export function useNode(data: TuseNodeOptions) {
   return {
     getNodeElement,
     getNodeOptions,
+    click,
     mouseDown,
     mouseMove,
     mouseUp,
     contextMenu,
     setNodeElement,
+    setCurrentPosition,
     start,
     destroy,
   }

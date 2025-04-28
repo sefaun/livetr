@@ -33,9 +33,7 @@ export const nodeData = {
     x: 0,
     y: 0,
   },
-  style: {
-    zIndex: '1000',
-  },
+  style: {},
 } as TNode
 
 export const mediaTypes = {
@@ -50,10 +48,6 @@ export const emitterEvents = {
   node: {
     mouseDown: 'mouseDown',
   },
-} as const
-
-export const nodeEvents = {
-  zIndex: 'zIndex',
 } as const
 
 export const liveConnectionTypes = {

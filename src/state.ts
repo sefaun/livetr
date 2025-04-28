@@ -21,7 +21,6 @@ export const defaultNodes = [
       y: 0,
     },
     style: {
-      zIndex: '1000',
       width: '150px',
       height: '150px',
     },
@@ -38,7 +37,6 @@ export const defaultNodes = [
   //     y: 0,
   //   },
   //   style: {
-  //     zIndex: '1000',
   //     width: '150px',
   //     height: '150px',
   //   },
@@ -55,7 +53,8 @@ export const defaultNodes = [
       y: 0,
     },
     style: {
-      zIndex: '999',
+      width: '100%',
+      height: '100%',
     },
     data: {
       title: 'Arka Plan',

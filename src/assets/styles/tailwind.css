@@ -6,7 +6,37 @@
     --primary-color: #00df30;
     --studio-navbar-height: 64px;
     --studio-footer-height: 140px;
-    --wire-dark-color: rgb(207, 211, 220);
-    --wire-color: rgb(71 85 105);
+    --border-dark-color: rgb(207, 211, 220);
+    --border-color: rgb(71 85 105);
+  }
+}
+
+@layer components {
+  .resizer {
+    @apply absolute w-[10px] h-[10px] bg-[var(--border-color)] border border-[var(--primary-color)] z-20 cursor-pointer;
+  }
+  .resizer-top-left {
+    @apply top-[-5px] left-[-5px] cursor-nwse-resize;
+  }
+  .resizer-top-right {
+    @apply top-[-5px] right-[-5px] cursor-nesw-resize;
+  }
+  .resizer-bottom-left {
+    @apply bottom-[-5px] left-[-5px] cursor-nesw-resize;
+  }
+  .resizer-bottom-right {
+    @apply bottom-[-5px] right-[-5px] cursor-nwse-resize;
+  }
+  .resizer-top {
+    @apply top-[-5px] left-1/2 transform -translate-x-1/2 cursor-ns-resize;
+  }
+  .resizer-bottom {
+    @apply bottom-[-5px] left-1/2 transform -translate-x-1/2 cursor-ns-resize;
+  }
+  .resizer-left {
+    @apply left-[-5px] top-1/2 transform -translate-y-1/2 cursor-ew-resize;
+  }
+  .resizer-right {
+    @apply right-[-5px] top-1/2 transform -translate-y-1/2 cursor-ew-resize;
   }
 }
