@@ -2,20 +2,16 @@ import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
 import { screenRef } from '@/state'
-import { useEventEmitter } from '@/composables/EventEmitter'
 import { useSelection } from '@/composables/Selection'
 import { activeStyles, passiveStyles } from '@/composables/utils'
-import { emitterEvents } from '@/enums'
 import type { TNode, TuseNodeOptions } from '@/types'
 
 export function useNode(data: TuseNodeOptions) {
-  const EE = useEventEmitter().getEventEmitter()
   const selection = useSelection()
   const nodeElement: Ref<HTMLElement> = ref()
   const options: Ref<TNode> = ref(cloneDeep(data.options))
   let startPosition = { x: 0, y: 0 }
   let shiftPosition = { x: 0, y: 0 }
-  let currentPosition = { x: 0, y: 0 }
 
   function getNodeOptions() {
     return options.value
@@ -25,35 +21,9 @@ export function useNode(data: TuseNodeOptions) {
     return nodeElement.value
   }
 
-  function setCurrentPosition(x: number = options.value.position.x, y: number = options.value.position.y) {
-    currentPosition.x = x
-    currentPosition.y = y
-
-    //Sol Taraftan Sınırlama
-    if (x < 0) {
-      currentPosition.x = 0
-    }
-    //Yukarı Taraftan Sınırlama
-    if (y < 0) {
-      currentPosition.y = 0
-    }
-    //Sağ Taraftan Sınırlama
-    if (x > screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width) {
-      currentPosition.x =
-        screenRef.value.getBoundingClientRect().width - nodeElement.value.getBoundingClientRect().width
-    }
-    //Aşağı Taraftan Sınırlama
-    if (y > screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height) {
-      currentPosition.y =
-        screenRef.value.getBoundingClientRect().height - nodeElement.value.getBoundingClientRect().height
-    }
-
-    options.value.position.x = currentPosition.x
-    options.value.position.y = currentPosition.y
-  }
-
   function setNodePosition(pageX: number, pageY: number): void {
-    setCurrentPosition(pageX - shiftPosition.x, pageY - shiftPosition.y)
+    options.value.position.x = pageX - shiftPosition.x
+    options.value.position.y = pageY - shiftPosition.y
   }
 
   function setStartingPoints(x: number, y: number): void {
@@ -103,26 +73,6 @@ export function useNode(data: TuseNodeOptions) {
     nodeElement.value = element
   }
 
-  function groundMouseUp() {
-    screenRef.value.removeEventListener('mousemove', mouseMove)
-  }
-
-  function startEmitterListener() {
-    EE.on(emitterEvents.screen.groundMouseUp, groundMouseUp)
-  }
-
-  function destroyEmitterListener() {
-    EE.removeListener(emitterEvents.screen.groundMouseUp, groundMouseUp)
-  }
-
-  function start() {
-    startEmitterListener()
-  }
-
-  function destroy() {
-    destroyEmitterListener()
-  }
-
   return {
     getNodeElement,
     getNodeOptions,
@@ -132,8 +82,5 @@ export function useNode(data: TuseNodeOptions) {
     mouseUp,
     contextMenu,
     setNodeElement,
-    setCurrentPosition,
-    start,
-    destroy,
   }
 }

@@ -95,20 +95,12 @@ function mouseUp(event: MouseEvent) {
 
 onMounted(() => {
   node.setNodeElement(nodeRef.value)
-  node.setCurrentPosition()
-  if (nodeOptions.type != screenNodeTypes.background) {
-    node.start()
-  }
-
   selection.clear()
   selection.add(nodeOptions.id)
   nodes.value[nodeOptions.id] = node
 })
 
 onBeforeUnmount(() => {
-  if (nodeOptions.type != screenNodeTypes.background) {
-    node.destroy()
-  }
   delete nodes.value[nodeOptions.id]
 })
 </script>

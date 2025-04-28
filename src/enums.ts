@@ -41,15 +41,6 @@ export const mediaTypes = {
   video: 'video',
 } as const
 
-export const emitterEvents = {
-  screen: {
-    groundMouseUp: 'groundMouseUp',
-  },
-  node: {
-    mouseDown: 'mouseDown',
-  },
-} as const
-
 export const liveConnectionTypes = {
   connect: 'connect',
   connecting: 'connecting',
