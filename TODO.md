@@ -1,5 +1,4 @@
 - yayın sırasında yeni node eklendiğinde sesinide yayına vermek lazım
 - ekolayzer ayarları için geliştirme yapılmalı
 - özel video resim ve metin ekleme için geliştirme yapılmalı
-- ekrana konan nodelar için resize özelliği olmalı
 - ekrandaki node silinebilmeli

@@ -1,5 +1,5 @@
 import { useNode } from '@/composables/Node'
-import { channels, localeNames, mediaTypes, screenNodeTypes, nodeEvents, liveConnectionTypes } from '@/enums'
+import { channels, localeNames, mediaTypes, screenNodeTypes, liveConnectionTypes } from '@/enums'
 
 export type ValueOf<T> = T[keyof T]
 
@@ -60,16 +60,6 @@ export type TNode = {
 export type TuseNodeOptions = {
   options: TNode
 }
-
-export type TNodeEvents = ValueOf<typeof nodeEvents>
-
-export type TNodeZIndexMessage = {
-  id: string
-}
-
-export type TNodeEventMessage<T> = T
-
-export type TNodeEventListenerData = TNodeZIndexMessage
 
 export type TLocalSource = {
   id: string

@@ -22,7 +22,7 @@
         })
       "
       draggable="true"
-      class="h-fit border border-[var(--wire-color)] dark:border-[--wire-dark-color] rounded-md cursor-pointer p-1"
+      class="h-fit border border-[var(--border-color)] dark:border-[--border-dark-color] rounded-md cursor-pointer p-1"
     >
       <ElTooltip :content="source.label" :hide-after="0" effect="dark" placement="top">
         <div class="w-28">
@@ -43,7 +43,7 @@
         })
       "
       draggable="true"
-      class="h-fit border border-[var(--wire-color)] dark:border-[--wire-dark-color] rounded-md cursor-pointer p-1"
+      class="h-fit border border-[var(--border-color)] dark:border-[--border-dark-color] rounded-md cursor-pointer p-1"
     >
       <ElTooltip :content="source.name" :hide-after="0" effect="dark" placement="top">
         <div class="w-28">
@@ -106,7 +106,6 @@ async function createLiveMedia(
   dragdrop.dragstart(event, {
     type: source.type,
     style: {
-      zIndex: '1000',
       width: '300px',
       height: '300px',
     },
