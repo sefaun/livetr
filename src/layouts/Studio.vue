@@ -5,7 +5,7 @@
   </div>
   <div
     :class="canvasRendering.getCanvasStatus() ? 'left-1' : 'left-[9999px]'"
-    class="fixed bottom-1 z-10 border border-amber-300"
+    class="fixed bottom-1 z-10 border border-amber-300 pointer-events-none"
   >
     <canvas ref="canvasRef" width="1280" height="720"></canvas>
   </div>
