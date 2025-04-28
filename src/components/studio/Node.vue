@@ -2,7 +2,10 @@
   <div
     ref="nodeRef"
     class="absolute w-full h-full select-none"
-    :class="[selectedZIndex, selectedStatus ? 'border-2 border-[var(--primary-color)] resize-both resizable' : '']"
+    :class="[
+      selectedZIndex,
+      selectedStatus && nonResizeNode ? 'border-2 border-[var(--primary-color)] resize-both resizable' : '',
+    ]"
     :style="{ left: `${nodeOptions.position.x}px`, top: `${nodeOptions.position.y}px`, ...nodeOptions.style as any }"
     @mousedown.stop.left="mouseDown"
     @mouseup.stop.left="mouseUp"
@@ -13,8 +16,13 @@
     @dragover.prevent.stop
     @dragleave.prevent.stop
   >
-    <Resize v-if="nodeRef && selectedStatus" :nodeOptions="nodeOptions" :nodeRef="node.getNodeElement()"></Resize>
+    <Resize
+      v-if="nodeRef && selectedStatus && nonResizeNode"
+      :nodeOptions="nodeOptions"
+      :nodeRef="node.getNodeElement()"
+    ></Resize>
     <slot />
+    <NodeTool v-if="selectedStatus" :nodeId="nodeOptions.id" />
   </div>
 </template>
 
@@ -27,6 +35,7 @@ import { useSelection } from '@/composables/Selection'
 import { screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
 import Resize from '@/components/studio/Resize.vue'
+import NodeTool from '@/components/studio/NodeTool.vue'
 
 const props = defineProps({
   data: {
@@ -44,11 +53,8 @@ const node = useNode({
 })
 const nodeOptions = node.getNodeOptions()
 
+const nonResizeNode = computed(() => nodeOptions.type != screenNodeTypes.background)
 const selectedStatus = computed(() => {
-  if (nodeOptions.type == screenNodeTypes.background) {
-    return false
-  }
-
   if (selection.get().find((item) => item == nodeOptions.id)) {
     return true
   }
@@ -69,10 +75,6 @@ const selectedZIndex = computed(() => {
 })
 
 function click(event: MouseEvent) {
-  if (nodeOptions.type == screenNodeTypes.background) {
-    return
-  }
-
   event.stopPropagation()
   node.click(event)
 }

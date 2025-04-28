@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full h-[var(--studio-navbar-height)] bg-pink-200 dark:bg-slate-900 flex items-center justify-between px-4 shadow-md"
+    class="w-full h-[var(--studio-navbar-height)] bg-pink-200 bg-dark flex items-center justify-between px-4 shadow-md"
   >
     <div class="text-lg font-bold">{{ t('studio') }}</div>
     <div class="font-bold text-3xl text-[var(--primary-color)]">Livetr</div>

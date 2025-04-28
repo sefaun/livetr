@@ -8,10 +8,14 @@
     --studio-footer-height: 140px;
     --border-dark-color: rgb(207, 211, 220);
     --border-color: rgb(71 85 105);
+    --bg-dark-color: #1d1e1f;
   }
 }
 
 @layer components {
+  .bg-dark {
+    @apply dark:!bg-[var(--bg-dark-color)]
+  }
   .resizer {
     @apply absolute w-[10px] h-[10px] bg-[var(--border-color)] border border-[var(--primary-color)] z-20 cursor-pointer;
   }
