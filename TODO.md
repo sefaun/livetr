@@ -1,7 +1,6 @@
 # Yapılacaklar
 
-- ctrl+p ile canvas önizleme olarak gösteriliyor. sesli bir önizleme için video'da ekle.
-- yayın sırasında yeni node eklendiğinde sesinide yayına vermek lazım
+- yayın sırasında yeni node eklendiğinde sesinide yayına vermek lazım.(genel yayın ses ayarları)
 - ekolayzer ayarları için geliştirme yapılmalı
 - özel video resim ve metin ekleme için geliştirme yapılmalı
 

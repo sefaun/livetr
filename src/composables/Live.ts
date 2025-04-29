@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { ElNotification } from 'element-plus'
 import type Ffmpeg from 'fluent-ffmpeg'
 import { useAudio } from '@/composables/Audio'
-import { canvasRef, channel, nodes } from '@/state'
+import { canvasPreviewRef, channel, nodes } from '@/state'
 import { liveConnectionTypes, screenNodeTypes } from '@/enums'
 import type { TLiveConnectionTypes, TLiveOptions } from '@/types'
 const { PassThrough } = window.require('node:stream') as typeof import('node:stream')
@@ -71,7 +71,7 @@ export function useLive() {
     setLiveStatus(liveConnectionTypes.connecting)
     ffmpeg.setFfmpegPath(ffmpegPath as unknown as string)
     inputStream = new PassThrough()
-    const canvasStream = canvasRef.value.captureStream(liveOptions.value.fps)
+    const canvasStream = canvasPreviewRef.value.captureStream(liveOptions.value.fps)
 
     audio.start()
 

@@ -1,12 +1,11 @@
 import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
-import { canvasRef, nodes } from '@/state'
+import { canvasPreviewRef, nodes } from '@/state'
 import { screenNodeTypes } from '@/enums'
-import { ctrlOrMetaKey, fixPositionHeightForCanvas, fixPositionWidthForCanvas } from '@/composables/utils'
+import { fixPositionHeightForCanvas, fixPositionWidthForCanvas } from '@/composables/utils'
 import type { TNode, TTextNodeData } from '@/types'
 
 const ctx = ref<CanvasRenderingContext2D | null>()
-const canvasStatus = ref(false)
 
 export function useCanvasRendering() {
   let screenNodes: {
@@ -19,25 +18,17 @@ export function useCanvasRendering() {
     return ctx.value
   }
 
-  function getCanvasStatus() {
-    return canvasStatus.value
-  }
-
   function setCtx(value: HTMLCanvasElement) {
     ctx.value = value.getContext('2d')
     clearScreen()
-  }
-
-  function setCanvasStatus(value: boolean) {
-    canvasStatus.value = value
   }
 
   function clearScreen() {
     ctx.value.clearRect(
       0,
       0,
-      canvasRef.value.getBoundingClientRect().width,
-      canvasRef.value.getBoundingClientRect().height
+      canvasPreviewRef.value.getBoundingClientRect().width,
+      canvasPreviewRef.value.getBoundingClientRect().height
     )
     ctx.value.fillStyle = 'black'
     ctx.value.font = '24px sans-serif'
@@ -92,20 +83,9 @@ export function useCanvasRendering() {
     }
   }
 
-  function canvasPreview() {
-    window.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (ctrlOrMetaKey(event as any) && event.code == 'KeyP') {
-        event.preventDefault()
-        setCanvasStatus(!getCanvasStatus())
-      }
-    })
-  }
-
   return {
-    getCanvasStatus,
     getCtx,
     setCtx,
     render,
-    canvasPreview,
   }
 }

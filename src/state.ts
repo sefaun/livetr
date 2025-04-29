@@ -3,7 +3,8 @@ import { ref } from 'vue'
 import { screenNodeTypes } from '@/enums'
 import type { TChannels, TNode, TuseNode } from '@/types'
 
-export const canvasRef = ref<HTMLCanvasElement>()
+export const canvasPreviewRef = ref<HTMLCanvasElement>()
+export const videoPreviewRef = ref<HTMLVideoElement>()
 export const screenRef = ref<HTMLElement>()
 
 export const channel = ref<TChannels>()
