@@ -6,7 +6,7 @@
     <canvas ref="canvasPreviewRef" width="1280" height="720"></canvas>
   </div>
   <div :class="preview.getVideoPreviewStatus() ? 'left-1' : 'left-[9999px]'" class="fixed bottom-1 z-10 border">
-    <video ref="videoPreviewRef" width="1280" height="720" muted controls></video>
+    <video ref="videoPreviewRef" width="1280" height="720" controls></video>
   </div>
 </template>
 

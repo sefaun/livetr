@@ -1,33 +1,22 @@
 <template>
-  <div class="w-full h-full">
-    <component
-      v-show="loadStatus"
-      v-bind="$attrs"
-      :is="props.type"
-      :src="props.src"
-      @load="loaded(true)"
-      @error="loaded(false)"
-      class="w-full h-full"
-    />
-    <div
-      v-show="!loadStatus"
-      class="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md"
-    >
-      <ElIcon :size="props.iconSize" :color="props.iconColor">
-        <Camera v-if="props.type == mediaTypes.img" />
-        <VideoPlay v-if="props.type == mediaTypes.video" />
-      </ElIcon>
-    </div>
-  </div>
+  <component
+    v-bind="$attrs"
+    :is="props.type"
+    :src="src"
+    :poster="poster"
+    @load="loaded(true)"
+    @error="loaded(false)"
+    class="w-full h-full"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { PropType } from 'vue'
-import { VideoPlay, Camera } from '@element-plus/icons-vue'
-import { ElIcon } from 'element-plus'
 import { mediaTypes } from '@/enums'
 import type { TMediaTypes } from '@/types'
+import ImageNotFound from '@/assets/image-not-found.png'
+import VideoNotFound from '@/assets/video-not-found.jpeg'
 
 defineOptions({
   inheritAttrs: false,
@@ -43,19 +32,20 @@ const props = defineProps({
     default: '',
     required: true,
   },
-  iconSize: {
-    type: Number,
-    default: 24,
-  },
-  iconColor: {
-    type: String,
-    default: '',
-  },
 })
 
-const loadStatus = ref(true)
+const src = ref(props.src)
+const poster = ref('')
 
 function loaded(value: boolean) {
-  loadStatus.value = value
+  if (!value) {
+    if (props.type == mediaTypes.img) {
+      src.value = ImageNotFound
+    }
+
+    if (props.type == mediaTypes.video) {
+      poster.value = VideoNotFound
+    }
+  }
 }
 </script>

@@ -1,29 +1,18 @@
 <template>
-  <div class="w-full h-full">
-    <video
-      ref="mediaRef"
-      v-show="loadStatus"
-      v-bind="$attrs"
-      @load="loaded(true)"
-      @error="loaded(false)"
-      autoplay
-      class="w-full h-full"
-    />
-    <div
-      v-show="!loadStatus"
-      class="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md"
-    >
-      <ElIcon :size="props.iconSize" :color="props.iconColor">
-        <VideoPlay />
-      </ElIcon>
-    </div>
-  </div>
+  <video
+    ref="mediaRef"
+    v-bind="$attrs"
+    :poster="poster"
+    @load="loaded(true)"
+    @error="loaded(false)"
+    autoplay
+    class="w-full h-full"
+  ></video>
 </template>
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { ElIcon } from 'element-plus'
-import { VideoPlay } from '@element-plus/icons-vue'
+import VideoNotFound from '@/assets/video-not-found.jpeg'
 
 defineOptions({
   inheritAttrs: false,
@@ -40,29 +29,28 @@ const props = defineProps({
     default: '',
     required: false,
   },
-  iconSize: {
-    type: Number,
-    default: 24,
-  },
-  iconColor: {
-    type: String,
-    default: '',
-  },
 })
 
 let stream: MediaStream
 const mediaRef = ref()
-const loadStatus = ref(true)
+const poster = ref('')
 
 function loaded(value: boolean) {
-  loadStatus.value = value
+  if (!value) {
+    poster.value = VideoNotFound
+  }
 }
 
 async function liveMedia() {
-  loaded(true)
-
   stream = await navigator.mediaDevices.getUserMedia({
-    audio: props.liveId ? true : false,
+    audio: props.liveId
+      ? true
+      : ({
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: props.sourceId,
+          },
+        } as any),
     video: props.liveId
       ? { deviceId: { exact: props.liveId } }
       : ({
