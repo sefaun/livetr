@@ -2,10 +2,10 @@ import { ref } from 'vue'
 import type { Stream } from 'node:stream'
 import { useI18n } from 'vue-i18n'
 import { ElNotification } from 'element-plus'
-import type Ffmpeg from 'fluent-ffmpeg'
+import type { FfmpegCommand } from 'fluent-ffmpeg'
 import { useAudio } from '@/composables/Audio'
-import { canvasPreviewRef, channel, nodes } from '@/state'
-import { liveConnectionTypes, screenNodeTypes } from '@/enums'
+import { canvasPreviewRef, channel } from '@/state'
+import { liveConnectionTypes } from '@/enums'
 import type { TLiveConnectionTypes, TLiveOptions } from '@/types'
 const { PassThrough } = window.require('node:stream') as typeof import('node:stream')
 const ffmpeg = window.require('fluent-ffmpeg') as typeof import('fluent-ffmpeg')
@@ -21,7 +21,7 @@ const liveOptions = ref<TLiveOptions>({
 // Yayınla ilgili referanslar
 let inputStream: Stream.PassThrough
 let mediaRecorder: MediaRecorder
-let ffmpegProcess: Ffmpeg.FfmpegCommand
+let ffmpegProcess: FfmpegCommand
 
 export function useLive() {
   const { t } = useI18n()
@@ -73,18 +73,6 @@ export function useLive() {
     inputStream = new PassThrough()
     const canvasStream = canvasPreviewRef.value.captureStream(liveOptions.value.fps)
 
-    audio.start()
-
-    for (const node of Object.values(nodes.value)) {
-      if (
-        node.getNodeOptions().type == screenNodeTypes.video ||
-        node.getNodeOptions().type == screenNodeTypes.sourceMedia ||
-        node.getNodeOptions().type == screenNodeTypes.liveCamera
-      ) {
-        audio.audioConnect(node.getNodeElement().querySelector('video'))
-      }
-    }
-
     audio
       .getAudioDestination()
       .stream.getAudioTracks()
@@ -121,7 +109,6 @@ export function useLive() {
       })
       .on('end', () => {
         setLiveStatus(liveConnectionTypes.connect)
-        audio.destroy()
         ElNotification({
           type: 'info',
           message: t('stream_ended'),
@@ -129,7 +116,6 @@ export function useLive() {
       })
       .on('error', (err) => {
         setLiveStatus(liveConnectionTypes.connect)
-        audio.destroy()
         ElNotification({
           type: 'error',
           message: err.message,
@@ -159,7 +145,6 @@ export function useLive() {
 
   function endStream() {
     setLiveStatus(liveConnectionTypes.connect)
-    audio.destroy()
 
     if (mediaRecorder && mediaRecorder.state != 'inactive') {
       mediaRecorder.stop()
