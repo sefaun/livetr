@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full">
-    <MediaRender :type="mediaTypes.img" :src="src" :iconSize="50" class="object-fill" iconColor="white" />
+    <MediaRender :type="mediaTypes.img" :src="src" class="object-fill" />
   </div>
 </template>
 

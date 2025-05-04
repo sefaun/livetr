@@ -2,6 +2,9 @@ import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { screenNodeTypes } from '@/enums'
 import type { TChannels, TNode, TuseNode } from '@/types'
+import testBgImage from '@/assets/test-bg-image.jpg'
+import testImage from '@/assets/test-image.png'
+import testVideo from '@/assets/bigbuckbunny.mp4'
 
 export const canvasPreviewRef = ref<HTMLCanvasElement>()
 export const videoPreviewRef = ref<HTMLVideoElement>()
@@ -27,25 +30,25 @@ export const defaultNodes = [
     },
     data: {
       title: 'Klasik Resim',
-      src: 'https://www.klasiksanatlar.com/img/sayfalar/b/1_1598452306_resim.png',
+      src: testImage,
     },
   },
-  // {
-  //   id: window.crypto.randomUUID(),
-  //   type: screenNodeTypes.video,
-  //   position: {
-  //     x: 0,
-  //     y: 0,
-  //   },
-  //   style: {
-  //     width: '150px',
-  //     height: '150px',
-  //   },
-  //   data: {
-  //     title: 'Klasik Video',
-  //     src: '../../../assets/bigbuckbunny.mp4',
-  //   },
-  // },
+  {
+    id: window.crypto.randomUUID(),
+    type: screenNodeTypes.video,
+    position: {
+      x: 0,
+      y: 0,
+    },
+    style: {
+      width: '150px',
+      height: '150px',
+    },
+    data: {
+      title: 'Test Video',
+      src: testVideo,
+    },
+  },
   {
     id: window.crypto.randomUUID(),
     type: screenNodeTypes.background,
@@ -59,7 +62,7 @@ export const defaultNodes = [
     },
     data: {
       title: 'Arka Plan',
-      src: 'https://www.manzara.gen.tr/w1/Güzel-Resimler-28.jpg',
+      src: testBgImage,
     },
   },
 ]
