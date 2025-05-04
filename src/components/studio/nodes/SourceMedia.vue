@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full">
-    <LiveMedia :sourceId="sourceId" class="object-fill" />
+    <LiveMedia :sourceId="sourceId" autoplay class="object-fill" />
   </div>
 </template>
 

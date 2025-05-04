@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { ref, onBeforeUnmount, onMounted, computed, provide } from 'vue'
+import { ref, onBeforeUnmount, onMounted, computed, provide, watch } from 'vue'
 import { nodes } from '@/state'
 import { useNode } from '@/composables/Node'
 import { useSelection } from '@/composables/Selection'
@@ -50,6 +50,7 @@ const node = useNode({
 provide(NodeId, node)
 
 const nodeOptions = node.getNodeOptions()
+const audio = node.getAudio()
 
 const nonResizeNode = computed(() => nodeOptions.type != screenNodeTypes.background)
 const selectedStatus = computed(() => {
@@ -58,6 +59,14 @@ const selectedStatus = computed(() => {
   }
 
   return false
+})
+
+watch(selectedStatus, (val) => {
+  if (val) {
+    audio.startAudioAnalyser()
+  } else {
+    audio.destroyAudioAnalyser()
+  }
 })
 
 const selectedZIndex = computed(() => {
@@ -103,6 +112,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   node.destroy()
+  audio.destroyAudioAnalyser()
   delete nodes.value[nodeOptions.id]
 })
 </script>

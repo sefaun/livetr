@@ -5,7 +5,6 @@
     :poster="poster"
     @load="loaded(true)"
     @error="loaded(false)"
-    autoplay
     class="w-full h-full"
   ></video>
 </template>
@@ -62,11 +61,10 @@ async function liveMedia() {
   })
 
   mediaRef.value.srcObject = stream
-  mediaRef.value.play()
 }
 
-onMounted(() => {
-  liveMedia()
+onMounted(async () => {
+  await liveMedia()
 })
 
 onBeforeUnmount(() => {
