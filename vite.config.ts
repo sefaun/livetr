@@ -22,5 +22,8 @@ export default defineConfig({
   },
   server: {
     port: 3001,
+    watch: {
+      ignored: ['**/*.ts', '**/node_modules/**'],
+    }
   },
 })

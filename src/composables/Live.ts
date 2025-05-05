@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { Stream } from 'node:stream'
 import { useI18n } from 'vue-i18n'
+import moment from 'moment'
 import { ElNotification } from 'element-plus'
 import type { FfmpegCommand } from 'fluent-ffmpeg'
 import { useAudio } from '@/composables/Audio'
@@ -63,7 +64,7 @@ export function useLive() {
     return true
   }
 
-  function startStream() {
+  function startStream(outputFile: boolean) {
     if (!validation()) {
       return
     }
@@ -82,46 +83,12 @@ export function useLive() {
 
     // ffmpeg başlat
     ffmpegProcess = ffmpeg()
-    ffmpegProcess
-      .input(inputStream)
-      .inputFormat('webm')
-      .videoCodec('libx264')
-      .audioCodec('aac')
-      .outputOptions([
-        '-preset ultrafast', // daha az CPU kullanımı
-        '-g 60',
-        '-b:v 800k', // video bitrate düşürüldü
-        '-maxrate 800k',
-        '-bufsize 1600k',
-        '-b:a 64k', // ses bitrate
-        '-pix_fmt yuv420p',
-        '-vf scale=640:360',
-      ])
-      .format('flv')
-      .fps(liveOptions.value.fps)
-      .output(liveOptions.value.rtmp + liveOptions.value.rtmpKey)
-      .on('start', () => {
-        setLiveStatus(liveConnectionTypes.connected)
-        ElNotification({
-          type: 'success',
-          message: t('stream_started'),
-        })
-      })
-      .on('end', () => {
-        setLiveStatus(liveConnectionTypes.connect)
-        ElNotification({
-          type: 'info',
-          message: t('stream_ended'),
-        })
-      })
-      .on('error', (err) => {
-        setLiveStatus(liveConnectionTypes.connect)
-        ElNotification({
-          type: 'error',
-          message: err.message,
-        })
-      })
-      .run()
+    startFfmpeg(ffmpegProcess, outputFile ? true : false)
+
+    ElNotification({
+      type: 'success',
+      message: t('stream_started'),
+    })
 
     mediaRecorder = new MediaRecorder(canvasStream, {
       mimeType: 'video/webm; codecs=vp8,opus',
@@ -167,6 +134,68 @@ export function useLive() {
       type: 'info',
       message: t('stream_ended'),
     })
+  }
+
+  function startFfmpeg(ffmpegProcess: FfmpegCommand, saveStatus: boolean) {
+    const rtmpUrl = saveStatus
+      ? `[f=flv]${liveOptions.value.rtmp + liveOptions.value.rtmpKey}|[f=mpegts]${moment().format(
+          'YYYYMMDD_HHmmss'
+        )}.ts`
+      : liveOptions.value.rtmp + liveOptions.value.rtmpKey
+    const outputOptions = saveStatus
+      ? [
+          '-preset ultrafast',
+          '-g 60',
+          '-b:v 800k',
+          '-maxrate 800k',
+          '-bufsize 1600k',
+          '-b:a 64k',
+          '-pix_fmt yuv420p',
+          '-vf scale=640:360',
+          '-f tee',
+          '-map 0:v',
+          '-map 0:a',
+          '-flags +global_header',
+        ]
+      : [
+          '-preset ultrafast',
+          '-g 60',
+          '-b:v 800k',
+          '-maxrate 800k',
+          '-bufsize 1600k',
+          '-b:a 64k',
+          '-pix_fmt yuv420p',
+          '-vf scale=640:360',
+        ]
+
+    ffmpegProcess
+      .input(inputStream)
+      .inputFormat('webm')
+      .videoCodec('libx264')
+      .audioCodec('aac')
+      .outputOptions(outputOptions)
+      .fps(liveOptions.value.fps)
+      .output(rtmpUrl)
+      .on('start', () => {
+        setLiveStatus(liveConnectionTypes.connected)
+      })
+      .on('end', () => {
+        setLiveStatus(liveConnectionTypes.connect)
+        audio.destroy()
+        ElNotification({
+          type: 'info',
+          message: t('stream_ended'),
+        })
+      })
+      .on('error', (err) => {
+        setLiveStatus(liveConnectionTypes.connect)
+        audio.destroy()
+        ElNotification({
+          type: 'error',
+          message: err.message,
+        })
+      })
+      .run()
   }
 
   return {
