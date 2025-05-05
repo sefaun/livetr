@@ -3,10 +3,10 @@ import type { Stream } from 'node:stream'
 import { useI18n } from 'vue-i18n'
 import moment from 'moment'
 import { ElNotification } from 'element-plus'
-import type Ffmpeg from 'fluent-ffmpeg'
+import type { FfmpegCommand } from 'fluent-ffmpeg'
 import { useAudio } from '@/composables/Audio'
-import { canvasPreviewRef, channel, nodes } from '@/state'
-import { liveConnectionTypes, screenNodeTypes } from '@/enums'
+import { canvasPreviewRef, channel } from '@/state'
+import { liveConnectionTypes } from '@/enums'
 import type { TLiveConnectionTypes, TLiveOptions } from '@/types'
 const { PassThrough } = window.require('node:stream') as typeof import('node:stream')
 const ffmpeg = window.require('fluent-ffmpeg') as typeof import('fluent-ffmpeg')
@@ -22,7 +22,7 @@ const liveOptions = ref<TLiveOptions>({
 // Yayınla ilgili referanslar
 let inputStream: Stream.PassThrough
 let mediaRecorder: MediaRecorder
-let ffmpegProcess: Ffmpeg.FfmpegCommand
+let ffmpegProcess: FfmpegCommand
 
 export function useLive() {
   const { t } = useI18n()
@@ -74,18 +74,6 @@ export function useLive() {
     inputStream = new PassThrough()
     const canvasStream = canvasPreviewRef.value.captureStream(liveOptions.value.fps)
 
-    audio.start()
-
-    for (const node of Object.values(nodes.value)) {
-      if (
-        node.getNodeOptions().type == screenNodeTypes.video ||
-        node.getNodeOptions().type == screenNodeTypes.sourceMedia ||
-        node.getNodeOptions().type == screenNodeTypes.liveCamera
-      ) {
-        audio.audioConnect(node.getNodeElement().querySelector('video'))
-      }
-    }
-
     audio
       .getAudioDestination()
       .stream.getAudioTracks()
@@ -95,12 +83,7 @@ export function useLive() {
 
     // ffmpeg başlat
     ffmpegProcess = ffmpeg()
-
-    if (outputFile) {
-      startStreamWithSave(ffmpegProcess)
-    } else {
-      startStreamWithoutSave(ffmpegProcess)
-    }
+    startFfmpeg(ffmpegProcess, outputFile ? true : false)
 
     ElNotification({
       type: 'success',
@@ -129,7 +112,6 @@ export function useLive() {
 
   function endStream() {
     setLiveStatus(liveConnectionTypes.connect)
-    audio.destroy()
 
     if (mediaRecorder && mediaRecorder.state != 'inactive') {
       mediaRecorder.stop()
@@ -144,7 +126,7 @@ export function useLive() {
     if (ffmpegProcess) {
       try {
         ffmpegProcess.kill('SIGINT')
-      } catch (error) { }
+      } catch (error) {}
       ffmpegProcess = null
     }
 
@@ -154,55 +136,9 @@ export function useLive() {
     })
   }
 
-  function startStreamWithoutSave(ffmpegProcess: Ffmpeg.FfmpegCommand) {
-
-    const outputOptions = [
-      '-preset ultrafast', // daha az CPU kullanımı
-      '-g 60',
-      '-b:v 800k', // video bitrate düşürüldü
-      '-maxrate 800k',
-      '-bufsize 1600k',
-      '-b:a 64k', // ses bitrate
-      '-pix_fmt yuv420p',
-      '-vf scale=640:360',
-    ]
-
-    ffmpegProcess
-      .input(inputStream)
-      .inputFormat('webm')
-      .videoCodec('libx264')
-      .audioCodec('aac')
-      .outputOptions(outputOptions)
-      .format('flv')
-      .fps(liveOptions.value.fps)
-      .output(liveOptions.value.rtmp + liveOptions.value.rtmpKey)
-      .on('start', () => {
-        setLiveStatus(liveConnectionTypes.connected)
-      })
-      .on('end', () => {
-        setLiveStatus(liveConnectionTypes.connect)
-        audio.destroy()
-        ElNotification({
-          type: 'info',
-          message: t('stream_ended'),
-        })
-      })
-      .on('error', (err) => {
-        setLiveStatus(liveConnectionTypes.connect)
-        audio.destroy()
-        ElNotification({
-          type: 'error',
-          message: err.message,
-        })
-      })
-      .run()
-  }
-
-  function startStreamWithSave(ffmpegProcess: Ffmpeg.FfmpegCommand) {
-    const name = moment().format('YYYYMMDD_HHmmss') + '.ts'
-
-    const rtmpUrl = `[f=flv]${liveOptions.value.rtmp + liveOptions.value.rtmpKey}|[f=mpegts]${name}`
-
+  function startFfmpeg(ffmpegProcess: FfmpegCommand, saveStatus: boolean) {
+    const rtmp = liveOptions.value.rtmp + liveOptions.value.rtmpKey
+    const rtmpUrl = saveStatus ? `[f=flv]${rtmp}|[f=mpegts]${moment().format('YYYYMMDD_HHmmss')}.ts` : rtmp
     const outputOptions = [
       '-preset ultrafast',
       '-g 60',
@@ -212,10 +148,7 @@ export function useLive() {
       '-b:a 64k',
       '-pix_fmt yuv420p',
       '-vf scale=640:360',
-      '-f tee',
-      '-map 0:v',
-      '-map 0:a',
-      '-flags +global_header',
+      ...(saveStatus ? ['-f tee', '-map 0:v', '-map 0:a', '-flags +global_header'] : []),
     ]
 
     ffmpegProcess

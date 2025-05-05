@@ -1,6 +1,6 @@
 <template>
   <component
-    v-bind="$attrs"
+    v-bind="attrs"
     :is="props.type"
     :src="src"
     :poster="poster"
@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, useAttrs } from 'vue'
 import type { PropType } from 'vue'
 import { mediaTypes } from '@/enums'
 import type { TMediaTypes } from '@/types'
@@ -34,6 +34,7 @@ const props = defineProps({
   },
 })
 
+const attrs = useAttrs()
 const src = ref(props.src)
 const poster = ref('')
 

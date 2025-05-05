@@ -1,15 +1,14 @@
 <template>
   <div class="w-full h-full">
-    <MediaRender :type="mediaTypes.video" :src="src" controls class="object-fill" />
+    <LiveMedia :src="src" controls muted class="object-fill" />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { ref } from 'vue'
-import { mediaTypes } from '@/enums'
 import type { TImageNodeData, TNode } from '@/types'
-import MediaRender from '@/components/MediaRender.vue'
+import LiveMedia from '@/components/LiveMedia.vue'
 
 const props = defineProps({
   data: {

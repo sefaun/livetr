@@ -16,23 +16,20 @@
     @dragover.prevent.stop
     @dragleave.prevent.stop
   >
-    <Resize
-      v-if="nodeRef && selectedStatus && nonResizeNode"
-      :nodeOptions="nodeOptions"
-      :nodeRef="node.getNodeElement()"
-    ></Resize>
+    <Resize v-if="nodeRef && selectedStatus && nonResizeNode"></Resize>
     <slot />
-    <NodeTool v-if="selectedStatus" :nodeId="nodeOptions.id" />
+    <NodeTool v-if="selectedStatus" />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { ref, onBeforeUnmount, onMounted, computed } from 'vue'
+import { ref, onBeforeUnmount, onMounted, computed, provide, watch } from 'vue'
 import { nodes } from '@/state'
 import { useNode } from '@/composables/Node'
 import { useSelection } from '@/composables/Selection'
-import { screenNodeTypes } from '@/enums'
+import { NodeId, screenNodeTypes } from '@/enums'
+import { isMediaNode } from '@/composables/utils'
 import type { TNode } from '@/types'
 import Resize from '@/components/studio/Resize.vue'
 import NodeTool from '@/components/studio/NodeTool.vue'
@@ -51,7 +48,10 @@ const selection = useSelection()
 const node = useNode({
   options: props.data,
 })
+provide(NodeId, node)
+
 const nodeOptions = node.getNodeOptions()
+const nodeAudio = node.getNodeAudio()
 
 const nonResizeNode = computed(() => nodeOptions.type != screenNodeTypes.background)
 const selectedStatus = computed(() => {
@@ -61,6 +61,16 @@ const selectedStatus = computed(() => {
 
   return false
 })
+
+if (isMediaNode(nodeOptions.type)) {
+  watch(selectedStatus, (val) => {
+    if (val) {
+      nodeAudio.startAudioAnalyser()
+    } else {
+      nodeAudio.destroyAudioAnalyser()
+    }
+  })
+}
 
 const selectedZIndex = computed(() => {
   if (nodeOptions.type == screenNodeTypes.background) {
@@ -100,9 +110,11 @@ onMounted(() => {
   selection.clear()
   selection.add(nodeOptions.id)
   nodes.value[nodeOptions.id] = node
+  node.start()
 })
 
 onBeforeUnmount(() => {
+  node.destroy()
   delete nodes.value[nodeOptions.id]
 })
 </script>

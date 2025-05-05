@@ -44,6 +44,8 @@ export function usePreview() {
   return {
     getCanvasPreviewStatus,
     getVideoPreviewStatus,
+    setCanvasPreviewStatus,
+    setVideoPreviewStatus,
     startPreviewListener,
     destroyPreviewListener,
   }

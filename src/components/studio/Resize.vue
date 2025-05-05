@@ -10,21 +10,11 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue'
-import { onMounted, defineProps } from 'vue'
+import { inject, onMounted } from 'vue'
 import { screenRef } from '@/state'
-import type { TNode } from '@/types'
+import { NodeId } from '@/enums'
 
-const props = defineProps({
-  nodeOptions: {
-    type: Object as PropType<TNode>,
-    default: {},
-    required: true,
-  },
-  nodeRef: {
-    type: HTMLElement,
-  },
-})
+const node = inject(NodeId)
 
 let resizers: NodeListOf<HTMLElement>
 let originalWidth = 0
@@ -36,7 +26,7 @@ let originalMouseY = 0
 let activeResizer: HTMLElement | null = null
 
 function nodeResize() {
-  resizers = props.nodeRef.querySelectorAll('.resizer')
+  resizers = node.getNodeElement().querySelectorAll('.resizer')
 
   resizers.forEach((resizer) => {
     resizer.addEventListener('mousedown', function (event: MouseEvent) {
@@ -45,10 +35,10 @@ function nodeResize() {
 
       activeResizer = resizer
 
-      originalWidth = props.nodeRef.getBoundingClientRect().width
-      originalHeight = props.nodeRef.getBoundingClientRect().height
-      originalX = props.nodeOptions.position.x
-      originalY = props.nodeOptions.position.y
+      originalWidth = node.getNodeElement().getBoundingClientRect().width
+      originalHeight = node.getNodeElement().getBoundingClientRect().height
+      originalX = node.getNodeOptions().position.x
+      originalY = node.getNodeOptions().position.y
       originalMouseX = event.pageX
       originalMouseY = event.pageY
 
@@ -62,31 +52,31 @@ function resizing(event: MouseEvent) {
   if (!activeResizer) return
 
   if (activeResizer.classList.contains('resizer-bottom-right')) {
-    props.nodeOptions.style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
-    props.nodeOptions.style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
+    node.getNodeOptions().style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
+    node.getNodeOptions().style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
   } else if (activeResizer.classList.contains('resizer-bottom-left')) {
-    props.nodeOptions.style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
-    props.nodeOptions.style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
-    props.nodeOptions.position.x = originalX + (event.pageX - originalMouseX)
+    node.getNodeOptions().style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
+    node.getNodeOptions().style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
+    node.getNodeOptions().position.x = originalX + (event.pageX - originalMouseX)
   } else if (activeResizer.classList.contains('resizer-top-right')) {
-    props.nodeOptions.style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
-    props.nodeOptions.style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
-    props.nodeOptions.position.y = originalY + (event.pageY - originalMouseY)
+    node.getNodeOptions().style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
+    node.getNodeOptions().style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
+    node.getNodeOptions().position.y = originalY + (event.pageY - originalMouseY)
   } else if (activeResizer.classList.contains('resizer-top-left')) {
-    props.nodeOptions.style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
-    props.nodeOptions.style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
-    props.nodeOptions.position.y = originalY + (event.pageY - originalMouseY)
-    props.nodeOptions.position.x = originalX + (event.pageX - originalMouseX)
+    node.getNodeOptions().style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
+    node.getNodeOptions().style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
+    node.getNodeOptions().position.y = originalY + (event.pageY - originalMouseY)
+    node.getNodeOptions().position.x = originalX + (event.pageX - originalMouseX)
   } else if (activeResizer.classList.contains('resizer-top')) {
-    props.nodeOptions.style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
-    props.nodeOptions.position.y = originalY + (event.pageY - originalMouseY)
+    node.getNodeOptions().style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
+    node.getNodeOptions().position.y = originalY + (event.pageY - originalMouseY)
   } else if (activeResizer.classList.contains('resizer-bottom')) {
-    props.nodeOptions.style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
+    node.getNodeOptions().style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
   } else if (activeResizer.classList.contains('resizer-left')) {
-    props.nodeOptions.style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
-    props.nodeOptions.position.x = originalX + (event.pageX - originalMouseX)
+    node.getNodeOptions().style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
+    node.getNodeOptions().position.x = originalX + (event.pageX - originalMouseX)
   } else if (activeResizer.classList.contains('resizer-right')) {
-    props.nodeOptions.style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
+    node.getNodeOptions().style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
   }
 }
 

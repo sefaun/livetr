@@ -1,4 +1,7 @@
-import type { TNode } from '@/types'
+import type { InjectionKey } from 'vue'
+import type { TNode, TuseNode } from '@/types'
+
+export const NodeId: InjectionKey<TuseNode> = Symbol('nodeId')
 
 export const localeNames = {
   tr: 'tr',
@@ -45,4 +48,9 @@ export const liveConnectionTypes = {
   connect: 'connect',
   connecting: 'connecting',
   connected: 'connected',
+} as const
+
+export const volumeOptions = {
+  max: 2,
+  min: 0,
 } as const
