@@ -29,6 +29,7 @@ import { nodes } from '@/state'
 import { useNode } from '@/composables/Node'
 import { useSelection } from '@/composables/Selection'
 import { NodeId, screenNodeTypes } from '@/enums'
+import { isMediaNode } from '@/composables/utils'
 import type { TNode } from '@/types'
 import Resize from '@/components/studio/Resize.vue'
 import NodeTool from '@/components/studio/NodeTool.vue'
@@ -61,13 +62,15 @@ const selectedStatus = computed(() => {
   return false
 })
 
-watch(selectedStatus, (val) => {
-  if (val) {
-    nodeAudio.startAudioAnalyser()
-  } else {
-    nodeAudio.destroyAudioAnalyser()
-  }
-})
+if (isMediaNode(nodeOptions.type)) {
+  watch(selectedStatus, (val) => {
+    if (val) {
+      nodeAudio.startAudioAnalyser()
+    } else {
+      nodeAudio.destroyAudioAnalyser()
+    }
+  })
+}
 
 const selectedZIndex = computed(() => {
   if (nodeOptions.type == screenNodeTypes.background) {

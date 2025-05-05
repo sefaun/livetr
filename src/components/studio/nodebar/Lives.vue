@@ -27,7 +27,7 @@
       <ElTooltip :content="source.label" :hide-after="0" effect="dark" placement="top">
         <div class="w-28">
           <div>
-            <LiveMedia :liveId="source.deviceId" autoplay muted class="!w-28 !h-20 !rounded-md" />
+            <NodeLiveMedia :liveId="source.deviceId" autoplay muted class="!w-28 !h-20 !rounded-md" />
           </div>
           <div class="text-xs truncate px-2 text-center mt-1">{{ source.label }}</div>
         </div>
@@ -67,7 +67,7 @@ import { useState } from '@/composables/State'
 import { screenNodeTypes } from '@/enums'
 import { studioData } from '@/state'
 import type { TSourceMediaNodeData, TScreenNodeTypes, TLiveCameraNodeData } from '@/types'
-import LiveMedia from '@/components/LiveMedia.vue'
+import NodeLiveMedia from '@/components/NodeLiveMedia.vue'
 
 const dragdrop = useDragDrop()
 const liveMedia = useLiveMedia()

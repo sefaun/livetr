@@ -34,9 +34,31 @@ export function useLiveMedia() {
     return keywords.some((keyword) => label.toLowerCase().includes(keyword.toLowerCase()))
   }
 
+  function getUserMedia(value: Partial<{ liveId: string; sourceId: string }>) {
+    return navigator.mediaDevices.getUserMedia({
+      audio: value.liveId
+        ? true
+        : ({
+            mandatory: {
+              chromeMediaSource: 'desktop',
+              chromeMediaSourceId: value.sourceId,
+            },
+          } as any),
+      video: value.liveId
+        ? { deviceId: { exact: value.liveId } }
+        : ({
+            mandatory: {
+              chromeMediaSource: 'desktop',
+              chromeMediaSourceId: value.sourceId,
+            },
+          } as any),
+    })
+  }
+
   return {
     getLiveCameras,
     getLiveMedias,
+    getUserMedia,
     listCameras,
     listLiveMedia,
   }

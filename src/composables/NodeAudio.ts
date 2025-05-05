@@ -22,9 +22,12 @@ export function useNodeAudio() {
     return volume.value
   }
 
-  function createAudioStream(value: MediaStream) {
+  function createAudioStream(value: MediaStream, connectStatus: boolean = true) {
     sourceNode.value = audioContext.createMediaStreamSource(value)
-    audioConnect()
+
+    if (connectStatus) {
+      audioConnect()
+    }
   }
 
   function audioConnect() {
