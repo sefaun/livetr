@@ -10,7 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, inject } from 'vue'
+import { NodeId } from '@/enums'
 import VideoNotFound from '@/assets/video-not-found.jpeg'
 
 defineOptions({
@@ -30,9 +31,12 @@ const props = defineProps({
   },
 })
 
+const node = inject(NodeId)
+
 let stream: MediaStream
-const mediaRef = ref()
+const mediaRef = ref<HTMLVideoElement>()
 const poster = ref('')
+const srcStatus = ref(false)
 
 function loaded(value: boolean) {
   if (!value) {
@@ -64,7 +68,21 @@ async function liveMedia() {
 }
 
 onMounted(async () => {
-  await liveMedia()
+  srcStatus.value = mediaRef.value.getAttribute('src') ? true : false
+
+  if (!srcStatus.value) {
+    await liveMedia()
+  }
+
+  if (node) {
+    if (srcStatus.value) {
+      mediaRef.value.onloadeddata = () => {
+        node.getNodeAudio().createAudioStream((mediaRef.value as any).captureStream())
+      }
+    } else {
+      node.getNodeAudio().createAudioStream(stream)
+    }
+  }
 })
 
 onBeforeUnmount(() => {

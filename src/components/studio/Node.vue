@@ -50,7 +50,7 @@ const node = useNode({
 provide(NodeId, node)
 
 const nodeOptions = node.getNodeOptions()
-const audio = node.getAudio()
+const nodeAudio = node.getNodeAudio()
 
 const nonResizeNode = computed(() => nodeOptions.type != screenNodeTypes.background)
 const selectedStatus = computed(() => {
@@ -63,9 +63,9 @@ const selectedStatus = computed(() => {
 
 watch(selectedStatus, (val) => {
   if (val) {
-    audio.startAudioAnalyser()
+    nodeAudio.startAudioAnalyser()
   } else {
-    audio.destroyAudioAnalyser()
+    nodeAudio.destroyAudioAnalyser()
   }
 })
 
@@ -112,7 +112,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   node.destroy()
-  audio.destroyAudioAnalyser()
   delete nodes.value[nodeOptions.id]
 })
 </script>

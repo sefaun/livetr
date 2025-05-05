@@ -137,36 +137,19 @@ export function useLive() {
   }
 
   function startFfmpeg(ffmpegProcess: FfmpegCommand, saveStatus: boolean) {
-    const rtmpUrl = saveStatus
-      ? `[f=flv]${liveOptions.value.rtmp + liveOptions.value.rtmpKey}|[f=mpegts]${moment().format(
-          'YYYYMMDD_HHmmss'
-        )}.ts`
-      : liveOptions.value.rtmp + liveOptions.value.rtmpKey
-    const outputOptions = saveStatus
-      ? [
-          '-preset ultrafast',
-          '-g 60',
-          '-b:v 800k',
-          '-maxrate 800k',
-          '-bufsize 1600k',
-          '-b:a 64k',
-          '-pix_fmt yuv420p',
-          '-vf scale=640:360',
-          '-f tee',
-          '-map 0:v',
-          '-map 0:a',
-          '-flags +global_header',
-        ]
-      : [
-          '-preset ultrafast',
-          '-g 60',
-          '-b:v 800k',
-          '-maxrate 800k',
-          '-bufsize 1600k',
-          '-b:a 64k',
-          '-pix_fmt yuv420p',
-          '-vf scale=640:360',
-        ]
+    const rtmp = liveOptions.value.rtmp + liveOptions.value.rtmpKey
+    const rtmpUrl = saveStatus ? `[f=flv]${rtmp}|[f=mpegts]${moment().format('YYYYMMDD_HHmmss')}.ts` : rtmp
+    const outputOptions = [
+      '-preset ultrafast',
+      '-g 60',
+      '-b:v 800k',
+      '-maxrate 800k',
+      '-bufsize 1600k',
+      '-b:a 64k',
+      '-pix_fmt yuv420p',
+      '-vf scale=640:360',
+      ...(saveStatus ? ['-f tee', '-map 0:v', '-map 0:a', '-flags +global_header'] : []),
+    ]
 
     ffmpegProcess
       .input(inputStream)

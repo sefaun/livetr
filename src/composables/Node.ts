@@ -3,12 +3,12 @@ import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
 import { screenRef } from '@/state'
 import { useSelection } from '@/composables/Selection'
-import { useAudio } from '@/composables/Audio'
+import { useNodeAudio } from '@/composables/NodeAudio'
 import { activeStyles, isMediaNode, passiveStyles } from '@/composables/utils'
 import type { TNode, TuseNodeOptions } from '@/types'
 
 export function useNode(data: TuseNodeOptions) {
-  const audio = useAudio()
+  const nodeAudio = useNodeAudio()
   const selection = useSelection()
   const nodeElement: Ref<HTMLElement> = ref()
   const options: Ref<TNode> = ref(cloneDeep(data.options))
@@ -23,8 +23,8 @@ export function useNode(data: TuseNodeOptions) {
     return nodeElement.value
   }
 
-  function getAudio() {
-    return audio
+  function getNodeAudio() {
+    return nodeAudio
   }
 
   function setNodePosition(pageX: number, pageY: number): void {
@@ -81,22 +81,20 @@ export function useNode(data: TuseNodeOptions) {
 
   function start() {
     if (isMediaNode(getNodeOptions().type)) {
-      audio.start()
-      audio.audioConnect(getNodeElement().querySelector('video'))
+      nodeAudio.start()
     }
   }
 
   function destroy() {
     if (isMediaNode(getNodeOptions().type)) {
-      audio.audioDisconnect()
-      audio.destroy()
+      nodeAudio.destroy()
     }
   }
 
   return {
     getNodeElement,
     getNodeOptions,
-    getAudio,
+    getNodeAudio,
     click,
     mouseDown,
     mouseMove,

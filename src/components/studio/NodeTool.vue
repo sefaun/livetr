@@ -24,7 +24,7 @@
       type="danger"
     ></ElButton>
     <div class="absolute top-0 right-[-25px]">
-      <VolumeBar v-if="nodeType" :value="audio.getVolume()" :min="0" :max="100" />
+      <VolumeBar v-if="nodeType" :value="nodeAudio.getVolume()" :min="0" :max="100" />
     </div>
   </div>
 </template>
@@ -40,9 +40,9 @@ import VolumeBar from './node-tool/VolumeBar.vue'
 
 const node = inject(NodeId)
 
-const audio = node.getAudio()
+const nodeAudio = node.getNodeAudio()
 const nodeType = ref(isMediaNode(node.getNodeOptions().type))
-const volume = ref(nodeType.value ? audio.getGainNode().gain.value : 0)
+const volume = ref(nodeType.value ? nodeAudio.getGainNode().gain.value : 0)
 
 const volumePercentage = computed(() => (nodeType.value ? ((100 * volume.value) / volumeOptions.max).toFixed(0) : '0'))
 
@@ -53,6 +53,6 @@ function removeNode() {
 
 function changedVolume(value: number) {
   volume.value = value
-  audio.getGainNode().gain.value = value
+  nodeAudio.getGainNode().gain.value = value
 }
 </script>
