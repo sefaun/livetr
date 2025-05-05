@@ -199,9 +199,9 @@ export function useLive() {
   }
 
   function startStreamWithSave(ffmpegProcess: Ffmpeg.FfmpegCommand) {
-    const outputName = moment().format('YYYYMMDD_HHmmss') + '.mp4'
+    const name = moment().format('YYYYMMDD_HHmmss') + '.ts'
 
-    let rtmpUrl = `[f=flv]${liveOptions.value.rtmp + liveOptions.value.rtmpKey}|[f=mp4]${outputName}`
+    const rtmpUrl = `[f=flv]${liveOptions.value.rtmp + liveOptions.value.rtmpKey}|[f=mpegts]${name}`
 
     const outputOptions = [
       '-preset ultrafast',
@@ -216,11 +216,8 @@ export function useLive() {
       '-map 0:v',
       '-map 0:a',
       '-flags +global_header',
-      '-movflags frag_keyframe+empty_moov'
     ]
 
-    // ffmpeg başlat
-    ffmpegProcess = ffmpeg()
     ffmpegProcess
       .input(inputStream)
       .inputFormat('webm')
@@ -229,7 +226,6 @@ export function useLive() {
       .outputOptions(outputOptions)
       .fps(liveOptions.value.fps)
       .output(rtmpUrl)
-      .save(outputName)
       .on('start', () => {
         setLiveStatus(liveConnectionTypes.connected)
       })

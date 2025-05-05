@@ -8,7 +8,7 @@
     >
       <ElButton
         :type="live.getLiveStatus() == liveConnectionTypes.connect ? 'success' : 'danger'"
-        @click.left="live.getLiveStatus() == liveConnectionTypes.connect ? live.startStream() : live.endStream()"
+        @click.left="live.getLiveStatus() == liveConnectionTypes.connect ? live.startStream(true) : live.endStream()"
         size="large"
         circle
       >
