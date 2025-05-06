@@ -27,29 +27,68 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
-import { canvasPreviewRef, videoPreviewRef } from '@/state'
-import { useCanvasRendering } from '@/composables/CanvasRendering'
-import { usePreview } from '@/composables/Preview'
+import { onBeforeUnmount, onMounted, watch, ref } from 'vue'
 import { ElButton } from 'element-plus'
 import { Close } from '@element-plus/icons-vue'
+import { canvasPreviewRef, videoPreviewRef } from '@/state'
+import { useCanvasRendering } from '@/composables/CanvasRendering'
+import { useAudio } from '@/composables/Audio'
+import { usePreview } from '@/composables/Preview'
 
 const preview = usePreview()
+const audio = useAudio()
 const canvasRendering = useCanvasRendering()
 
+const canvasStream = ref<MediaStream>()
+const destination = ref<MediaStreamAudioDestinationNode>()
+
 function playVideoPreview() {
-  const canvasStream = canvasPreviewRef.value.captureStream(30)
-  videoPreviewRef.value.srcObject = canvasStream
+  canvasStream.value = canvasPreviewRef.value.captureStream(30)
+  destination.value = audio.getAudioContext().createMediaStreamDestination()
+  const gain = audio.getAudioGain()
+
+  gain.connect(destination.value)
+
+  destination.value.stream.getAudioTracks().forEach((track) => {
+    if (track.readyState == 'live') {
+      canvasStream.value.addTrack(track)
+    }
+  })
+
+  videoPreviewRef.value.srcObject = canvasStream.value
+  videoPreviewRef.value.play()
 }
+
+function closeVideoPreview() {
+  videoPreviewRef.value.pause()
+  videoPreviewRef.value.srcObject = null
+
+  audio.getAudioGain().disconnect(destination.value)
+  canvasStream.value.getTracks().forEach((track) => track.stop())
+
+  canvasStream.value = null
+  destination.value = null
+}
+
+watch(
+  () => preview.getVideoPreviewStatus(),
+  (enabled) => {
+    if (enabled) {
+      playVideoPreview()
+    } else {
+      closeVideoPreview()
+    }
+  }
+)
 
 onMounted(() => {
   canvasRendering.setCtx(canvasPreviewRef.value)
   canvasRendering.render()
   preview.startPreviewListener()
-  playVideoPreview()
 })
 
 onBeforeUnmount(() => {
   preview.destroyPreviewListener()
+  closeVideoPreview()
 })
 </script>

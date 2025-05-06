@@ -41,7 +41,7 @@ let stream: MediaStream
 const mediaRef = ref<HTMLVideoElement>()
 const poster = ref('')
 const srcStatus = ref(attrs.src ? true : false)
-const srcVideoEnded = ref(false)
+const srcVideoEnded = ref(true)
 
 function loaded(value: boolean) {
   if (!value) {
@@ -52,28 +52,31 @@ function loaded(value: boolean) {
 async function getUserMedia() {
   stream = await liveMedia.getUserMedia(props)
   mediaRef.value.srcObject = stream
+  node.getNodeAudio().createAudioStream(stream)
 }
 
 function setSrcVideoEnded(value: boolean) {
   srcVideoEnded.value = value
 }
 
-function captureStream() {
-  node.getNodeAudio().createAudioStream((mediaRef.value as any).captureStream(), false)
-}
-
-function ended() {
+async function captureStream(conenctStatus: boolean = true) {
+  node.getNodeAudio().createAudioStream((mediaRef.value as any).captureStream(), conenctStatus)
   setSrcVideoEnded(false)
 }
 
+function ended() {
+  setSrcVideoEnded(true)
+}
+
 function firstPlay() {
-  if (mediaRef.value.currentTime < 0.1 || !srcVideoEnded.value) {
-    captureStream()
-    setSrcVideoEnded(true)
+  if (mediaRef.value.currentTime < 0.1 || srcVideoEnded.value) {
+    captureStream(true)
   }
 }
 
 onMounted(async () => {
+  node.getNodeAudio().start()
+
   if (!srcStatus.value) {
     await getUserMedia()
   }
@@ -81,8 +84,6 @@ onMounted(async () => {
   if (srcStatus.value) {
     mediaRef.value.addEventListener('play', firstPlay)
     mediaRef.value.addEventListener('ended', ended)
-  } else {
-    node.getNodeAudio().createAudioStream(stream)
   }
 })
 

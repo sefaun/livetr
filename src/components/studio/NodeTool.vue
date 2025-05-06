@@ -36,7 +36,7 @@ import { Delete, Headset } from '@element-plus/icons-vue'
 import { isMediaNode } from '@/composables/utils'
 import { studioData } from '@/state'
 import { NodeId, volumeOptions } from '@/enums'
-import VolumeBar from './node-tool/VolumeBar.vue'
+import VolumeBar from '@/components/studio/node-tool/VolumeBar.vue'
 
 const node = inject(NodeId)
 

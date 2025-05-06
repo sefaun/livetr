@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full">
-    <LiveMedia :src="src" controls muted class="object-fill" />
+    <LiveMedia :src="src" controls class="object-fill" />
   </div>
 </template>
 

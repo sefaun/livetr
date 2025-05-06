@@ -12,17 +12,17 @@ const { PassThrough } = window.require('node:stream') as typeof import('node:str
 const ffmpeg = window.require('fluent-ffmpeg') as typeof import('fluent-ffmpeg')
 const ffmpegPath = window.require('ffmpeg-static') as typeof import('ffmpeg-static')
 
-// Local değişkenler
+let inputStream: Stream.PassThrough
+let mediaRecorder: MediaRecorder
+let ffmpegProcess: FfmpegCommand
+const canvasStream = ref<MediaStream>()
+const destination = ref<MediaStreamAudioDestinationNode>()
 const liveStatus = ref<TLiveConnectionTypes>(liveConnectionTypes.connect)
 const liveOptions = ref<TLiveOptions>({
   rtmp: '',
   fps: 30,
   rtmpKey: '',
 })
-// Yayınla ilgili referanslar
-let inputStream: Stream.PassThrough
-let mediaRecorder: MediaRecorder
-let ffmpegProcess: FfmpegCommand
 
 export function useLive() {
   const { t } = useI18n()
@@ -64,7 +64,7 @@ export function useLive() {
     return true
   }
 
-  function startStream(outputFile: boolean) {
+  function startStream(saveStatus: boolean) {
     if (!validation()) {
       return
     }
@@ -72,25 +72,27 @@ export function useLive() {
     setLiveStatus(liveConnectionTypes.connecting)
     ffmpeg.setFfmpegPath(ffmpegPath as unknown as string)
     inputStream = new PassThrough()
-    const canvasStream = canvasPreviewRef.value.captureStream(liveOptions.value.fps)
+    canvasStream.value = canvasPreviewRef.value.captureStream(liveOptions.value.fps)
+    destination.value = audio.getAudioContext().createMediaStreamDestination()
+    const gain = audio.getAudioGain()
+    gain.connect(destination.value)
 
-    audio
-      .getAudioDestination()
-      .stream.getAudioTracks()
-      .forEach((track) => {
-        canvasStream.addTrack(track)
-      })
+    destination.value.stream.getAudioTracks().forEach((track) => {
+      if (track.readyState == 'live') {
+        canvasStream.value.addTrack(track)
+      }
+    })
 
     // ffmpeg başlat
     ffmpegProcess = ffmpeg()
-    startFfmpeg(ffmpegProcess, outputFile ? true : false)
+    startFfmpeg(ffmpegProcess, saveStatus)
 
     ElNotification({
       type: 'success',
       message: t('stream_started'),
     })
 
-    mediaRecorder = new MediaRecorder(canvasStream, {
+    mediaRecorder = new MediaRecorder(canvasStream.value, {
       mimeType: 'video/webm; codecs=vp8,opus',
     })
 
@@ -112,6 +114,11 @@ export function useLive() {
 
   function endStream() {
     setLiveStatus(liveConnectionTypes.connect)
+    audio.getAudioGain().disconnect(destination.value)
+    canvasStream.value.getTracks().forEach((track) => track.stop())
+
+    canvasStream.value = null
+    destination.value = null
 
     if (mediaRecorder && mediaRecorder.state != 'inactive') {
       mediaRecorder.stop()
@@ -156,6 +163,7 @@ export function useLive() {
       .inputFormat('webm')
       .videoCodec('libx264')
       .audioCodec('aac')
+      .format('flv')
       .outputOptions(outputOptions)
       .fps(liveOptions.value.fps)
       .output(rtmpUrl)

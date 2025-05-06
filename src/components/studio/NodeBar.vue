@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full">
+  <div class="w-full h-full select-none">
     <ElTabs>
       <ElTabPane :label="t('text')">
         <Text />

@@ -2,12 +2,12 @@ import { ref } from 'vue'
 import { useAudio } from '@/composables/Audio'
 
 export function useNodeAudio() {
+  const audio = useAudio()
+  const audioContext = audio.getAudioContext()
   const gainNode = ref<GainNode>()
   const analyser = ref<AnalyserNode>()
   const sourceNode = ref<MediaStreamAudioSourceNode>()
   const volume = ref(0)
-  const audio = useAudio()
-  const audioContext = audio.getAudioContext()
   let analyserInterval: ReturnType<typeof setInterval> = null
 
   function getGainNode() {
@@ -33,6 +33,7 @@ export function useNodeAudio() {
   function audioConnect() {
     sourceNode.value.connect(gainNode.value)
     gainNode.value.connect(analyser.value)
+    gainNode.value.connect(audio.getAudioGain())
   }
 
   function audioDisconnect() {

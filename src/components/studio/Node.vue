@@ -110,11 +110,9 @@ onMounted(() => {
   selection.clear()
   selection.add(nodeOptions.id)
   nodes.value[nodeOptions.id] = node
-  node.start()
 })
 
 onBeforeUnmount(() => {
-  node.destroy()
   delete nodes.value[nodeOptions.id]
 })
 </script>
