@@ -78,13 +78,11 @@ onMounted(async () => {
     await getUserMedia()
   }
 
-  if (node) {
-    if (srcStatus.value) {
-      mediaRef.value.addEventListener('play', firstPlay)
-      mediaRef.value.addEventListener('ended', ended)
-    } else {
-      node.getNodeAudio().createAudioStream(stream)
-    }
+  if (srcStatus.value) {
+    mediaRef.value.addEventListener('play', firstPlay)
+    mediaRef.value.addEventListener('ended', ended)
+  } else {
+    node.getNodeAudio().createAudioStream(stream)
   }
 })
 
@@ -94,11 +92,9 @@ onBeforeUnmount(() => {
     mediaRef.value.srcObject = null
   }
 
-  if (node) {
-    if (srcStatus.value) {
-      mediaRef.value.removeEventListener('play', firstPlay)
-      mediaRef.value.removeEventListener('ended', ended)
-    }
+  if (srcStatus.value) {
+    mediaRef.value.removeEventListener('play', firstPlay)
+    mediaRef.value.removeEventListener('ended', ended)
   }
 })
 </script>
