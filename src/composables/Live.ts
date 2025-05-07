@@ -172,7 +172,6 @@ export function useLive() {
       })
       .on('end', () => {
         setLiveStatus(liveConnectionTypes.connect)
-        audio.destroy()
         ElNotification({
           type: 'info',
           message: t('stream_ended'),
@@ -180,7 +179,6 @@ export function useLive() {
       })
       .on('error', (err) => {
         setLiveStatus(liveConnectionTypes.connect)
-        audio.destroy()
         ElNotification({
           type: 'error',
           message: err.message,
