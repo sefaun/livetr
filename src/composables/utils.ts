@@ -1,8 +1,15 @@
 import { screenNodeTypes } from '@/enums'
-import { screenRef, canvasPreviewRef } from '@/state'
+import { screenRef, canvasPreviewRef, studioData } from '@/state'
 import type { TScreenNodeTypes } from '@/types'
 
-export const ctrlOrMetaKey = (event: KeyboardEvent) => event.ctrlKey || event.metaKey
+export function removeNode(id: string) {
+  const index = studioData.value.nodes.findIndex((item) => item.id == id)
+  studioData.value.nodes.splice(index, 1)
+}
+
+export function ctrlOrMetaKey(event: KeyboardEvent) {
+  return event.ctrlKey || event.metaKey
+}
 
 export function activeStyles() {
   screenRef.value.style.cursor = 'move'

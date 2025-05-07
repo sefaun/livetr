@@ -1,13 +1,5 @@
 <template>
-  <component
-    v-bind="attrs"
-    :is="props.type"
-    :src="src"
-    :poster="poster"
-    @load="loaded(true)"
-    @error="loaded(false)"
-    class="w-full h-full"
-  />
+  <component v-bind="attrs" :is="props.type" :src="src" :poster="poster" @load="loaded(true)" @error="loaded(false)" />
 </template>
 
 <script setup lang="ts">

@@ -14,5 +14,6 @@
   "channel": "Channel",
   "stream_key": "Stream Key",
   "stream_started": "Stream Started",
-  "stream_ended": "Stream Ended"
+  "stream_ended": "Stream Ended",
+  "stream_not_found": "No Live Stream Content"
 }

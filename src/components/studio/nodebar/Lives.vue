@@ -14,6 +14,7 @@
   <div v-if="!loading.get()" class="flex items-center gap-2">
     <div
       v-for="source of filteredLive"
+      :key="source.deviceId"
       @dragstart="
         createLiveMedia($event, {
           id: source.deviceId,
@@ -35,6 +36,7 @@
     </div>
     <div
       v-for="source of filteredSource"
+      :key="source.id"
       @dragstart="
         createLiveMedia($event, {
           id: source.id,
@@ -48,7 +50,7 @@
       <ElTooltip :content="source.name" :hide-after="0" effect="dark" placement="top">
         <div class="w-28">
           <div>
-            <img :src="source.thumbnail" class="w-28 h-20 rounded-md" />
+            <MediaRender :src="source.thumbnail" class="w-28 h-20 rounded-md" />
           </div>
           <div class="text-xs truncate px-2 text-center mt-1">{{ source.name }}</div>
         </div>
@@ -68,6 +70,7 @@ import { screenNodeTypes } from '@/enums'
 import { studioData } from '@/state'
 import type { TSourceMediaNodeData, TScreenNodeTypes, TLiveCameraNodeData } from '@/types'
 import NodeLiveMedia from '@/components/NodeLiveMedia.vue'
+import MediaRender from '@/components/MediaRender.vue'
 
 const dragdrop = useDragDrop()
 const liveMedia = useLiveMedia()

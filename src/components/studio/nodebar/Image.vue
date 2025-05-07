@@ -8,7 +8,7 @@
       class="w-full flex p-2 border border-gray-300 rounded-md cursor-move gap-2"
     >
       <div class="w-12 h-12">
-        <MediaRender :type="mediaTypes.img" :src="node.data.src" class="rounded-md" />
+        <MediaRender :type="mediaTypes.img" :src="node.data.src" class="w-full h-full rounded-md" />
       </div>
       <div class="flex items-center">{{ node.data.title }}</div>
     </div>

@@ -11,9 +11,12 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, inject, useAttrs } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { ElNotification } from 'element-plus'
 import { useLiveMedia } from '@/composables/LiveMedia'
 import { NodeId } from '@/enums'
 import VideoNotFound from '@/assets/video-not-found.jpeg'
+import { removeNode } from '@/composables/utils'
 
 defineOptions({
   inheritAttrs: false,
@@ -35,6 +38,7 @@ const props = defineProps({
 const node = inject(NodeId)
 
 const attrs = useAttrs()
+const { t } = useI18n()
 const liveMedia = useLiveMedia()
 
 let stream: MediaStream
@@ -50,7 +54,18 @@ function loaded(value: boolean) {
 }
 
 async function getUserMedia() {
-  stream = await liveMedia.getUserMedia(props)
+  try {
+    stream = await liveMedia.getUserMedia(props)
+  } catch (error) {
+    ElNotification({
+      type: 'error',
+      message: t('stream_not_found'),
+    })
+
+    removeNode(node.getNodeOptions().id)
+    return
+  }
+
   mediaRef.value.srcObject = stream
   node.getNodeAudio().createAudioStream(stream)
 }

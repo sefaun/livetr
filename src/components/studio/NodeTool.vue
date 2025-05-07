@@ -19,7 +19,7 @@
     <ElButton
       :icon="Delete"
       @mousedown.stop
-      @click.stop.left="removeNode()"
+      @click.stop.left="removeNode(node.getNodeOptions().id)"
       class="!h-auto !p-1 !ml-0 !text-xs"
       type="danger"
     ></ElButton>
@@ -33,8 +33,7 @@
 import { computed, inject, ref } from 'vue'
 import { ElButton, ElIcon, ElPopover, ElSlider } from 'element-plus'
 import { Delete, Headset } from '@element-plus/icons-vue'
-import { isMediaNode } from '@/composables/utils'
-import { studioData } from '@/state'
+import { isMediaNode, removeNode } from '@/composables/utils'
 import { NodeId, volumeOptions } from '@/enums'
 import VolumeBar from '@/components/studio/node-tool/VolumeBar.vue'
 
@@ -45,11 +44,6 @@ const nodeType = ref(isMediaNode(node.getNodeOptions().type))
 const volume = ref(nodeType.value ? nodeAudio.getGainNode().gain.value : 0)
 
 const volumePercentage = computed(() => (nodeType.value ? ((100 * volume.value) / volumeOptions.max).toFixed(0) : '0'))
-
-function removeNode() {
-  const index = studioData.value.nodes.findIndex((item) => item.id == node.getNodeOptions().id)
-  studioData.value.nodes.splice(index, 1)
-}
 
 function changedVolume(value: number) {
   volume.value = value
