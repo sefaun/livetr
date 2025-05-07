@@ -1,5 +1,5 @@
 import { useNode } from '@/composables/Node'
-import { channels, localeNames, mediaTypes, screenNodeTypes, liveConnectionTypes } from '@/enums'
+import { channels, localeNames, mediaTypes, screenNodeTypes, liveConnectionTypes, resolutions } from '@/enums'
 
 export type ValueOf<T> = T[keyof T]
 
@@ -9,12 +9,14 @@ export type TMediaTypes = ValueOf<typeof mediaTypes>
 export type TChannels = ValueOf<typeof channels>
 export type TScreenNodeTypes = ValueOf<typeof screenNodeTypes>
 export type TLiveConnectionTypes = ValueOf<typeof liveConnectionTypes>
+export type TLiveResolution = ValueOf<typeof resolutions>
 export type TuseNode = ReturnType<typeof useNode>
 
 export type TLiveOptions = {
   rtmp: string
   fps: number
   rtmpKey: string
+  resolution: TLiveResolution
 }
 
 export type TTextNodeData = {

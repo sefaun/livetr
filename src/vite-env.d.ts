@@ -9,4 +9,5 @@ interface ImportMetaEnv {
   VITE_TWITCH_RTMP: 'rtmp://live.twitch.tv/app/'
   VITE_RTMP_KEY: string
   VITE_STREAM_FPS: string
+  VITE_STREAM_RESOLUTION: string
 }

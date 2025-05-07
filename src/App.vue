@@ -9,8 +9,8 @@ import { channel } from '@/state'
 import { useTheme } from '@/composables/Theme'
 import { useEventEmitter } from '@/composables/EventEmitter'
 import { useLive } from '@/composables/Live'
-import { channelRTMP, fps } from '@/enums'
-import type { TTheme, TLocale, TChannels } from '@/types'
+import { channelRTMP, fps, resolutions } from '@/enums'
+import type { TTheme, TLocale, TChannels, TLiveResolution } from '@/types'
 
 const { locale } = useI18n()
 const theme = useTheme()
@@ -28,8 +28,13 @@ function languageOperations() {
   localStorage.setItem(import.meta.env.VITE_LANG, locale.value)
 }
 
+function channelOperations() {
+  channel.value = (localStorage.getItem(import.meta.env.VITE_CHANNEL) as TChannels) ?? ('' as any)
+}
+
 function streamOperations() {
   let localFPS = localStorage.getItem(import.meta.env.VITE_STREAM_FPS)
+  let localResolution = localStorage.getItem(import.meta.env.VITE_STREAM_RESOLUTION) as TLiveResolution
   const rtmpKey = localStorage.getItem(import.meta.env.VITE_RTMP_KEY) ?? ''
 
   if (!localFPS) {
@@ -37,15 +42,17 @@ function streamOperations() {
     localStorage.setItem(import.meta.env.VITE_STREAM_FPS, localFPS)
   }
 
-  live.setLiveOptions({
-    fps: Number(localFPS),
-    rtmpKey,
-    rtmp: channelRTMP[channel.value] ?? '',
-  })
-}
+  if (!localResolution) {
+    localResolution = resolutions['480p']
+    localStorage.setItem(import.meta.env.VITE_STREAM_RESOLUTION, localResolution)
+  }
 
-function channelOperations() {
-  channel.value = (localStorage.getItem(import.meta.env.VITE_CHANNEL) as TChannels) ?? ('' as any)
+  live.setLiveOptions({
+    rtmpKey,
+    fps: Number(localFPS),
+    rtmp: channelRTMP[channel.value] ?? '',
+    resolution: localResolution,
+  })
 }
 
 onBeforeMount(() => {
