@@ -13,16 +13,20 @@ function operations() {
     })
 
     if (!result.canceled) {
-      const files = []
+      return result.filePaths
+    }
 
-      for (const item of result.filePaths) {
-        files.push({
-          item: item,
-          data: nativeImage.createFromPath(item)
-        })
-      }
+    return []
+  })
 
-      return files
+  ipcMain.handle('select-video', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'Videos', extensions: ['mp4', 'webm', 'ogg'] }]
+    })
+
+    if (!result.canceled) {
+      return result.filePaths
     }
 
     return []
