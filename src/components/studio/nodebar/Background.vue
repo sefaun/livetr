@@ -1,6 +1,6 @@
 <template>
   <div>
-    <input type="file" accept="image/*" @change="selectBackground" />
+    <ElButton :icon="Plus" @click.left="selectBackground()">Ekle</ElButton>
     <div
       v-for="node of nodes"
       :id="node.id"
@@ -17,11 +17,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ElButton } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { defaultNodes, studioData } from '@/state'
 import { mediaTypes, screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
 import MediaRender from '@/components/MediaRender.vue'
+const { ipcRenderer } = window.require('electron') as typeof import('electron')
+const fs = window.require('node:fs') as typeof import('node:fs')
 
 const dragdrop = useDragDrop()
 const nodes = ref(defaultNodes.filter((item) => item.type == screenNodeTypes.background))
@@ -39,10 +43,16 @@ function createBackground(event: MouseEvent, node: TNode) {
   dragdrop.nondragdrop(event, node)
 }
 
-async function selectBackground(event: Event) {
-  const target = event.target as HTMLInputElement
+async function selectBackground() {
+  const filePaths = await ipcRenderer.invoke('select-image')
 
-  for (const item of target.files) {
+  for (const item of filePaths) {
+    const directorySplit = item.split('\\')
+
+    const fileName = directorySplit[directorySplit.length - 1]
+
+    const fileData = fs.readFileSync(item, 'base64')
+
     nodes.value.push({
       id: window.crypto.randomUUID(),
       type: screenNodeTypes.background,
@@ -55,8 +65,8 @@ async function selectBackground(event: Event) {
         height: '150px',
       },
       data: {
-        title: item.name,
-        src: URL.createObjectURL(item),
+        title: fileName,
+        src: `data:image/jpeg;base64,${fileData}`,
       },
     })
   }
