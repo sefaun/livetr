@@ -51,7 +51,7 @@ function createWindow() {
     mode: 'detach',
   })
 
-  operations(win)
+  operations()
 
   win.on('ready-to-show', () => {
     setTimeout(() => {

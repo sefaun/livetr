@@ -1,10 +1,9 @@
-const { ipcMain, desktopCapturer } = require('electron/main')
+const { ipcMain, desktopCapturer } = require('electron')
 
 /**
  * Front-end ile ilgili işlemler yapılır.
- * @param {win: BrowserWindow} opts
  */
-function operations(win) {
+function operations() {
   ipcMain.handle('getMediaSources', async (_event) => await desktopCapturer.getSources({ types: ['window', 'screen'] }))
 }
 
