@@ -1,5 +1,6 @@
 <template>
   <div>
+    <input type="file" accept="image/*" @change="selectBackground" />
     <div
       v-for="node of nodes"
       :id="node.id"
@@ -15,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { defaultNodes, studioData } from '@/state'
 import { mediaTypes, screenNodeTypes } from '@/enums'
@@ -22,7 +24,7 @@ import type { TNode } from '@/types'
 import MediaRender from '@/components/MediaRender.vue'
 
 const dragdrop = useDragDrop()
-const nodes = defaultNodes.filter((item) => item.type == screenNodeTypes.background)
+const nodes = ref(defaultNodes.filter((item) => item.type == screenNodeTypes.background))
 
 function deleteExistBackground() {
   const backgroundItemIndex = studioData.value.nodes.findIndex((item) => item.type == screenNodeTypes.background)
@@ -35,5 +37,28 @@ function deleteExistBackground() {
 function createBackground(event: MouseEvent, node: TNode) {
   deleteExistBackground()
   dragdrop.nondragdrop(event, node)
+}
+
+async function selectBackground(event: Event) {
+  const target = event.target as HTMLInputElement
+
+  for (const item of target.files) {
+    nodes.value.push({
+      id: window.crypto.randomUUID(),
+      type: screenNodeTypes.background,
+      position: {
+        x: 0,
+        y: 0,
+      },
+      style: {
+        width: '150px',
+        height: '150px',
+      },
+      data: {
+        title: item.name,
+        src: URL.createObjectURL(item),
+      },
+    })
+  }
 }
 </script>

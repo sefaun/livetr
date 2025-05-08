@@ -1,5 +1,6 @@
 <template>
   <div>
+    <input type="file" accept="video/*" @change="selectVideo" />
     <div
       v-for="node of nodes"
       :id="node.id"
@@ -16,11 +17,35 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { defaultNodes } from '@/state'
 import { mediaTypes, screenNodeTypes } from '@/enums'
 import MediaRender from '@/components/MediaRender.vue'
 
 const dragdrop = useDragDrop()
-const nodes = defaultNodes.filter((item) => item.type == screenNodeTypes.video)
+const nodes = ref(defaultNodes.filter((item) => item.type == screenNodeTypes.video))
+
+async function selectVideo(event: Event) {
+  const target = event.target as HTMLInputElement
+
+  for (const item of target.files) {
+    nodes.value.push({
+      id: window.crypto.randomUUID(),
+      type: screenNodeTypes.video,
+      position: {
+        x: 0,
+        y: 0,
+      },
+      style: {
+        width: '150px',
+        height: '150px',
+      },
+      data: {
+        title: item.name,
+        src: URL.createObjectURL(item),
+      },
+    })
+  }
+}
 </script>
