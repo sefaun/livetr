@@ -6,7 +6,7 @@ import { ElNotification } from 'element-plus'
 import type { FfmpegCommand } from 'fluent-ffmpeg'
 import { useAudio } from '@/composables/Audio'
 import { canvasPreviewRef, channel } from '@/state'
-import { liveConnectionTypes } from '@/enums'
+import { ffmpegBitrateOptions, liveConnectionTypes, resolutions } from '@/enums'
 import type { TLiveConnectionTypes, TLiveOptions } from '@/types'
 const { PassThrough } = window.require('node:stream') as typeof import('node:stream')
 const ffmpeg = window.require('fluent-ffmpeg') as typeof import('fluent-ffmpeg')
@@ -22,6 +22,7 @@ const liveOptions = ref<TLiveOptions>({
   rtmp: '',
   fps: 30,
   rtmpKey: '',
+  resolution: resolutions['480p'],
 })
 
 export function useLive() {
@@ -149,13 +150,11 @@ export function useLive() {
     const outputOptions = [
       '-preset ultrafast',
       '-g 60',
-      '-b:v 800k',
-      '-maxrate 800k',
-      '-bufsize 1600k',
-      '-b:a 64k',
+      '-b:a 128k',
       '-pix_fmt yuv420p',
-      '-vf scale=640:360',
-      ...(saveStatus ? ['-f tee', '-map 0:v', '-map 0:a', '-flags +global_header'] : []),
+      `-vf scale=${liveOptions.value.resolution}`,
+      ...ffmpegBitrateOptions[liveOptions.value.resolution],
+      ...(saveStatus ? ['-f tee', '-map 0:v', '-map 0:a', '-flags +global_header'] : ['-f flv']),
     ]
 
     ffmpegProcess
@@ -163,7 +162,6 @@ export function useLive() {
       .inputFormat('webm')
       .videoCodec('libx264')
       .audioCodec('aac')
-      .format('flv')
       .outputOptions(outputOptions)
       .fps(liveOptions.value.fps)
       .output(rtmpUrl)
