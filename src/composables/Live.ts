@@ -150,11 +150,11 @@ export function useLive() {
     const outputOptions = [
       '-preset ultrafast',
       '-g 60',
-      '-b:a 64k',
+      '-b:a 128k',
       '-pix_fmt yuv420p',
       `-vf scale=${liveOptions.value.resolution}`,
-      ffmpegBitrateOptions[liveOptions.value.resolution],
-      ...(saveStatus ? ['-f tee', '-map 0:v', '-map 0:a', '-flags +global_header'] : []),
+      ...ffmpegBitrateOptions[liveOptions.value.resolution],
+      ...(saveStatus ? ['-f tee', '-map 0:v', '-map 0:a', '-flags +global_header'] : ['-f flv']),
     ]
 
     ffmpegProcess
@@ -162,7 +162,6 @@ export function useLive() {
       .inputFormat('webm')
       .videoCodec('libx264')
       .audioCodec('aac')
-      .format('flv')
       .outputOptions(outputOptions)
       .fps(liveOptions.value.fps)
       .output(rtmpUrl)

@@ -64,9 +64,9 @@ export const resolutions = {
 } as const
 
 export const ffmpegBitrateOptions = {
-  [resolutions['1080p']]: '-b:v 6000k -maxrate 6000k -bufsize 12000k',
-  [resolutions['720p']]: '-b:v 4500k -maxrate 4500k -bufsize 9000k',
-  [resolutions['480p']]: '-b:v 2500k -maxrate 2500k -bufsize 5000k',
-  [resolutions['360p']]: '-b:v 1000k -maxrate 1000k -bufsize 2000k',
-  [resolutions['160p']]: '-b:v 300k -maxrate 300k -bufsize 600k',
+  [resolutions['1080p']]: ['-b:v 6000k', '-maxrate 6000k', '-bufsize 12000k'],
+  [resolutions['720p']]: ['-b:v 4500k', '-maxrate 4500k', '-bufsize 9000k'],
+  [resolutions['480p']]: ['-b:v 2500k', '-maxrate 2500k', '-bufsize 5000k'],
+  [resolutions['360p']]: ['-b:v 1000k', '-maxrate 1000k', '-bufsize 2000k'],
+  [resolutions['160p']]: ['-b:v 300k', '-maxrate 300k', '-bufsize 600k'],
 } as const
