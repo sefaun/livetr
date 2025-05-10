@@ -1,10 +1,15 @@
 import { screenNodeTypes } from '@/enums'
-import { screenRef, canvasPreviewRef, studioData } from '@/state'
+import { screenRef, canvasPreviewRef, studioData, defaultNodes } from '@/state'
 import type { TScreenNodeTypes } from '@/types'
 
 export function removeNode(id: string) {
   const index = studioData.value.nodes.findIndex((item) => item.id == id)
   studioData.value.nodes.splice(index, 1)
+}
+
+export function removeDefaultNode(id: string) {
+  const index = defaultNodes.value.findIndex((item) => item.id == id)
+  defaultNodes.value.splice(index, 1)
 }
 
 export function ctrlOrMetaKey(event: KeyboardEvent) {

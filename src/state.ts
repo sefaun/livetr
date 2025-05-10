@@ -15,8 +15,7 @@ export const nodes: Ref<Record<string, TuseNode>> = ref({})
 export const studioData = ref({
   nodes: [] as TNode[],
 })
-
-export const defaultNodes = [
+export const defaultNodes = ref([
   {
     id: window.crypto.randomUUID(),
     type: screenNodeTypes.image,
@@ -65,4 +64,4 @@ export const defaultNodes = [
       src: testBgImage,
     },
   },
-]
+])

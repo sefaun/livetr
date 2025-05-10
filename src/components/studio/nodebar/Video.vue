@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { ElButton } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
@@ -28,10 +28,10 @@ const { ipcRenderer } = window.require('electron') as typeof import('electron')
 const fs = window.require('node:fs') as typeof import('node:fs')
 
 const dragdrop = useDragDrop()
-const nodes = ref(defaultNodes.filter((item) => item.type == screenNodeTypes.video))
+const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.video))
 
 async function selectVideo() {
-  const filePaths = await ipcRenderer.invoke('select-video')
+  const filePaths = await ipcRenderer.invoke('selectVideo')
 
   for (const item of filePaths) {
     const directorySplit = item.split('\\')

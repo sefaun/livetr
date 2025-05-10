@@ -16,5 +16,6 @@
   "stream_started": "Yayın Başladı",
   "stream_ended": "Yayın Sonlandırıldı",
   "stream_not_found": "Yayın İçeriği Yok",
-  "resolution": "Çözünürlük"
+  "resolution": "Çözünürlük",
+  "add": "Ekle"
 }
