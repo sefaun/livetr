@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div class="w-full">
-      <ElButton :icon="Plus" @click.left="file.setVideoStore()" type="success" class="w-full">
+      <ElButton :icon="Plus" @click.left="nodeBar.setVideoStore()" type="success" class="w-full">
         {{ t('add') }}
       </ElButton>
     </div>
@@ -40,6 +40,7 @@ import { ElButton } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useFile } from '@/composables/File'
+import { useNodeBar } from '@/composables/NodeBar'
 import { removeDefaultNode } from '@/composables/utils'
 import { defaultNodes } from '@/state'
 import { mediaTypes, screenNodeTypes } from '@/enums'
@@ -49,11 +50,12 @@ import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
 const { t } = useI18n()
 const dragdrop = useDragDrop()
 const file = useFile()
+const nodeBar = useNodeBar()
 
 const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.video))
 
 function removeNode(id: string) {
   removeDefaultNode(id)
-  file.exportDefaultNodes()
+  nodeBar.exportDefaultNodes()
 }
 </script>

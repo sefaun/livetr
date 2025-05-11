@@ -20,7 +20,8 @@ const audio = useAudio()
 
 onMounted(() => {
   file.createDefaultDirs()
-  file.setDefaultNodes()
+  file.getDefaultNodes()
+  file.getStudioData()
   audio.start()
 })
 

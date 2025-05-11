@@ -4,7 +4,7 @@
   "author": "SEFA UN",
   "description": "This is Livetr Desktop App",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",

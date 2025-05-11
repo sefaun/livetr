@@ -1,6 +1,8 @@
 {
   "turkish": "Turkish",
   "english": "English",
+  "yes": "Yes",
+  "no": "No",
   "studio": "Studio",
   "text": "Text",
   "image": "Image",
@@ -22,5 +24,7 @@
   "saved": "Saved",
   "not_saved": "not Saved",
   "wrong_file_content": "Wrong NodeBar File Content",
-  "wrong_video_content": "Wrong Video Content"
+  "wrong_video_content": "Wrong Video Content",
+  "sure_for_delete_scene": "Are you sure you want to delete the scene ?",
+  "get_on_scene": "Get on Scene"
 }

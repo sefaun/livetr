@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
 import { nodeData } from '@/enums'
-import { studioData } from '@/state'
+import { activeScene, studioData } from '@/state'
 import type { TScreenNodeTypes, TNode } from '@/types'
 
 const dragNode = ref<TNode>()
@@ -59,7 +59,7 @@ export function useDragDrop() {
     node.data = nodeContent.data
     node.style = nodeContent.style
 
-    studioData.value.nodes.push(node)
+    studioData.value.scene[activeScene.value].push(node)
   }
 
   function getDragNode() {

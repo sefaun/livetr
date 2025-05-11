@@ -1,0 +1,75 @@
+<template>
+  <div class="relative w-full h-[100px] space-y-2">
+    <div class="w-full">
+      <ElButton :icon="Plus" @click.left="addScene()" type="success" class="w-full">{{ t('add') }}</ElButton>
+    </div>
+    <div
+      v-for="(sce, index) of scenes"
+      :key="sce.id"
+      class="relative rounded-md group dark:[box-shadow:0_0_5px_gray] [box-shadow:0_0_5px_black] transition-all duration-200 ease-in-out"
+    >
+      <SceneThumbnail :index="index" class="rounded-md" />
+      <div
+        v-if="activeScene != index"
+        class="absolute top-0 left-0 w-full h-full group-hover:bg-black/35 rounded-md transition-all duration-200 ease-in-out"
+      ></div>
+      <div v-if="activeScene != index" class="absolute top-0 left-0 w-full h-full flex justify-center items-center">
+        <div class="hidden group-hover:block">
+          <ElButton @click.left="useSelectedScene(index)" size="small">{{ t('get_on_scene') }}</ElButton>
+        </div>
+      </div>
+      <div v-if="activeScene != index" class="absolute top-1 right-1 w-full flex justify-end">
+        <div class="hidden group-hover:block">
+          <ElPopconfirm
+            :title="t('sure_for_delete_scene')"
+            :confirm-button-text="t('yes')"
+            :cancel-button-text="t('no')"
+            @confirm="removeSelectedScene(index)"
+            placement="right-start"
+            width="fit"
+          >
+            <template #reference>
+              <ElButton :icon="Delete" type="danger" size="small" circle></ElButton>
+            </template>
+          </ElPopconfirm>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { ElButton, ElPopconfirm } from 'element-plus'
+import { Delete, Plus } from '@element-plus/icons-vue'
+import { useFile } from '@/composables/File'
+import { activeScene, studioData } from '@/state'
+import SceneThumbnail from '@/components/studio/scene/SceneThumbnail.vue'
+
+const { t } = useI18n()
+const file = useFile()
+
+const scenes = computed(() =>
+  studioData.value.scene.map((_, index) => ({
+    index,
+    id: window.crypto.randomUUID(),
+  }))
+)
+
+function addScene() {
+  studioData.value.scene.push([])
+  file.setStudioData()
+}
+
+function useSelectedScene(index: number) {
+  activeScene.value = index
+  localStorage.setItem(import.meta.env.VITE_ACTIVE_SCENE, activeScene.value.toString())
+  file.setStudioData()
+}
+
+function removeSelectedScene(index: number) {
+  studioData.value.scene.splice(index, 1)
+  file.setStudioData()
+}
+</script>

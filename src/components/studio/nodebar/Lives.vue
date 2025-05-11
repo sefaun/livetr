@@ -66,8 +66,8 @@ import { Refresh } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useLiveMedia } from '@/composables/LiveMedia'
 import { useState } from '@/composables/State'
+import { activeScene, studioData } from '@/state'
 import { screenNodeTypes } from '@/enums'
-import { studioData } from '@/state'
 import type { TSourceMediaNodeData, TScreenNodeTypes, TLiveCameraNodeData } from '@/types'
 import NodeBarLiveMediaRender from '@/components/NodeBarLiveMediaRender.vue'
 import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
@@ -81,7 +81,7 @@ const filteredLive = computed(() => {
     .getLiveCameras()
     .filter(
       (item) =>
-        !studioData.value.nodes.some(
+        !studioData.value.scene[activeScene.value].some(
           (node) => node.type == screenNodeTypes.liveCamera && (node.data as TLiveCameraNodeData).id == item.deviceId
         )
     )
@@ -92,7 +92,7 @@ const filteredSource = computed(() => {
     .getLiveMedias()
     .filter(
       (item) =>
-        !studioData.value.nodes.some(
+        !studioData.value.scene[activeScene.value].some(
           (node) => node.type == screenNodeTypes.sourceMedia && (node.data as TSourceMediaNodeData).id == item.id
         )
     )

@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { onBeforeMount } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { channel } from '@/state'
+import { activeScene, channel } from '@/state'
 import { useTheme } from '@/composables/Theme'
 import { useEventEmitter } from '@/composables/EventEmitter'
 import { useLive } from '@/composables/Live'
@@ -35,6 +35,7 @@ function channelOperations() {
 function streamOperations() {
   let localFPS = localStorage.getItem(import.meta.env.VITE_STREAM_FPS)
   let localResolution = localStorage.getItem(import.meta.env.VITE_STREAM_RESOLUTION) as TLiveResolution
+  let activeSceneIndex = localStorage.getItem(import.meta.env.VITE_ACTIVE_SCENE)
   const rtmpKey = localStorage.getItem(import.meta.env.VITE_RTMP_KEY) ?? ''
 
   if (!localFPS) {
@@ -47,6 +48,12 @@ function streamOperations() {
     localStorage.setItem(import.meta.env.VITE_STREAM_RESOLUTION, localResolution)
   }
 
+  if (!activeSceneIndex) {
+    activeSceneIndex = '0'
+    localStorage.setItem(import.meta.env.VITE_STREAM_RESOLUTION, activeSceneIndex)
+  }
+
+  activeScene.value = Number(activeSceneIndex)
   live.setLiveOptions({
     rtmpKey,
     fps: Number(localFPS),

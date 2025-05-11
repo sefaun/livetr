@@ -8,7 +8,7 @@
     @click.stop="selection.clear()"
     class="relative w-full bg-black border border-[var(--border-color)] dark:border-[--border-dark-color] aspect-video shadow-[0_0_10px_var(--border-color)] dark:shadow-[0_0_10px_var(--border-dark-color)]"
   >
-    <Node v-for="node of studioData.nodes" :data="node" :key="node.id">
+    <Node v-for="node of studioData.scene[activeScene]" :data="node" :key="node.id">
       <NodeImage v-if="node.type == screenNodeTypes.image" :data="node"></NodeImage>
       <NodeVideo v-if="node.type == screenNodeTypes.video" :data="node"></NodeVideo>
       <NodeSourceMedia v-if="node.type == screenNodeTypes.sourceMedia" :data="node"></NodeSourceMedia>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { screenRef, studioData } from '@/state'
+import { activeScene, screenRef, studioData } from '@/state'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useSelection } from '@/composables/Selection'
 import { screenNodeTypes } from '@/enums'

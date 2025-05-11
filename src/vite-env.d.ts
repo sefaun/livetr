@@ -10,4 +10,5 @@ interface ImportMetaEnv {
   VITE_RTMP_KEY: string
   VITE_STREAM_FPS: string
   VITE_STREAM_RESOLUTION: string
+  VITE_ACTIVE_SCENE: string
 }

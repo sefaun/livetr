@@ -1,7 +1,12 @@
 <template>
   <div class="space-y-4">
     <div class="w-full">
-      <ElButton :icon="Plus" @click.left="file.setImageStore(screenNodeTypes.background)" type="success" class="w-full">
+      <ElButton
+        :icon="Plus"
+        @click.left="nodeBar.setImageStore(screenNodeTypes.background)"
+        type="success"
+        class="w-full"
+      >
         {{ t('add') }}
       </ElButton>
     </div>
@@ -38,8 +43,9 @@ import { ElButton } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useFile } from '@/composables/File'
+import { useNodeBar } from '@/composables/NodeBar'
 import { removeDefaultNode } from '@/composables/utils'
-import { defaultNodes, studioData } from '@/state'
+import { activeScene, defaultNodes, studioData } from '@/state'
 import { screenNodeTypes } from '@/enums'
 import type { TBackgroundNodeData, TNode } from '@/types'
 import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
@@ -47,14 +53,17 @@ import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
 const { t } = useI18n()
 const dragdrop = useDragDrop()
 const file = useFile()
+const nodeBar = useNodeBar()
 
 const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.background))
 
 function deleteExistBackground() {
-  const backgroundItemIndex = studioData.value.nodes.findIndex((item) => item.type == screenNodeTypes.background)
+  const backgroundItemIndex = studioData.value.scene[activeScene.value].findIndex(
+    (item) => item.type == screenNodeTypes.background
+  )
 
   if (backgroundItemIndex != -1) {
-    studioData.value.nodes.splice(backgroundItemIndex, 1)
+    studioData.value.scene[activeScene.value].splice(backgroundItemIndex, 1)
   }
 }
 
@@ -65,6 +74,6 @@ function createBackground(event: MouseEvent, node: TNode) {
 
 function removeNode(id: string) {
   removeDefaultNode(id)
-  file.exportDefaultNodes()
+  nodeBar.exportDefaultNodes()
 }
 </script>
