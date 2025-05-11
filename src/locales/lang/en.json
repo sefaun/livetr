@@ -6,6 +6,7 @@
   "image": "Image",
   "video": "Video",
   "background": "Background",
+  "refresh": "Refresh",
   "select_channel": "Select Channel",
   "start_live": "Start Stream",
   "end_live": "End Live",
@@ -20,5 +21,6 @@
   "add": "Add",
   "saved": "Saved",
   "not_saved": "not Saved",
-  "wrong_file_content": "Wrong NodeBar File Content "
+  "wrong_file_content": "Wrong NodeBar File Content",
+  "wrong_video_content": "Wrong Video Content"
 }

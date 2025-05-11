@@ -1,12 +1,5 @@
 <template>
-  <video
-    ref="mediaRef"
-    v-bind="attrs"
-    :poster="poster"
-    @load="loaded(true)"
-    @error="loaded(false)"
-    class="w-full h-full"
-  ></video>
+  <video ref="mediaRef" v-bind="attrs" @load="loaded(true)" @error="loaded(false)" class="w-full h-full"></video>
 </template>
 
 <script setup lang="ts">
@@ -15,7 +8,6 @@ import { useI18n } from 'vue-i18n'
 import { ElNotification } from 'element-plus'
 import { useLiveMedia } from '@/composables/LiveMedia'
 import { NodeId } from '@/enums'
-import VideoNotFound from '@/assets/video-not-found.jpeg'
 import { removeNode } from '@/composables/utils'
 
 defineOptions({
@@ -43,13 +35,16 @@ const liveMedia = useLiveMedia()
 
 let stream: MediaStream
 const mediaRef = ref<HTMLVideoElement>()
-const poster = ref('')
 const srcStatus = ref(attrs.src ? true : false)
 const srcVideoEnded = ref(true)
 
 function loaded(value: boolean) {
   if (!value) {
-    poster.value = VideoNotFound
+    ElNotification({
+      type: 'error',
+      message: t('wrong_video_content'),
+    })
+    removeNode(node.getNodeOptions().id)
   }
 }
 

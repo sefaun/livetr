@@ -6,6 +6,7 @@
   "image": "Resim",
   "video": "Video",
   "background": "Arka Plan",
+  "refresh": "Yenile",
   "select_channel": "Kanal Seçiniz",
   "start_live": "Yayın Başlat",
   "end_live": "Yayını Sonlandır",
@@ -20,5 +21,6 @@
   "add": "Ekle",
   "saved": "Kaydedildi",
   "not_saved": "Kaydedilemedi",
-  "wrong_file_content": "NodeBar Dosya İçeriği Hatalı "
+  "wrong_file_content": "NodeBar Dosya İçeriği Hatalı",
+  "wrong_video_content": "Video İçeriği Hatalı"
 }

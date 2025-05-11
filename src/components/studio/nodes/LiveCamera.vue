@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full">
-    <LiveMedia :liveId="liveId" autoplay muted class="object-fill" />
+    <LiveMediaRender :liveId="liveId" autoplay muted class="object-fill" />
   </div>
 </template>
 
@@ -8,7 +8,7 @@
 import type { PropType } from 'vue'
 import { ref } from 'vue'
 import type { TLiveCameraNodeData, TNode } from '@/types'
-import LiveMedia from '@/components/LiveMedia.vue'
+import LiveMediaRender from '@/components/LiveMediaRender.vue'
 
 const props = defineProps({
   data: {

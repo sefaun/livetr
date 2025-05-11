@@ -7,7 +7,6 @@ import { onBeforeMount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { channel } from '@/state'
 import { useTheme } from '@/composables/Theme'
-import { useFile } from '@/composables/File'
 import { useEventEmitter } from '@/composables/EventEmitter'
 import { useLive } from '@/composables/Live'
 import { channelRTMP, fps, resolutions } from '@/enums'
@@ -15,7 +14,6 @@ import type { TTheme, TLocale, TChannels, TLiveResolution } from '@/types'
 
 const { locale } = useI18n()
 const theme = useTheme()
-const file = useFile()
 const eventEmitter = useEventEmitter()
 const live = useLive()
 
@@ -62,8 +60,6 @@ onBeforeMount(() => {
   themeOperations()
   channelOperations()
   streamOperations()
-  file.createDefaultDirs()
-  file.setDefaultNodes()
   eventEmitter.start()
 })
 </script>

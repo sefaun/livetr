@@ -17,12 +17,12 @@
           <div class="min-w-12 min-h-12">
             <NodeBarMediaRender
               :type="mediaTypes.video"
-              :src="node.default ? file.getDirectoryFromMainFolder(node.data.src) : node.data.src"
+              :src="node.default ? file.getDirectoryFromMainFolder((node.data as TVideoNodeData).src) : (node.data as TVideoNodeData).src"
               class="w-12 h-12 rounded-md"
             />
           </div>
           <div class="w-full flex items-center">
-            {{ node.data.title }}
+            {{ (node.data as TVideoNodeData).title }}
           </div>
         </div>
         <div class="w-8 flex items-center">
@@ -43,6 +43,7 @@ import { useFile } from '@/composables/File'
 import { removeDefaultNode } from '@/composables/utils'
 import { defaultNodes } from '@/state'
 import { mediaTypes, screenNodeTypes } from '@/enums'
+import type { TVideoNodeData } from '@/types'
 import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
 
 const { t } = useI18n()

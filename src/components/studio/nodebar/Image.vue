@@ -16,12 +16,12 @@
         <div class="w-full flex gap-2">
           <div class="min-w-12 min-h-12">
             <NodeBarMediaRender
-              :src="node.default ? file.getDirectoryFromMainFolder(node.data.src) : node.data.src"
+              :src="node.default ? file.getDirectoryFromMainFolder((node.data as TImageNodeData).src) : (node.data as TImageNodeData).src"
               class="w-12 h-12 rounded-md"
             />
           </div>
           <div class="w-full flex items-center">
-            {{ node.data.title }}
+            {{ (node.data as TImageNodeData).title }}
           </div>
         </div>
         <div class="w-8 flex items-center">
@@ -42,6 +42,7 @@ import { useFile } from '@/composables/File'
 import { removeDefaultNode } from '@/composables/utils'
 import { defaultNodes } from '@/state'
 import { screenNodeTypes } from '@/enums'
+import type { TImageNodeData } from '@/types'
 import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
 
 const { t } = useI18n()

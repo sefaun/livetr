@@ -10,13 +10,17 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted } from 'vue'
+import { useFile } from '@/composables/File'
 import { useAudio } from '@/composables/Audio'
 import StudioNavbar from '@/layouts/studio/Navbar.vue'
 import Preview from '@/components/Preview.vue'
 
+const file = useFile()
 const audio = useAudio()
 
 onMounted(() => {
+  file.createDefaultDirs()
+  file.setDefaultNodes()
   audio.start()
 })
 

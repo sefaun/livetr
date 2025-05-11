@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-full">
-    <LiveMedia :src="src" controls class="object-fill" />
+    <LiveMediaRender :src="src" controls class="object-fill" />
   </div>
 </template>
 
@@ -8,7 +8,7 @@
 import type { PropType } from 'vue'
 import { ref } from 'vue'
 import type { TImageNodeData, TNode } from '@/types'
-import LiveMedia from '@/components/LiveMedia.vue'
+import LiveMediaRender from '@/components/LiveMediaRender.vue'
 
 const props = defineProps({
   data: {
