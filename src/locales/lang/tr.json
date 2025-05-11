@@ -17,5 +17,8 @@
   "stream_ended": "Yayın Sonlandırıldı",
   "stream_not_found": "Yayın İçeriği Yok",
   "resolution": "Çözünürlük",
-  "add": "Ekle"
+  "add": "Ekle",
+  "saved": "Kaydedildi",
+  "not_saved": "Kaydedilemedi",
+  "wrong_file_content": "NodeBar Dosya İçeriği Hatalı "
 }

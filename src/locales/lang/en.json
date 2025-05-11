@@ -17,5 +17,8 @@
   "stream_ended": "Stream Ended",
   "stream_not_found": "No Live Stream Content",
   "resolution": "Resolution",
-  "add": "Add"
+  "add": "Add",
+  "saved": "Saved",
+  "not_saved": "not Saved",
+  "wrong_file_content": "Wrong NodeBar File Content "
 }

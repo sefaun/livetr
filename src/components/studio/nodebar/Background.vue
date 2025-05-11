@@ -14,7 +14,10 @@
       >
         <div class="w-full flex gap-2">
           <div class="min-w-12 min-h-12">
-            <NodeBarMediaRender :src="node.data.src" class="w-12 h-12 rounded-md" />
+            <NodeBarMediaRender
+              :src="node.default ? file.getDirectoryFromMainFolder(node.data.src) : node.data.src"
+              class="w-12 h-12 rounded-md"
+            />
           </div>
           <div class="w-full flex items-center">
             {{ node.data.title }}
@@ -62,5 +65,6 @@ function createBackground(event: MouseEvent, node: TNode) {
 
 function removeNode(id: string) {
   removeDefaultNode(id)
+  file.exportDefaultNodes()
 }
 </script>

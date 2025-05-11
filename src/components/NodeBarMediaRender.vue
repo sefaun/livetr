@@ -55,7 +55,10 @@ function loaded(value: boolean) {
 
 onMounted(() => {
   try {
-    src.value = `data:image/jpeg;base64,${file.readFile(props.src, 'base64')}`
+    src.value = `data:${props.type == mediaTypes.img ? 'image/jpeg' : 'video/mp4'};base64,${file.readFile(
+      props.src,
+      'base64'
+    )}`
   } catch {
     loaded(false)
   }

@@ -1,11 +1,16 @@
 import type { OpenDialogReturnValue } from 'electron'
+import { useI18n } from 'vue-i18n'
+import { cloneDeep } from 'lodash'
+import { isJSON } from '@/composables/utils'
 import { defaultNodes } from '@/state'
-import { screenNodeTypes } from '@/enums'
+import { filePaths, mainFilePath, nodeData, screenNodeTypes } from '@/enums'
 const fs = window.require('node:fs') as typeof import('node:fs')
 const path = window.require('node:path') as typeof import('node:path')
 const { ipcRenderer } = window.require('electron') as typeof import('electron')
 
 export function useFile() {
+  const { t } = useI18n()
+
   function getDirectoryFromMainFolder(way: string) {
     return path.resolve(process.cwd(), way)
   }
@@ -20,53 +25,101 @@ export function useFile() {
     for (const item of result.filePaths) {
       const directorySplit = item.split('\\')
       const fileName = directorySplit[directorySplit.length - 1]
+      const nodeContent = cloneDeep(nodeData)
 
-      defaultNodes.value.push({
-        id: window.crypto.randomUUID(),
-        type: type,
-        position: {
-          x: 0,
-          y: 0,
-        },
-        style: {
-          width: '150px',
-          height: '150px',
-        },
-        data: {
-          title: fileName,
-          src: directorySplit.join('/'),
-        },
-      })
+      nodeContent.id = window.crypto.randomUUID() as string
+      nodeContent.type = type
+      nodeContent.data = {
+        title: fileName,
+        src: directorySplit.join('/'),
+      }
+      nodeContent.style = {
+        width: type == screenNodeTypes.image ? '150px' : '100%',
+        height: type == screenNodeTypes.image ? '150px' : '100%',
+      }
+
+      defaultNodes.value.push(nodeContent)
+    }
+
+    exportDefaultNodes()
+  }
+
+  async function setVideoStore() {
+    const result = (await ipcRenderer.invoke('selectVideo')) as OpenDialogReturnValue
+
+    if (result.canceled) {
+      return
+    }
+
+    for (const item of result.filePaths) {
+      const directorySplit = item.split('\\')
+      const fileName = directorySplit[directorySplit.length - 1]
+      const nodeContent = cloneDeep(nodeData)
+
+      nodeContent.id = window.crypto.randomUUID() as string
+      nodeContent.type = screenNodeTypes.video
+      nodeContent.data = {
+        title: fileName,
+        src: directorySplit.join('/'),
+      }
+      nodeContent.style = {
+        width: '150px',
+        height: '150px',
+      }
+
+      defaultNodes.value.push(nodeContent)
+    }
+
+    exportDefaultNodes()
+  }
+
+  function exportDefaultNodes(notify: boolean = false) {
+    try {
+      fs.writeFileSync(
+        getDirectoryFromMainFolder(filePaths.nodebar),
+        JSON.stringify(defaultNodes.value, null, 2),
+        'utf8'
+      )
+
+      if (notify) {
+        new window.Notification(t('saved'))
+      }
+    } catch (error) {
+      if (notify) {
+        new window.Notification(t('not_saved'), {
+          body: (error as Error).message,
+        })
+      }
+      console.log(error)
     }
   }
 
-  function setBackgroundStore() {}
+  function setDefaultNodes() {
+    const file = fs.readFileSync(getDirectoryFromMainFolder(filePaths.nodebar)).toString()
+    if (!isJSON(file)) {
+      throw new window.Notification(t('wrong_file_content'))
+    }
 
-  function setVideoStore() {}
+    defaultNodes.value = JSON.parse(file)
+  }
 
-  // async function name() {
-  //   try {
-  //     const result = await ipcRenderer.invoke('exportAsJSONLadderData')
+  function createDefaultDirs() {
+    if (!fs.existsSync(getDirectoryFromMainFolder(mainFilePath))) {
+      fs.mkdirSync(mainFilePath)
+    }
 
-  //     if (result.canceled) {
-  //       return
-  //     }
-
-  //     fs.writeFileSync(result.filePath, JSON.stringify(ladderExport.exportJSON(), null, 2), 'utf8')
-
-  //     new window.Notification(t('saved'))
-  //   } catch (error) {
-  //     new window.Notification(t('not_saved'), {
-  //       body: (error as Error).message,
-  //     })
-  //   }
-  // }
+    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.nodebar))) {
+      fs.writeFileSync(getDirectoryFromMainFolder(filePaths.nodebar), JSON.stringify(defaultNodes.value))
+    }
+  }
 
   return {
     getDirectoryFromMainFolder,
+    setDefaultNodes,
     setImageStore,
-    setBackgroundStore,
     setVideoStore,
+    createDefaultDirs,
+    exportDefaultNodes,
     readFile: fs.readFileSync,
   }
 }
