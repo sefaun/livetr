@@ -1,61 +1,58 @@
 <template>
-  <div>
-    <ElButton :icon="Plus" @click.left="selectImage()">Ekle</ElButton>
-    <div
-      v-for="node of nodes"
-      :id="node.id"
-      @dragstart="dragdrop.dragstart($event, node)"
-      draggable="true"
-      class="w-full flex p-2 border border-gray-300 rounded-md cursor-move gap-2"
-    >
-      <div class="w-12 h-12">
-        <MediaRender :type="mediaTypes.img" :src="node.data.src" class="w-full h-full rounded-md" />
+  <div class="space-y-4">
+    <div class="w-full">
+      <ElButton :icon="Plus" @click.left="file.setImageStore(screenNodeTypes.image)" type="success" class="w-full">
+        {{ t('add') }}
+      </ElButton>
+    </div>
+    <div class="w-full space-y-1">
+      <div
+        v-for="node of nodes"
+        :id="node.id"
+        @dragstart="dragdrop.dragstart($event, node)"
+        draggable="true"
+        class="w-full flex justify-between p-2 border border-gray-300 rounded-md cursor-move gap-2"
+      >
+        <div class="w-full flex gap-2">
+          <div class="min-w-12 min-h-12">
+            <NodeBarMediaRender
+              :src="node.default ? file.getDirectoryFromMainFolder((node.data as TImageNodeData).src) : (node.data as TImageNodeData).src"
+              class="w-12 h-12 rounded-md"
+            />
+          </div>
+          <div class="w-full flex items-center">
+            {{ (node.data as TImageNodeData).title }}
+          </div>
+        </div>
+        <div class="w-8 flex items-center">
+          <ElButton :icon="Delete" @click.stop.left="removeNode(node.id)" type="danger" circle></ElButton>
+        </div>
       </div>
-      <div class="flex items-center">{{ node.data.title }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElButton } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
+import { useFile } from '@/composables/File'
+import { removeDefaultNode } from '@/composables/utils'
 import { defaultNodes } from '@/state'
-import { mediaTypes, screenNodeTypes } from '@/enums'
-import MediaRender from '@/components/MediaRender.vue'
-const { ipcRenderer } = window.require('electron') as typeof import('electron')
-const fs = window.require('node:fs') as typeof import('node:fs')
+import { screenNodeTypes } from '@/enums'
+import type { TImageNodeData } from '@/types'
+import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
 
+const { t } = useI18n()
 const dragdrop = useDragDrop()
-const nodes = ref(defaultNodes.filter((item) => item.type == screenNodeTypes.image))
+const file = useFile()
 
-async function selectImage() {
-  const filePaths = await ipcRenderer.invoke('select-image')
+const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.image))
 
-  for (const item of filePaths) {
-    const directorySplit = item.split('\\')
-
-    const fileName = directorySplit[directorySplit.length - 1]
-
-    const fileData = fs.readFileSync(item, 'base64')
-
-    nodes.value.push({
-      id: window.crypto.randomUUID(),
-      type: screenNodeTypes.image,
-      position: {
-        x: 0,
-        y: 0,
-      },
-      style: {
-        width: '150px',
-        height: '150px',
-      },
-      data: {
-        title: fileName,
-        src: `data:image/jpeg;base64,${fileData}`,
-      },
-    })
-  }
+function removeNode(id: string) {
+  removeDefaultNode(id)
+  file.exportDefaultNodes()
 }
 </script>

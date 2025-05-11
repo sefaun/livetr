@@ -1,13 +1,12 @@
 <template>
   <div class="w-full h-full">
-    <MediaRender :type="mediaTypes.img" :src="src" class="w-full h-full object-fill" />
+    <MediaRender :src="src" class="w-full h-full object-fill" />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { ref } from 'vue'
-import { mediaTypes } from '@/enums'
 import type { TImageNodeData, TNode } from '@/types'
 import MediaRender from '@/components/MediaRender.vue'
 

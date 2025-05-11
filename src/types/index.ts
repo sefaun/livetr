@@ -57,6 +57,7 @@ export type TNode = {
   }
   style: Partial<CSSStyleDeclaration>
   data: TTextNodeData | TImageNodeData | TVideoNodeData | TSourceMediaNodeData | TBackgroundNodeData
+  default: boolean
 }
 
 export type TuseNodeOptions = {

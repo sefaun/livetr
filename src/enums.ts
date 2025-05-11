@@ -37,6 +37,7 @@ export const nodeData = {
     y: 0,
   },
   style: {},
+  default: false,
 } as TNode
 
 export const mediaTypes = {
@@ -69,4 +70,9 @@ export const ffmpegBitrateOptions = {
   [resolutions['480p']]: ['-b:v 2500k', '-maxrate 2500k', '-bufsize 5000k'],
   [resolutions['360p']]: ['-b:v 1000k', '-maxrate 1000k', '-bufsize 2000k'],
   [resolutions['160p']]: ['-b:v 300k', '-maxrate 300k', '-bufsize 600k'],
+} as const
+
+export const mainFilePath = 'store' as const
+export const filePaths = {
+  nodebar: `${mainFilePath}/nodebar.json`,
 } as const

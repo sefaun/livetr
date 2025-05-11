@@ -1,6 +1,7 @@
 # Yapılacaklar
 
-- özel video resim ve metin ekleme için geliştirme yapılmalı
+- ses nodu yapılmalı
+- Yazı ekleme yapılmalı
 
 # Not
 

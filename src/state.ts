@@ -2,9 +2,6 @@ import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { screenNodeTypes } from '@/enums'
 import type { TChannels, TNode, TuseNode } from '@/types'
-import testBgImage from '@/assets/test-bg-image.jpg'
-import testImage from '@/assets/test-image.png'
-import testVideo from '@/assets/bigbuckbunny.mp4'
 
 export const canvasPreviewRef = ref<HTMLCanvasElement>()
 export const videoPreviewRef = ref<HTMLVideoElement>()
@@ -15,8 +12,7 @@ export const nodes: Ref<Record<string, TuseNode>> = ref({})
 export const studioData = ref({
   nodes: [] as TNode[],
 })
-
-export const defaultNodes = [
+export const defaultNodes = ref<TNode[]>([
   {
     id: window.crypto.randomUUID(),
     type: screenNodeTypes.image,
@@ -30,8 +26,9 @@ export const defaultNodes = [
     },
     data: {
       title: 'Klasik Resim',
-      src: testImage,
+      src: 'src/assets/test-image.png',
     },
+    default: true,
   },
   {
     id: window.crypto.randomUUID(),
@@ -46,8 +43,9 @@ export const defaultNodes = [
     },
     data: {
       title: 'Test Video',
-      src: testVideo,
+      src: 'src/assets/bigbuckbunny.mp4',
     },
+    default: true,
   },
   {
     id: window.crypto.randomUUID(),
@@ -62,7 +60,8 @@ export const defaultNodes = [
     },
     data: {
       title: 'Arka Plan',
-      src: testBgImage,
+      src: 'src/assets/test-bg-image.jpg',
     },
+    default: true,
   },
-]
+])

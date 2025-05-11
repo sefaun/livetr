@@ -7,7 +7,7 @@ let splashWindow
 
 function createSplashWindow() {
   splashWindow = new BrowserWindow({
-    width: 400,
+    width: 380,
     height: 140,
     frame: false,
     transparent: true,
@@ -38,6 +38,8 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: false,
+      allowRunningInsecureContent: true,
     },
   })
 

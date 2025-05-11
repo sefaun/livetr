@@ -28,7 +28,7 @@
       <ElTooltip :content="source.label" :hide-after="0" effect="dark" placement="top">
         <div class="w-28">
           <div>
-            <NodeLiveMedia :liveId="source.deviceId" autoplay muted class="!w-28 !h-20 !rounded-md" />
+            <NodeBarLiveMediaRender :liveId="source.deviceId" autoplay muted class="!w-28 !h-20 !rounded-md" />
           </div>
           <div class="text-xs truncate px-2 text-center mt-1">{{ source.label }}</div>
         </div>
@@ -50,7 +50,7 @@
       <ElTooltip :content="source.name" :hide-after="0" effect="dark" placement="top">
         <div class="w-28">
           <div>
-            <MediaRender :src="source.thumbnail" class="w-28 h-20 rounded-md" />
+            <NodeBarMediaRender :src="source.thumbnail" class="w-28 h-20 rounded-md" />
           </div>
           <div class="text-xs truncate px-2 text-center mt-1">{{ source.name }}</div>
         </div>
@@ -69,8 +69,8 @@ import { useState } from '@/composables/State'
 import { screenNodeTypes } from '@/enums'
 import { studioData } from '@/state'
 import type { TSourceMediaNodeData, TScreenNodeTypes, TLiveCameraNodeData } from '@/types'
-import NodeLiveMedia from '@/components/NodeLiveMedia.vue'
-import MediaRender from '@/components/MediaRender.vue'
+import NodeBarLiveMediaRender from '@/components/NodeBarLiveMediaRender.vue'
+import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
 
 const dragdrop = useDragDrop()
 const liveMedia = useLiveMedia()

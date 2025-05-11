@@ -1,36 +1,24 @@
-const { ipcMain, desktopCapturer, dialog, nativeImage } = require('electron')
+const { ipcMain, desktopCapturer, dialog } = require('electron')
 
 /**
  * Front-end ile ilgili işlemler yapılır.
  */
 function operations() {
-  ipcMain.handle('getMediaSources', async (_event) => await desktopCapturer.getSources({ types: ['window', 'screen'] }))
+  ipcMain.handle('getMediaSources', (_event) => desktopCapturer.getSources({ types: ['window', 'screen'] }))
 
-  ipcMain.handle('select-image', async () => {
-    const result = await dialog.showOpenDialog({
+  ipcMain.handle('selectImage', (_event) =>
+    dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }]
+      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif'] }],
     })
+  )
 
-    if (!result.canceled) {
-      return result.filePaths
-    }
-
-    return []
-  })
-
-  ipcMain.handle('select-video', async () => {
-    const result = await dialog.showOpenDialog({
+  ipcMain.handle('selectVideo', (_event) =>
+    dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'Videos', extensions: ['mp4', 'webm', 'ogg'] }]
+      filters: [{ name: 'Videos', extensions: ['mp4', 'webm', 'ogg'] }],
     })
-
-    if (!result.canceled) {
-      return result.filePaths
-    }
-
-    return []
-  })
+  )
 }
 
 module.exports = operations
