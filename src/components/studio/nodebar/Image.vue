@@ -55,6 +55,6 @@ const nodes = computed(() => defaultNodes.value.filter((item) => item.type == sc
 
 function removeNode(id: string) {
   removeDefaultNode(id)
-  nodeBar.exportDefaultNodes()
+  file.setDefaultNodes()
 }
 </script>

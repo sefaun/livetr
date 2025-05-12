@@ -74,6 +74,6 @@ function createBackground(event: MouseEvent, node: TNode) {
 
 function removeNode(id: string) {
   removeDefaultNode(id)
-  nodeBar.exportDefaultNodes()
+  file.setDefaultNodes()
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div draggable="true" @dragstart="dragdrop.dragstart">metin - 1</div>
+    <div draggable="true" @dragstart="dragdrop.dragstart($event, 'node' as any)">metin - 1</div>
   </div>
 </template>
 
