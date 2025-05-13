@@ -1,11 +1,16 @@
 <template>
   <div class="relative w-full h-[100px] space-y-2">
+    <div class="flex justify-center leading-none font-bold">{{ t('scenes') }}</div>
+    <ElDivider class="!m-0 !mb-1"></ElDivider>
     <div class="w-full">
-      <ElButton :icon="Plus" @click.left="addScene()" type="success" class="w-full">{{ t('add') }}</ElButton>
+      <ElButton :icon="Plus" @click.left="addScene()" type="success" size="small" class="w-full">
+        {{ t('add') }}
+      </ElButton>
     </div>
     <div
       v-for="(sce, index) of scenes"
       :key="sce.id"
+      :class="activeScene == index ? 'outline-[3px] outline-[var(--primary-color)]' : ''"
       class="relative rounded-md group dark:[box-shadow:0_0_5px_gray] [box-shadow:0_0_5px_black] transition-all duration-200 ease-in-out"
     >
       <SceneThumbnail :index="index" class="rounded-md" />
@@ -41,7 +46,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElButton, ElPopconfirm } from 'element-plus'
+import { ElButton, ElDivider, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useFile } from '@/composables/File'
 import { activeScene, studioData } from '@/state'

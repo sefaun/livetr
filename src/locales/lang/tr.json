@@ -26,5 +26,6 @@
   "wrong_file_content": "NodeBar Dosya İçeriği Hatalı",
   "wrong_video_content": "Video İçeriği Hatalı",
   "sure_for_delete_scene": "Sahneyi silmek istediğinize emin misiniz ?",
-  "get_on_scene": "Sahneye Geç"
+  "get_on_scene": "Sahneye Geç",
+  "scenes": "Sahneler"
 }

@@ -26,5 +26,6 @@
   "wrong_file_content": "Wrong NodeBar File Content",
   "wrong_video_content": "Wrong Video Content",
   "sure_for_delete_scene": "Are you sure you want to delete the scene ?",
-  "get_on_scene": "Get on Scene"
+  "get_on_scene": "Get on Scene",
+  "scenes": "Scenes"
 }
