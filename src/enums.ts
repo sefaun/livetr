@@ -76,4 +76,5 @@ export const mainFilePath = 'store' as const
 export const filePaths = {
   studio: `${mainFilePath}/studio.json`,
   nodebar: `${mainFilePath}/nodebar.json`,
+  scene: `${mainFilePath}/scene`,
 } as const

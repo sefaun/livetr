@@ -9,6 +9,7 @@ export const screenRef = ref<HTMLElement>()
 
 export const channel = ref<TChannels>()
 export const nodes: Ref<Record<string, TuseNode>> = ref({})
+export const activeSceneSrc = ref('')
 export const activeScene = ref(0)
 export const studioData = ref({
   scene: [[]] as [TNode[]],

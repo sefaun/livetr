@@ -19,7 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { activeScene, screenRef, studioData } from '@/state'
+import { onUpdated } from 'vue'
+import { activeScene, screenRef, studioData, activeSceneSrc, canvasPreviewRef } from '@/state'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useSelection } from '@/composables/Selection'
 import { screenNodeTypes } from '@/enums'
@@ -32,4 +33,17 @@ import NodeBackground from '@/components/studio/nodes/Background.vue'
 
 const dragdrop = useDragDrop()
 const selection = useSelection()
+
+let timeout: NodeJS.Timeout
+
+onUpdated(() => {
+  if (timeout) {
+    clearTimeout(timeout)
+  }
+
+  timeout = setTimeout(() => {
+    activeSceneSrc.value = canvasPreviewRef.value.toDataURL('image/png')
+    timeout = null
+  }, 1000)
+})
 </script>

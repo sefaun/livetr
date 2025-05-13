@@ -13,7 +13,7 @@
       :class="activeScene == index ? 'outline-[3px] outline-[var(--primary-color)]' : ''"
       class="relative rounded-md group dark:[box-shadow:0_0_5px_gray] [box-shadow:0_0_5px_black] transition-all duration-200 ease-in-out"
     >
-      <SceneThumbnail :index="index" class="rounded-md" />
+      <SceneThumbnail :live="activeScene == index" :index="index" class="h-24 rounded-md" />
       <div
         v-if="activeScene != index"
         class="absolute top-0 left-0 w-full h-full group-hover:bg-black/35 rounded-md transition-all duration-200 ease-in-out"

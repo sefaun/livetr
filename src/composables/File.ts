@@ -79,6 +79,9 @@ export function useFile() {
     if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.studio))) {
       fs.writeFileSync(getDirectoryFromMainFolder(filePaths.studio), JSON.stringify(studioData.value))
     }
+    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.scene))) {
+      fs.mkdirSync(filePaths.scene)
+    }
   }
 
   return {
