@@ -49,7 +49,9 @@ import { useI18n } from 'vue-i18n'
 import { ElButton, ElDivider, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useFile } from '@/composables/File'
-import { activeScene, studioData } from '@/state'
+import { getCorrectSceneImage } from '@/composables/utils'
+import { activeScene, canvasPreviewRef, studioData } from '@/state'
+import { filePaths } from '@/enums'
 import SceneThumbnail from '@/components/studio/scene/SceneThumbnail.vue'
 
 const { t } = useI18n()
@@ -68,6 +70,12 @@ function addScene() {
 }
 
 function useSelectedScene(index: number) {
+  const base64Data = canvasPreviewRef.value.toDataURL('image/png').replace(/^data:image\/png;base64,/, '')
+
+  file.writeFile(
+    `${file.getDirectoryFromMainFolder(filePaths.scene)}/${getCorrectSceneImage(index)}`,
+    Buffer.from(base64Data, 'base64')
+  )
   activeScene.value = index
   localStorage.setItem(import.meta.env.VITE_ACTIVE_SCENE, activeScene.value.toString())
   file.setStudioData()

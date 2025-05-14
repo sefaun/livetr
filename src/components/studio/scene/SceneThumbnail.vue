@@ -6,6 +6,7 @@
 import { ref, computed } from 'vue'
 import { activeSceneSrc } from '@/state'
 import { useFile } from '@/composables/File'
+import { getCorrectSceneImage } from '@/composables/utils'
 import ImageNotFound from '@/assets/image-not-found.png'
 import { filePaths } from '@/enums'
 
@@ -28,7 +29,7 @@ const src = ref('')
 const srcSource = computed(
   () =>
     `data:image/jpeg;base64,${file.readFile(
-      file.readFile(file.getDirectoryFromMainFolder(filePaths.scene) + `/scene_${props.index}.png`),
+      file.getDirectoryFromMainFolder(filePaths.scene) + `/${getCorrectSceneImage(props.index)}`,
       'base64'
     )}`
 )

@@ -92,5 +92,6 @@ export function useFile() {
     setDefaultNodes,
     setStudioData,
     readFile: fs.readFileSync,
+    writeFile: fs.writeFileSync,
   }
 }
