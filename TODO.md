@@ -1,12 +1,12 @@
 # Yapılacaklar
 
 - ses nodu yapılmalı
-- Yazı ekleme yapılmalı
+- Yazı nodları ile alakalı stil işleri düzenlenmeli
+- birden fazla platforma aynı anda yayın yapabilme özelliği eklenmeli
 
 # Hatalar
 
-- ekrana koyulan nodelar sahneler arası geçişte yerleri düzgün kalmıyor. ve boyutları
-- ilk açılışta sahnelerden kaynaklı hata var.
+-
 
 # Not
 

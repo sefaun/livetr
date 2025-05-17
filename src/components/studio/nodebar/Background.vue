@@ -13,6 +13,7 @@
     <div class="w-full space-y-1">
       <div
         v-for="node of nodes"
+        :key="node.id"
         :id="node.id"
         @click.left="createBackground($event, node)"
         class="w-full flex p-2 border border-gray-300 rounded-md cursor-pointer gap-2"
@@ -29,7 +30,18 @@
           </div>
         </div>
         <div class="w-8 flex items-center">
-          <ElButton :icon="Delete" @click.stop.left="removeNode(node.id)" type="danger" circle></ElButton>
+          <ElPopconfirm
+            :title="t('sure_for_delete')"
+            :confirm-button-text="t('yes')"
+            :cancel-button-text="t('no')"
+            @confirm="removeNode(node.id)"
+            placement="left-start"
+            width="fit"
+          >
+            <template #reference>
+              <ElButton :icon="Delete" @click.stop type="danger" circle></ElButton>
+            </template>
+          </ElPopconfirm>
         </div>
       </div>
     </div>
@@ -39,7 +51,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElButton } from 'element-plus'
+import { ElButton, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useFile } from '@/composables/File'
@@ -58,12 +70,12 @@ const nodeBar = useNodeBar()
 const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.background))
 
 function deleteExistBackground() {
-  const backgroundItemIndex = studioData.value.scene[activeScene.value].findIndex(
+  const backgroundItemIndex = studioData.value.scene[activeScene.value].nodes.findIndex(
     (item) => item.type == screenNodeTypes.background
   )
 
   if (backgroundItemIndex != -1) {
-    studioData.value.scene[activeScene.value].splice(backgroundItemIndex, 1)
+    studioData.value.scene[activeScene.value].nodes.splice(backgroundItemIndex, 1)
   }
 }
 

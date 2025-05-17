@@ -12,9 +12,57 @@ export const nodes: Ref<Record<string, TuseNode>> = ref({})
 export const activeSceneSrc = ref('')
 export const activeScene = ref(0)
 export const studioData = ref({
-  scene: [[]] as [TNode[]],
+  scene: [
+    {
+      sceneId: window.crypto.randomUUID(),
+      nodes: [],
+    },
+  ] as [
+    {
+      sceneId: string
+      nodes: TNode[]
+    }
+  ],
 })
 export const defaultNodes = ref<TNode[]>([
+  {
+    id: window.crypto.randomUUID(),
+    type: screenNodeTypes.text,
+    position: {
+      x: 0,
+      y: 0,
+    },
+    style: {
+      width: 'fit-content',
+      height: 'fit-content',
+    },
+    data: {
+      text: 'Test - 1 😊',
+      color: '#000000',
+      fontSize: 24,
+      fontFamily: 'Arial',
+    },
+    default: true,
+  },
+  {
+    id: window.crypto.randomUUID(),
+    type: screenNodeTypes.text,
+    position: {
+      x: 0,
+      y: 0,
+    },
+    style: {
+      width: 'fit-content',
+      height: 'fit-content',
+    },
+    data: {
+      text: 'Test - 2 🔥',
+      color: '#000000',
+      fontSize: 24,
+      fontFamily: 'Arial',
+    },
+    default: true,
+  },
   {
     id: window.crypto.randomUUID(),
     type: screenNodeTypes.image,

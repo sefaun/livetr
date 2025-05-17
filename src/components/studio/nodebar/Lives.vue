@@ -81,7 +81,7 @@ const filteredLive = computed(() => {
     .getLiveCameras()
     .filter(
       (item) =>
-        !studioData.value.scene[activeScene.value].some(
+        !studioData.value.scene[activeScene.value].nodes.some(
           (node) => node.type == screenNodeTypes.liveCamera && (node.data as TLiveCameraNodeData).id == item.deviceId
         )
     )
@@ -92,7 +92,7 @@ const filteredSource = computed(() => {
     .getLiveMedias()
     .filter(
       (item) =>
-        !studioData.value.scene[activeScene.value].some(
+        !studioData.value.scene[activeScene.value].nodes.some(
           (node) => node.type == screenNodeTypes.sourceMedia && (node.data as TSourceMediaNodeData).id == item.id
         )
     )

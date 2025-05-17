@@ -9,7 +9,7 @@ export function useFile() {
   const { t } = useI18n()
 
   function getDirectoryFromMainFolder(way: string) {
-    return path.resolve(process.cwd(), way)
+    return path.join(process.cwd(), way)
   }
 
   function getDefaultNodes() {
@@ -85,13 +85,12 @@ export function useFile() {
   }
 
   return {
+    fs,
     createDefaultDirs,
     getDirectoryFromMainFolder,
     getStudioData,
     getDefaultNodes,
     setDefaultNodes,
     setStudioData,
-    readFile: fs.readFileSync,
-    writeFile: fs.writeFileSync,
   }
 }

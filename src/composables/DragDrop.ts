@@ -59,7 +59,7 @@ export function useDragDrop() {
     node.data = nodeContent.data
     node.style = nodeContent.style
 
-    studioData.value.scene[activeScene.value].push(node)
+    studioData.value.scene[activeScene.value].nodes.push(node)
   }
 
   function getDragNode() {

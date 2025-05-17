@@ -21,6 +21,9 @@ export type TLiveOptions = {
 
 export type TTextNodeData = {
   text: string
+  fontSize: number
+  fontFamily: string
+  color: string
 }
 
 export type TImageNodeData = {

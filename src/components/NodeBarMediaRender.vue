@@ -58,7 +58,7 @@ onMounted(() => {
     if (props.src.includes('data:') && props.src.includes(';base64,')) {
       src.value = props.src
     } else {
-      src.value = `data:${props.type == mediaTypes.img ? 'image/jpeg' : 'video/mp4'};base64,${file.readFile(
+      src.value = `data:${props.type == mediaTypes.img ? 'image/jpeg' : 'video/mp4'};base64,${file.fs.readFileSync(
         props.src,
         'base64'
       )}`

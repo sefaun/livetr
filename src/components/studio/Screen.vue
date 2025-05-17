@@ -8,23 +8,26 @@
     @click.stop="selection.clear()"
     class="relative w-full bg-black border border-[var(--border-color)] dark:border-[--border-dark-color] aspect-video shadow-[0_0_10px_var(--border-color)] dark:shadow-[0_0_10px_var(--border-dark-color)]"
   >
-    <Node v-for="node of studioData.scene[activeScene]" :data="node" :key="node.id">
-      <NodeImage v-if="node.type == screenNodeTypes.image" :data="node"></NodeImage>
-      <NodeVideo v-if="node.type == screenNodeTypes.video" :data="node"></NodeVideo>
-      <NodeSourceMedia v-if="node.type == screenNodeTypes.sourceMedia" :data="node"></NodeSourceMedia>
-      <NodeLiveCamera v-if="node.type == screenNodeTypes.liveCamera" :data="node"></NodeLiveCamera>
-      <NodeBackground v-if="node.type == screenNodeTypes.background" :data="node"></NodeBackground>
-    </Node>
+    <template v-if="studioData.scene[activeScene]">
+      <Node v-for="(node, index) of studioData.scene[activeScene].nodes" :key="node.id" :index="index" :data="node">
+        <NodeText v-if="node.type == screenNodeTypes.text" :data="node"></NodeText>
+        <NodeImage v-if="node.type == screenNodeTypes.image" :data="node"></NodeImage>
+        <NodeVideo v-if="node.type == screenNodeTypes.video" :data="node"></NodeVideo>
+        <NodeSourceMedia v-if="node.type == screenNodeTypes.sourceMedia" :data="node"></NodeSourceMedia>
+        <NodeLiveCamera v-if="node.type == screenNodeTypes.liveCamera" :data="node"></NodeLiveCamera>
+        <NodeBackground v-if="node.type == screenNodeTypes.background" :data="node"></NodeBackground>
+      </Node>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onUpdated } from 'vue'
-import { activeScene, screenRef, studioData, activeSceneSrc, canvasPreviewRef } from '@/state'
+import { activeScene, screenRef, studioData } from '@/state'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useSelection } from '@/composables/Selection'
 import { screenNodeTypes } from '@/enums'
 import Node from '@/components/studio/Node.vue'
+import NodeText from '@/components/studio/nodes/Text.vue'
 import NodeImage from '@/components/studio/nodes/Image.vue'
 import NodeVideo from '@/components/studio/nodes/Video.vue'
 import NodeSourceMedia from '@/components/studio/nodes/SourceMedia.vue'
@@ -33,17 +36,4 @@ import NodeBackground from '@/components/studio/nodes/Background.vue'
 
 const dragdrop = useDragDrop()
 const selection = useSelection()
-
-let timeout: NodeJS.Timeout
-
-onUpdated(() => {
-  if (timeout) {
-    clearTimeout(timeout)
-  }
-
-  timeout = setTimeout(() => {
-    activeSceneSrc.value = canvasPreviewRef.value.toDataURL('image/png')
-    timeout = null
-  }, 1000)
-})
 </script>
