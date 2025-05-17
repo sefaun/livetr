@@ -38,9 +38,11 @@ export const defaultNodes = ref<TNode[]>([
     },
     data: {
       text: 'Test - 1 😊',
-      color: '#000000',
-      fontSize: 24,
-      fontFamily: 'Arial',
+      style: {
+        color: '#000000',
+        fontSize: 24,
+        fontFamily: 'Arial',
+      },
     },
     default: true,
   },
@@ -57,9 +59,11 @@ export const defaultNodes = ref<TNode[]>([
     },
     data: {
       text: 'Test - 2 🔥',
-      color: '#000000',
-      fontSize: 24,
-      fontFamily: 'Arial',
+      style: {
+        color: '#000000',
+        fontSize: 24,
+        fontFamily: 'Arial',
+      },
     },
     default: true,
   },
