@@ -31,7 +31,6 @@ export function useCanvasRendering() {
       canvasPreviewRef.value.getBoundingClientRect().height
     )
     ctx.value.fillStyle = 'black'
-    ctx.value.font = '24px sans-serif'
   }
 
   function render() {
@@ -51,9 +50,10 @@ export function useCanvasRendering() {
       switch (options.type) {
         case screenNodeTypes.text:
           const lines = (options.data as TTextNodeData).text.split('\n')
+          const style = (options.data as TTextNodeData).style
 
-          ctx.value.font = `${(options.data as TTextNodeData).fontSize}px ${(options.data as TTextNodeData).fontFamily}`
-          ctx.value.fillStyle = (options.data as TTextNodeData).color
+          ctx.value.font = `${fixPositionWidthForCanvas(style.fontSize)}px ${style.fontFamily}`
+          ctx.value.fillStyle = style.color
           ctx.value.textAlign = 'left'
 
           lines.forEach((line) => {

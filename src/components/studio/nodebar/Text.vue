@@ -1,13 +1,17 @@
 <template>
   <div class="space-y-4">
-    <div class="w-full flex justify-center gap-2">
-      <ElInput v-model="text" type="textarea" />
-      <ElConfigProvider :locale="configProviderLocale">
-        <ElColorPicker v-model="color" />
-      </ElConfigProvider>
-      <ElButton type="primary" @click="addNewText()">
-        {{ t('add') }}
-      </ElButton>
+    <div class="w-full space-y-2">
+      <div class="w-full flex justify-center gap-2">
+        <ElInput v-model="text" type="textarea" />
+        <ElButton @click.left="setStyleDialogStatus(true)" type="primary">
+          {{ t('style_settings') }}
+        </ElButton>
+      </div>
+      <div class="w-full flex justify-center">
+        <ElButton :icon="Plus" @click.left="addNewText()" type="success" class="w-full">
+          {{ t('add') }}
+        </ElButton>
+      </div>
     </div>
     <div class="w-full space-y-1">
       <div
@@ -38,53 +42,67 @@
       </div>
     </div>
   </div>
+  <ElDialog v-model="styleDialogStatus" :title="t('style_settings')" :close-on-click-modal="false" width="400px">
+    <TextStyle v-if="styleDialogStatus" @styleChange="styleChange" />
+  </ElDialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElButton, ElColorPicker, ElConfigProvider, ElInput, ElNotification, ElPopconfirm } from 'element-plus'
-import { Delete } from '@element-plus/icons-vue'
+import { cloneDeep } from 'lodash'
+import { ElButton, ElDialog, ElInput, ElNotification, ElPopconfirm } from 'element-plus'
+import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useNodeBar } from '@/composables/NodeBar'
 import { useFile } from '@/composables/File'
 import { removeDefaultNode } from '@/composables/utils'
 import { defaultNodes } from '@/state'
-import { localeNames, screenNodeTypes } from '@/enums'
-import type { TTextNodeData } from '@/types'
-import tr from 'element-plus/dist/locale/tr.mjs'
-import en from 'element-plus/dist/locale/en.mjs'
+import { screenNodeTypes } from '@/enums'
+import type { TTextNodeData, TTextNodeDataStyle } from '@/types'
+import TextStyle from '@/components/studio/node-tool/TextStyle.vue'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const dragdrop = useDragDrop()
 const nodeBar = useNodeBar()
 const file = useFile()
 
+const styleDialogStatus = ref(false)
 const text = ref('')
-const color = ref('#409EFF')
+const styles = ref({
+  color: '#FFFFFF',
+  fontFamily: 'Arial',
+  fontSize: 24,
+})
 
-const configProviderLocale = computed(() => (locale.value == localeNames.tr ? tr : en))
 const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.text))
 
 function addNewText() {
-  if (text.value.trim() === '') {
+  if (text.value.trim() == '') {
     ElNotification({
       message: t('content_empty'),
       type: 'warning',
     })
     return
   }
-  nodeBar.setTextStore({
-    text: text.value,
-    color: color.value,
-    fontFamily: 'Arial',
-    fontSize: 50,
-  })
+
+  nodeBar.setTextStore(cloneDeep({ text: text.value, style: styles.value }))
+
   text.value = ''
+  setStyleDialogStatus(false)
 }
 
 function removeNode(id: string) {
   removeDefaultNode(id)
   file.setDefaultNodes()
+}
+
+function styleChange(data: TTextNodeDataStyle) {
+  styles.value = data
+  setStyleDialogStatus(false)
+}
+
+function setStyleDialogStatus(value: boolean) {
+  styleDialogStatus.value = value
 }
 </script>

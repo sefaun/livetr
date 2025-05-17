@@ -27,6 +27,10 @@ export function useNode(data: TuseNodeOptions) {
     return nodeAudio
   }
 
+  function setNodeOptions(data: Partial<TNode>) {
+    options.value = Object.assign({}, options.value, data)
+  }
+
   function setNodePosition(pageX: number, pageY: number): void {
     options.value.position.x = pageX - shiftPosition.x
     options.value.position.y = pageY - shiftPosition.y
@@ -89,5 +93,6 @@ export function useNode(data: TuseNodeOptions) {
     mouseUp,
     contextMenu,
     setNodeElement,
+    setNodeOptions,
   }
 }

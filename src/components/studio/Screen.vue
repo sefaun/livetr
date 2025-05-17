@@ -22,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import { activeScene, screenRef, studioData } from '@/state'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useSelection } from '@/composables/Selection'
+import { activeScene, screenRef, studioData } from '@/state'
 import { screenNodeTypes } from '@/enums'
 import Node from '@/components/studio/Node.vue'
 import NodeText from '@/components/studio/nodes/Text.vue'

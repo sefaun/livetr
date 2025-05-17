@@ -19,11 +19,19 @@ export type TLiveOptions = {
   resolution: TLiveResolution
 }
 
-export type TTextNodeData = {
-  text: string
+export type TTextNodeDataStyle = {
   fontSize: number
   fontFamily: string
   color: string
+}
+
+export type TTextNodeData = {
+  text: string
+  style: {
+    fontSize: number
+    fontFamily: string
+    color: string
+  }
 }
 
 export type TImageNodeData = {

@@ -1,8 +1,6 @@
 <template>
-  <div class="w-full h-full">
-    <pre :style="styles">
-      {{ (props.data.data as TTextNodeData).text }}
-    </pre>
+  <div class="w-full h-full" :style="styles">
+    {{ (props.data.data as TTextNodeData).text }}
   </div>
 </template>
 
@@ -22,9 +20,9 @@ const props = defineProps({
 const styles = computed(() => {
   const data = props.data.data as TTextNodeData
   return {
-    fontSize: `${data.fontSize}px`,
-    color: data.color,
-    fontFamily: data.fontFamily,
+    fontSize: `${data.style.fontSize}px`,
+    color: data.style.color,
+    fontFamily: data.style.fontFamily,
   }
 })
 </script>

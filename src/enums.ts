@@ -78,3 +78,18 @@ export const filePaths = {
   nodebar: `${mainFilePath}/nodebar.json`,
   scene: `${mainFilePath}/scene`,
 } as const
+
+export const fontFamilies = [
+  { name: 'Arial', value: 'Arial, Helvetica, sans-serif' },
+  { name: 'Courier New', value: "'Courier New', Courier, monospace" },
+  { name: 'Times New Roman', value: "Georgia, 'Times New Roman', Times, serif" },
+  { name: 'Verdana', value: 'Verdana, Geneva, Tahoma, sans-serif' },
+  {
+    name: 'Lucida Sans',
+    value: "'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif",
+  },
+  {
+    name: 'Gill Sans',
+    value: "'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif",
+  },
+] as const

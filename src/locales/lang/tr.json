@@ -32,5 +32,9 @@
   "save": "Kaydet",
   "warning": "Uyarı",
   "content_empty": "İçerik Boş",
-  "dont_save_you_want_continue": "Ekrandaki değişiklikleri kaydetmediniz. Sahne değiştirdiğinizde kaydedilmeyen değişiklikler kaybolacaktır. Yinede devam etmek istiyor musunuz ?"
+  "dont_save_you_want_continue": "Ekrandaki değişiklikleri kaydetmediniz. Sahne değiştirdiğinizde kaydedilmeyen değişiklikler kaybolacaktır. Yinede devam etmek istiyor musunuz ?",
+  "style_settings": "Stil Ayarları",
+  "fontsize": "Yazı Boyutu",
+  "color": "Renk",
+  "fontfamily": "Yazı Tipi"
 }
