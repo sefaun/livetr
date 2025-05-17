@@ -50,11 +50,19 @@ export function useCanvasRendering() {
     for (const { options, element } of screenNodes) {
       switch (options.type) {
         case screenNodeTypes.text:
-          ctx.value.fillText(
-            (options.data as TTextNodeData).text || '',
-            fixPositionWidthForCanvas(options.position.x),
-            fixPositionHeightForCanvas(options.position.y)
-          )
+          const lines = (options.data as TTextNodeData).text.split('\n')
+
+          ctx.value.font = `${(options.data as TTextNodeData).fontSize}px ${(options.data as TTextNodeData).fontFamily}`
+          ctx.value.fillStyle = (options.data as TTextNodeData).color
+          ctx.value.textAlign = 'left'
+
+          lines.forEach((line) => {
+            ctx.value.fillText(
+              line,
+              fixPositionWidthForCanvas(options.position.x),
+              fixPositionHeightForCanvas(options.position.y)
+            )
+          })
           break
 
         case screenNodeTypes.image:

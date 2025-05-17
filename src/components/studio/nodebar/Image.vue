@@ -8,6 +8,7 @@
     <div class="w-full space-y-1">
       <div
         v-for="node of nodes"
+        :key="node.id"
         :id="node.id"
         @dragstart="dragdrop.dragstart($event, node)"
         draggable="true"
@@ -25,7 +26,18 @@
           </div>
         </div>
         <div class="w-8 flex items-center">
-          <ElButton :icon="Delete" @click.stop.left="removeNode(node.id)" type="danger" circle></ElButton>
+          <ElPopconfirm
+            :title="t('sure_for_delete')"
+            :confirm-button-text="t('yes')"
+            :cancel-button-text="t('no')"
+            @confirm="removeNode(node.id)"
+            placement="left-start"
+            width="fit"
+          >
+            <template #reference>
+              <ElButton :icon="Delete" @click.stop type="danger" circle></ElButton>
+            </template>
+          </ElPopconfirm>
         </div>
       </div>
     </div>
@@ -35,7 +47,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElButton } from 'element-plus'
+import { ElButton, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useFile } from '@/composables/File'

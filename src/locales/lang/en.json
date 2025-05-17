@@ -26,6 +26,11 @@
   "wrong_file_content": "Wrong NodeBar File Content",
   "wrong_video_content": "Wrong Video Content",
   "sure_for_delete_scene": "Are you sure you want to delete the scene ?",
+  "sure_for_delete": "Are you sure you want to delete ?",
   "get_on_scene": "Get on Scene",
-  "scenes": "Scenes"
+  "scenes": "Scenes",
+  "save": "Save",
+  "warning": "Warning",
+  "content_empty": "Content is Empty",
+  "dont_save_you_want_continue": "You have not saved the changes on the screen. Unsaved changes will be lost when you change the scene. Do you still want to continue?"
 }

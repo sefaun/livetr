@@ -8,19 +8,19 @@
       </ElButton>
     </div>
     <div
-      v-for="(sce, index) of scenes"
-      :key="sce.id"
+      v-for="(sce, index) of studioData.scene"
+      :key="sce.sceneId"
       :class="activeScene == index ? 'outline-[3px] outline-[var(--primary-color)]' : ''"
       class="relative rounded-md group dark:[box-shadow:0_0_5px_gray] [box-shadow:0_0_5px_black] transition-all duration-200 ease-in-out"
     >
-      <SceneThumbnail :index="index" class="rounded-md" />
+      <SceneThumbnail :live="activeScene == index" :index="index" class="h-24 rounded-md" />
       <div
         v-if="activeScene != index"
         class="absolute top-0 left-0 w-full h-full group-hover:bg-black/35 rounded-md transition-all duration-200 ease-in-out"
       ></div>
       <div v-if="activeScene != index" class="absolute top-0 left-0 w-full h-full flex justify-center items-center">
         <div class="hidden group-hover:block">
-          <ElButton @click.left="useSelectedScene(index)" size="small">{{ t('get_on_scene') }}</ElButton>
+          <ElButton @click.left="changeSceneConfim(index)" size="small">{{ t('get_on_scene') }}</ElButton>
         </div>
       </div>
       <div v-if="activeScene != index" class="absolute top-1 right-1 w-full flex justify-end">
@@ -29,7 +29,7 @@
             :title="t('sure_for_delete_scene')"
             :confirm-button-text="t('yes')"
             :cancel-button-text="t('no')"
-            @confirm="removeSelectedScene(index)"
+            @confirm="removeSelectedScene(sce.sceneId, index)"
             placement="right-start"
             width="fit"
           >
@@ -44,36 +44,57 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElButton, ElDivider, ElPopconfirm } from 'element-plus'
+import { ElButton, ElDivider, ElMessageBox, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useFile } from '@/composables/File'
+import { useScreenChange } from '@/composables/ScreenChange'
 import { activeScene, studioData } from '@/state'
+import { filePaths } from '@/enums'
 import SceneThumbnail from '@/components/studio/scene/SceneThumbnail.vue'
+import DefaultScene from '@/assets/default-scene.png'
 
 const { t } = useI18n()
+const screenChange = useScreenChange()
 const file = useFile()
 
-const scenes = computed(() =>
-  studioData.value.scene.map((_, index) => ({
-    index,
-    id: window.crypto.randomUUID(),
-  }))
-)
-
 function addScene() {
-  studioData.value.scene.push([])
+  const uuid = window.crypto.randomUUID()
+  file.fs.writeFileSync(
+    `${file.getDirectoryFromMainFolder(filePaths.scene)}/${uuid}.png`,
+    file.fs.readFileSync(file.getDirectoryFromMainFolder(DefaultScene))
+  )
+  studioData.value.scene.push({
+    sceneId: uuid,
+    nodes: [],
+  })
   file.setStudioData()
 }
 
-function useSelectedScene(index: number) {
+function changeScene(index: number) {
   activeScene.value = index
   localStorage.setItem(import.meta.env.VITE_ACTIVE_SCENE, activeScene.value.toString())
-  file.setStudioData()
+  screenChange.setScreenChangeStatus(false)
 }
 
-function removeSelectedScene(index: number) {
+function changeSceneConfim(index: number) {
+  if (screenChange.getScreenChangeStatus()) {
+    ElMessageBox.confirm(t('dont_save_you_want_continue'), t('warning'), {
+      confirmButtonText: t('yes'),
+      cancelButtonText: t('no'),
+      type: 'warning',
+    })
+      .then(() => {
+        changeScene(index)
+      })
+      .catch(() => null)
+  } else {
+    changeScene(index)
+  }
+}
+
+function removeSelectedScene(uuid: string, index: number) {
+  file.fs.rmSync(`${file.getDirectoryFromMainFolder(filePaths.scene)}/${uuid}.png`)
   studioData.value.scene.splice(index, 1)
   file.setStudioData()
 }

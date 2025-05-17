@@ -9,7 +9,7 @@ export function useFile() {
   const { t } = useI18n()
 
   function getDirectoryFromMainFolder(way: string) {
-    return path.resolve(process.cwd(), way)
+    return path.join(process.cwd(), way)
   }
 
   function getDefaultNodes() {
@@ -79,15 +79,18 @@ export function useFile() {
     if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.studio))) {
       fs.writeFileSync(getDirectoryFromMainFolder(filePaths.studio), JSON.stringify(studioData.value))
     }
+    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.scene))) {
+      fs.mkdirSync(filePaths.scene)
+    }
   }
 
   return {
+    fs,
     createDefaultDirs,
     getDirectoryFromMainFolder,
     getStudioData,
     getDefaultNodes,
     setDefaultNodes,
     setStudioData,
-    readFile: fs.readFileSync,
   }
 }

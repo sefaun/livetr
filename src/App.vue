@@ -9,7 +9,7 @@ import { activeScene, channel } from '@/state'
 import { useTheme } from '@/composables/Theme'
 import { useEventEmitter } from '@/composables/EventEmitter'
 import { useLive } from '@/composables/Live'
-import { channelRTMP, fps, resolutions } from '@/enums'
+import { channelRTMP, fps, resolutions, localeNames } from '@/enums'
 import type { TTheme, TLocale, TChannels, TLiveResolution } from '@/types'
 
 const { locale } = useI18n()
@@ -24,7 +24,7 @@ function themeOperations() {
 
 function languageOperations() {
   const lang = localStorage.getItem(import.meta.env.VITE_LANG) as TLocale
-  locale.value = lang ? lang : 'en'
+  locale.value = lang ? lang : localeNames.en
   localStorage.setItem(import.meta.env.VITE_LANG, locale.value)
 }
 

@@ -16,7 +16,7 @@
     @dragover.prevent.stop
     @dragleave.prevent.stop
   >
-    <Resize v-if="nodeRef && selectedStatus && nonResizeNode"></Resize>
+    <Resize v-if="nodeRef && selectedStatus && nonResizeNode" />
     <slot />
     <NodeTool v-if="selectedStatus" />
   </div>
@@ -25,16 +25,22 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { ref, onBeforeUnmount, onMounted, computed, provide, watch } from 'vue'
-import { nodes } from '@/state'
+import { cloneDeep } from 'lodash'
 import { useNode } from '@/composables/Node'
 import { useSelection } from '@/composables/Selection'
-import { NodeId, screenNodeTypes } from '@/enums'
+import { useScreenChange } from '@/composables/ScreenChange'
 import { isMediaNode } from '@/composables/utils'
+import { nodes, studioData, activeScene } from '@/state'
+import { NodeId, screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
 import Resize from '@/components/studio/Resize.vue'
 import NodeTool from '@/components/studio/NodeTool.vue'
 
 const props = defineProps({
+  index: {
+    type: Number,
+    required: true,
+  },
   data: {
     type: Object as PropType<TNode>,
     default: {},
@@ -42,16 +48,18 @@ const props = defineProps({
   },
 })
 
-const nodeRef = ref<HTMLElement>()
-
 const selection = useSelection()
+const screenChange = useScreenChange()
 const node = useNode({
   options: props.data,
 })
 provide(NodeId, node)
 
+const nodeRef = ref<HTMLElement>()
 const nodeOptions = node.getNodeOptions()
 const nodeAudio = node.getNodeAudio()
+let nodeChanged = false
+let backupOptions = cloneDeep(nodeOptions)
 
 const nonResizeNode = computed(() => nodeOptions.type != screenNodeTypes.background)
 const selectedStatus = computed(() => {
@@ -60,6 +68,20 @@ const selectedStatus = computed(() => {
   }
 
   return false
+})
+
+const saveChangeId = screenChange.onSaveChanges(() => {
+  if (nodeChanged) {
+    studioData.value.scene[activeScene.value].nodes[props.index] = cloneDeep(backupOptions)
+  }
+
+  nodeChanged = false
+})
+
+watch(nodeOptions, (val) => {
+  screenChange.setScreenChangeStatus(true)
+  nodeChanged = true
+  backupOptions = val
 })
 
 if (isMediaNode(nodeOptions.type)) {
@@ -113,6 +135,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  screenChange.removeChangeCallback(saveChangeId)
   delete nodes.value[nodeOptions.id]
 })
 </script>
