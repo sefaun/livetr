@@ -52,7 +52,6 @@ import { useScreenChange } from '@/composables/ScreenChange'
 import { activeScene, studioData } from '@/state'
 import { filePaths } from '@/enums'
 import SceneThumbnail from '@/components/studio/scene/SceneThumbnail.vue'
-import DefaultScene from '@/assets/default-scene.png'
 
 const { t } = useI18n()
 const screenChange = useScreenChange()
@@ -62,7 +61,7 @@ function addScene() {
   const uuid = window.crypto.randomUUID()
   file.fs.writeFileSync(
     `${file.getDirectoryFromMainFolder(filePaths.scene)}/${uuid}.png`,
-    file.fs.readFileSync(file.getDirectoryFromMainFolder(DefaultScene))
+    file.fs.readFileSync(file.getDirectoryFromMainFolder(filePaths.defaultScenePng))
   )
   studioData.value.scene.push({
     sceneId: uuid,

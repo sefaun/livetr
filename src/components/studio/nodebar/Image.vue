@@ -17,7 +17,7 @@
         <div class="w-full flex gap-2">
           <div class="min-w-12 min-h-12">
             <NodeBarMediaRender
-              :src="node.default ? file.getDirectoryFromMainFolder((node.data as TImageNodeData).src) : (node.data as TImageNodeData).src"
+              :src="(node.data as TImageNodeData).src"
               class="w-12 h-12 rounded-md"
             />
           </div>

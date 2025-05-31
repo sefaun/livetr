@@ -18,7 +18,7 @@
           <div class="min-w-12 min-h-12">
             <NodeBarMediaRender
               :type="mediaTypes.video"
-              :src="node.default ? file.getDirectoryFromMainFolder((node.data as TVideoNodeData).src) : (node.data as TVideoNodeData).src"
+              :src="(node.data as TVideoNodeData).src"
               class="w-12 h-12 rounded-md"
             />
           </div>

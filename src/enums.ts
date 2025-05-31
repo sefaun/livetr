@@ -74,9 +74,14 @@ export const ffmpegBitrateOptions = {
 
 export const mainFilePath = 'store' as const
 export const filePaths = {
-  studio: `${mainFilePath}/studio.json`,
-  nodebar: `${mainFilePath}/nodebar.json`,
   scene: `${mainFilePath}/scene`,
+  nodebar: `${mainFilePath}/nodebar`,
+  studioJson: `${mainFilePath}/studio.json`,
+  nodebarJson: `${mainFilePath}/nodebar.json`,
+  defaultScenePng: `${mainFilePath}/scene/default-scene.png`,
+  testVideoMp4: `${mainFilePath}/nodebar/bigbuckbunny.mp4`,
+  testBgImagePng: `${mainFilePath}/nodebar/test-bg-image.png`,
+  testImagePng: `${mainFilePath}/nodebar/test-image.png`,
 } as const
 
 export const fontFamilies = [

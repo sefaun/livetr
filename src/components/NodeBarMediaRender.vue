@@ -11,9 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useAttrs, onMounted } from 'vue'
+import { ref, useAttrs } from 'vue'
 import type { PropType } from 'vue'
-import { useFile } from '@/composables/File'
 import { mediaTypes } from '@/enums'
 import type { TMediaTypes } from '@/types'
 import ImageNotFound from '@/assets/image-not-found.png'
@@ -36,9 +35,8 @@ const props = defineProps({
 })
 
 const attrs = useAttrs()
-const file = useFile()
 
-const src = ref('')
+const src = ref(props.src)
 const poster = ref('')
 
 function loaded(value: boolean) {
@@ -52,19 +50,4 @@ function loaded(value: boolean) {
     }
   }
 }
-
-onMounted(() => {
-  try {
-    if (props.src.includes('data:') && props.src.includes(';base64,')) {
-      src.value = props.src
-    } else {
-      src.value = `data:${props.type == mediaTypes.img ? 'image/jpeg' : 'video/mp4'};base64,${file.fs.readFileSync(
-        props.src,
-        'base64'
-      )}`
-    }
-  } catch {
-    loaded(false)
-  }
-})
 </script>
