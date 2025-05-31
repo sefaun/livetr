@@ -97,7 +97,6 @@ export function useFile() {
             fontFamily: 'Arial',
           },
         },
-        default: true,
       },
       {
         id: window.crypto.randomUUID(),
@@ -118,7 +117,6 @@ export function useFile() {
             fontFamily: 'Arial',
           },
         },
-        default: true,
       },
       {
         id: window.crypto.randomUUID(),
@@ -134,8 +132,7 @@ export function useFile() {
         data: {
           title: 'Klasik Resim',
           src: getDirectoryFromMainFolder(filePaths.testImagePng),
-        },
-        default: true,
+        }
       },
       {
         id: window.crypto.randomUUID(),
@@ -152,7 +149,6 @@ export function useFile() {
           title: 'Test Video',
           src: getDirectoryFromMainFolder(filePaths.testVideoMp4),
         },
-        default: true,
       },
       {
         id: window.crypto.randomUUID(),
@@ -169,7 +165,6 @@ export function useFile() {
           title: 'Arka Plan',
           src: getDirectoryFromMainFolder(filePaths.testBgImagePng),
         },
-        default: true,
       },
     ]
   }

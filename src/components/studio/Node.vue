@@ -132,10 +132,12 @@ onMounted(() => {
   selection.clear()
   selection.add(nodeOptions.id)
   nodes.value[nodeOptions.id] = node
+  screenChange.setScreenChangeStatus(true)
 })
 
 onBeforeUnmount(() => {
   screenChange.removeChangeCallback(saveChangeId)
   delete nodes.value[nodeOptions.id]
+  screenChange.setScreenChangeStatus(true)
 })
 </script>

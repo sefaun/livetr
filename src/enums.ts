@@ -37,7 +37,6 @@ export const nodeData = {
     y: 0,
   },
   style: {},
-  default: false,
 } as TNode
 
 export const mediaTypes = {
