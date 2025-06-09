@@ -18,6 +18,9 @@
       <ElTabPane :label="t('background')" name="background">
         <Background />
       </ElTabPane>
+      <ElTabPane :label="t('background_sound')" name="backgroundSound">
+        <BackgroundSound />
+      </ElTabPane>
     </ElTabs>
   </div>
 </template>
@@ -31,12 +34,13 @@ import Text from '@/components/studio/nodebar/Text.vue'
 import Image from '@/components/studio/nodebar/Image.vue'
 import Video from '@/components/studio/nodebar/Video.vue'
 import Background from '@/components/studio/nodebar/Background.vue'
+import BackgroundSound from '@/components/studio/nodebar/BackgroundSound.vue'
 
 const { t } = useI18n()
 
 const nodeBarRef = ref<HTMLDivElement>()
 const isOpen = ref(true)
-const activeTab = ref('text')
+const activeTab = ref('backgroundSound')
 
 function refreshNodeBar() {
   const loading = ElLoading.service({

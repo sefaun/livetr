@@ -6,7 +6,7 @@ export function useNodeAudio() {
   const audioContext = audio.getAudioContext()
   const gainNode = ref<GainNode>()
   const analyser = ref<AnalyserNode>()
-  const sourceNode = ref<MediaStreamAudioSourceNode>()
+  const sourceNode = ref<MediaStreamAudioSourceNode | MediaElementAudioSourceNode>()
   const volume = ref(0)
   let analyserInterval: ReturnType<typeof setInterval> = null
 
@@ -22,12 +22,12 @@ export function useNodeAudio() {
     return volume.value
   }
 
-  function createAudioStream(value: MediaStream, connectStatus: boolean = true) {
-    sourceNode.value = audioContext.createMediaStreamSource(value)
+  function createAudioElementStream(value: HTMLMediaElement) {
+    sourceNode.value = audioContext.createMediaElementSource(value)
+  }
 
-    if (connectStatus) {
-      audioConnect()
-    }
+  function createAudioStream(value: MediaStream) {
+    sourceNode.value = audioContext.createMediaStreamSource(value)
   }
 
   function audioConnect() {
@@ -73,6 +73,7 @@ export function useNodeAudio() {
   function start() {
     gainNode.value = audioContext.createGain()
     analyser.value = audioContext.createAnalyser()
+    audioConnect()
   }
 
   function destroy() {
@@ -89,6 +90,7 @@ export function useNodeAudio() {
     audioConnect,
     audioDisconnect,
     createAudioStream,
+    createAudioElementStream,
     startAudioAnalyser,
     destroyAudioAnalyser,
     start,
