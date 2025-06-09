@@ -21,11 +21,13 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElButton } from 'element-plus'
 import { useScene } from '@/composables/Scene'
 import { useFile } from '@/composables/File'
 import { useScreenChange } from '@/composables/ScreenChange'
+import { useNodeOrder } from '@/composables/NodeOrder'
 import Scene from '@/components/studio/Scene.vue'
 import Screen from '@/components/studio/Screen.vue'
 import NodeBar from '@/components/studio/NodeBar.vue'
@@ -35,11 +37,13 @@ const { t } = useI18n()
 const file = useFile()
 const scene = useScene()
 const screenChange = useScreenChange()
+const nodeOrder = useNodeOrder()
 
 function saveScene() {
+  nodeOrder.resetOrder()
   screenChange.saveChanges()
-  screenChange.setScreenChangeStatus(false)
   scene.saveActiveScreen()
   file.setStudioData()
+  nextTick(() => screenChange.setScreenChangeStatus(false))
 }
 </script>

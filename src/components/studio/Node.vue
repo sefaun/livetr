@@ -2,11 +2,8 @@
   <div
     ref="nodeRef"
     class="absolute w-full h-full select-none"
-    :class="[
-      selectedZIndex,
-      selectedStatus && nonResizeNode ? 'border-2 border-[var(--primary-color)] resize-both resizable' : '',
-    ]"
-    :style="{ left: `${nodeOptions.position.x}px`, top: `${nodeOptions.position.y}px`, ...nodeOptions.style as any }"
+    :class="[selectedStatus && nonResizeNode ? 'border-2 border-[var(--primary-color)] resize-both resizable' : '']"
+    :style="{ left: `${node.getNodeOptions().position.x}px`, top: `${node.getNodeOptions().position.y}px`, ...node.getNodeOptions().style as any }"
     @mousedown.stop.left="mouseDown"
     @mouseup.stop.left="mouseUp"
     @click="click"
@@ -78,7 +75,7 @@ const saveChangeId = screenChange.onSaveChanges(() => {
   nodeChanged = false
 })
 
-watch(nodeOptions, (val) => {
+watch(node.getNodeOptions(), (val) => {
   screenChange.setScreenChangeStatus(true)
   nodeChanged = true
   backupOptions = val
@@ -93,18 +90,6 @@ if (isMediaNode(nodeOptions.type)) {
     }
   })
 }
-
-const selectedZIndex = computed(() => {
-  if (nodeOptions.type == screenNodeTypes.background) {
-    return 'z-999'
-  }
-
-  if (selection.get().find((item) => item == nodeOptions.id)) {
-    return 'z-1001'
-  }
-
-  return 'z-1000'
-})
 
 function click(event: MouseEvent) {
   event.stopPropagation()

@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
+import { useNodeOrder } from '@/composables/NodeOrder'
 import { nodeData } from '@/enums'
 import { activeScene, studioData } from '@/state'
 import type { TScreenNodeTypes, TNode } from '@/types'
@@ -7,6 +8,7 @@ import type { TScreenNodeTypes, TNode } from '@/types'
 const dragNode = ref<TNode>()
 
 export function useDragDrop() {
+  const nodeOrder = useNodeOrder()
   const item = 'item' as const
   const nodeItem = 'nodeItem' as const
 
@@ -58,6 +60,7 @@ export function useDragDrop() {
     node.position.y = opts.y
     node.data = nodeContent.data
     node.style = nodeContent.style
+    node.style.zIndex = nodeOrder.getNodeZIndex(nodeContent.type).toString()
 
     studioData.value.scene[activeScene.value].nodes.push(node)
   }

@@ -4,12 +4,14 @@ import { cloneDeep } from 'lodash'
 import { screenRef } from '@/state'
 import { useSelection } from '@/composables/Selection'
 import { useNodeAudio } from '@/composables/NodeAudio'
+import { useNodeOrder } from '@/composables/NodeOrder'
 import { activeStyles, passiveStyles } from '@/composables/utils'
 import type { TNode, TuseNodeOptions } from '@/types'
 
 export function useNode(data: TuseNodeOptions) {
   const nodeAudio = useNodeAudio()
   const selection = useSelection()
+  const nodeOrder = useNodeOrder()
   const nodeElement: Ref<HTMLElement> = ref()
   const options: Ref<TNode> = ref(cloneDeep(data.options))
   let startPosition = { x: 0, y: 0 }
@@ -50,9 +52,14 @@ export function useNode(data: TuseNodeOptions) {
     select()
   }
 
+  function updateNodeZIndex() {
+    options.value.style.zIndex = nodeOrder.getNodeZIndex(options.value.type).toString()
+  }
+
   function mouseDown(event: MouseEvent) {
     activeStyles()
     select()
+    updateNodeZIndex()
 
     setStartingPoints(event.clientX, event.clientY)
     shiftPosition.x = startPosition.x - nodeElement.value.getBoundingClientRect().left
