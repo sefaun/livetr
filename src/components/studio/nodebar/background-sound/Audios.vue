@@ -5,10 +5,12 @@
         <div class="min-w-12 min-h-12">
           <audio
             ref="audioPlayerRef"
-            :src="(props.data.data as TBackgroundSoundNodeData).src"
+            :src="src"
             @timeupdate="onTimeUpdate"
             @loadedmetadata="onLoadedMetadata"
             @ended="onEnded"
+            @load="loaded(true)"
+            @error="loaded(false)"
             preload="auto"
             class="hidden"
           ></audio>
@@ -78,6 +80,7 @@ import { useFile } from '@/composables/File'
 import { volumeOptions } from '@/enums'
 import { removeDefaultNode } from '@/composables/utils'
 import type { TBackgroundSoundNodeData, TNode } from '@/types'
+import SoundNotFound from '@/assets/sound-not-found.png'
 
 const props = defineProps({
   data: {
@@ -91,6 +94,7 @@ const { t } = useI18n()
 const nodeAudio = useNodeAudio()
 const file = useFile()
 
+const src = ref((props.data.data as TBackgroundSoundNodeData).src)
 const audioPlayerRef = ref<HTMLAudioElement>()
 const audioCurrentTime = ref(0)
 const audioDuration = ref(0)
@@ -166,6 +170,12 @@ function changedVolume(value: number) {
   volume.value = value
   if (nodeAudio.getGainNode()) {
     nodeAudio.getGainNode().gain.value = value
+  }
+}
+
+function loaded(value: boolean) {
+  if (!value) {
+    src.value = SoundNotFound
   }
 }
 
