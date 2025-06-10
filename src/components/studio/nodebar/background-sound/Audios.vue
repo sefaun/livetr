@@ -9,7 +9,7 @@
             @timeupdate="onTimeUpdate"
             @loadedmetadata="onLoadedMetadata"
             @ended="onEnded"
-            @load="loaded(true)"
+            @canplay="loaded(true)"
             @error="loaded(false)"
             preload="auto"
             class="hidden"
@@ -56,7 +56,7 @@
         />
       </div>
       <div class="w-full">
-        <div class="text-xs">{{ t('sound') }}:</div>
+        <div class="text-xs">{{ t('sound') }}: {{ audioVolumePercentage }}%</div>
         <ElSlider
           :model-value="volume"
           :min="volumeOptions.min"
@@ -103,6 +103,7 @@ const isSeeking = ref(false)
 const audioLoaded = ref(false)
 
 const audioStatus = computed(() => audioCurrentTime.value == 0)
+const audioVolumePercentage = computed(() => ((volume.value * 100) / 1).toFixed())
 const formatTime = computed(
   () =>
     `${Math.floor(audioCurrentTime.value / 60)

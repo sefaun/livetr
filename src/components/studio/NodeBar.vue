@@ -6,9 +6,9 @@
       </ElButton>
     </div>
     <ElTabs v-if="isOpen" v-model="activeTab">
-      <ElTabPane :label="t('text')" name="text">
+      <!-- <ElTabPane :label="t('text')" name="text">
         <Text />
-      </ElTabPane>
+      </ElTabPane> -->
       <ElTabPane :label="t('image')" name="image">
         <Image />
       </ElTabPane>
@@ -30,7 +30,7 @@ import { ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElTabs, ElTabPane, ElButton, ElLoading } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
-import Text from '@/components/studio/nodebar/Text.vue'
+// import Text from '@/components/studio/nodebar/Text.vue'
 import Image from '@/components/studio/nodebar/Image.vue'
 import Video from '@/components/studio/nodebar/Video.vue'
 import Background from '@/components/studio/nodebar/Background.vue'
@@ -40,7 +40,7 @@ const { t } = useI18n()
 
 const nodeBarRef = ref<HTMLDivElement>()
 const isOpen = ref(true)
-const activeTab = ref('backgroundSound')
+const activeTab = ref('image')
 
 function refreshNodeBar() {
   const loading = ElLoading.service({
