@@ -83,9 +83,35 @@ export function useNodeBar() {
     file.setDefaultNodes()
   }
 
+  async function setBackgroundSoundStore() {
+    const result = (await ipcRenderer.invoke('selectBackgroundSound')) as OpenDialogReturnValue
+
+    if (result.canceled) {
+      return
+    }
+
+    for (const item of result.filePaths) {
+      const directorySplit = item.split('\\')
+      const fileName = directorySplit[directorySplit.length - 1]
+      const nodeContent = cloneDeep(nodeData)
+
+      nodeContent.id = window.crypto.randomUUID() as string
+      nodeContent.type = screenNodeTypes.backgroundSound
+      nodeContent.data = {
+        title: fileName,
+        src: directorySplit.join('/'),
+      }
+
+      defaultNodes.value.push(nodeContent)
+    }
+
+    file.setDefaultNodes()
+  }
+
   return {
     setTextStore,
     setImageStore,
     setVideoStore,
+    setBackgroundSoundStore,
   }
 }

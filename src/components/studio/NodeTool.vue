@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElButton, ElPopover, ElSlider } from 'element-plus'
 import { Delete, Headset } from '@element-plus/icons-vue'
 import { isMediaNode, removeNode } from '@/composables/utils'
@@ -47,7 +47,7 @@ const node = inject(NodeId)
 
 const nodeAudio = node.getNodeAudio()
 const isMediaNodeType = ref(isMediaNode(node.getNodeOptions().type))
-const volume = ref(isMediaNodeType.value ? nodeAudio.getGainNode().gain.value : 0)
+const volume = ref(0)
 
 const volumePercentage = computed(() =>
   isMediaNodeType.value ? ((100 * volume.value) / volumeOptions.max).toFixed(0) : '0'
@@ -57,4 +57,24 @@ function changedVolume(value: number) {
   volume.value = value
   nodeAudio.getGainNode().gain.value = value
 }
+
+function startVolumeAnalyser() {
+  const interval = setInterval(() => {
+    if (isMediaNodeType && nodeAudio.getGainNode()) {
+      nodeAudio.startAudioAnalyser()
+      volume.value = nodeAudio.getGainNode().gain.value || 0
+      clearInterval(interval)
+    }
+  }, 500)
+}
+
+onMounted(() => {
+  startVolumeAnalyser()
+})
+
+onBeforeUnmount(() => {
+  if (isMediaNodeType && nodeAudio.getGainNode()) {
+    nodeAudio.destroyAudioAnalyser()
+  }
+})
 </script>

@@ -36,5 +36,8 @@
   "style_settings": "Style Settings",
   "fontsize": "Font Size",
   "color": "Color",
-  "fontfamily": "Font Family"
+  "fontfamily": "Font Family",
+  "background_sound": "Background Sound",
+  "sound": "Sound",
+  "time": "Time"
 }

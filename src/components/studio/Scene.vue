@@ -44,10 +44,13 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElButton, ElDivider, ElMessageBox, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useFile } from '@/composables/File'
+import { useNodeOrder } from '@/composables/NodeOrder'
+import { useScene } from '@/composables/Scene'
 import { useScreenChange } from '@/composables/ScreenChange'
 import { activeScene, studioData } from '@/state'
 import { filePaths } from '@/enums'
@@ -56,6 +59,8 @@ import SceneThumbnail from '@/components/studio/scene/SceneThumbnail.vue'
 const { t } = useI18n()
 const screenChange = useScreenChange()
 const file = useFile()
+const scene = useScene()
+const nodeOrder = useNodeOrder()
 
 function addScene() {
   const uuid = window.crypto.randomUUID()
@@ -84,7 +89,11 @@ function changeSceneConfim(index: number) {
       type: 'warning',
     })
       .then(() => {
-        changeScene(index)
+        nodeOrder.resetOrder()
+        screenChange.saveChanges()
+        scene.saveActiveScreen()
+        file.setStudioData()
+        nextTick(() => changeScene(index))
       })
       .catch(() => null)
   } else {

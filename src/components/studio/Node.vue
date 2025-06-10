@@ -26,7 +26,6 @@ import { cloneDeep } from 'lodash'
 import { useNode } from '@/composables/Node'
 import { useSelection } from '@/composables/Selection'
 import { useScreenChange } from '@/composables/ScreenChange'
-import { isMediaNode } from '@/composables/utils'
 import { nodes, studioData, activeScene } from '@/state'
 import { NodeId, screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
@@ -54,7 +53,6 @@ provide(NodeId, node)
 
 const nodeRef = ref<HTMLElement>()
 const nodeOptions = node.getNodeOptions()
-const nodeAudio = node.getNodeAudio()
 let nodeChanged = false
 let backupOptions = cloneDeep(nodeOptions)
 
@@ -80,16 +78,6 @@ watch(node.getNodeOptions(), (val) => {
   nodeChanged = true
   backupOptions = val
 })
-
-if (isMediaNode(nodeOptions.type)) {
-  watch(selectedStatus, (val) => {
-    if (val) {
-      nodeAudio.startAudioAnalyser()
-    } else {
-      nodeAudio.destroyAudioAnalyser()
-    }
-  })
-}
 
 function click(event: MouseEvent) {
   event.stopPropagation()

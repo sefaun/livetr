@@ -16,7 +16,14 @@ function operations() {
   ipcMain.handle('selectVideo', (_event) =>
     dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'Videos', extensions: ['mp4', 'webm', 'ogg'] }],
+      filters: [{ name: 'Videos', extensions: ['mp4', 'webm', 'ogg', 'mov'] }],
+    })
+  )
+
+  ipcMain.handle('selectBackgroundSound', (_event) =>
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'BackgroundSounds', extensions: ['mp3', 'webm', 'ogg', 'wav', 'aac', 'm4a'] }],
     })
   )
 }

@@ -62,15 +62,26 @@ async function getUserMedia() {
   }
 
   mediaRef.value.srcObject = stream
-  node.getNodeAudio().createAudioStream(stream)
+  audioStream(stream)
 }
 
 function setSrcVideoEnded(value: boolean) {
   srcVideoEnded.value = value
 }
 
-async function captureStream(conenctStatus: boolean = true) {
-  node.getNodeAudio().createAudioStream((mediaRef.value as any).captureStream(), conenctStatus)
+function audioStream(stream: HTMLVideoElement | MediaStream) {
+  if (!node.getNodeAudio().getGainNode()) {
+    if (stream instanceof HTMLVideoElement) {
+      node.getNodeAudio().createAudioElementStream(stream)
+    } else {
+      node.getNodeAudio().createAudioStream(stream)
+    }
+    node.getNodeAudio().start()
+  }
+}
+
+async function captureStream() {
+  audioStream(mediaRef.value)
   setSrcVideoEnded(false)
 }
 
@@ -80,13 +91,11 @@ function ended() {
 
 function firstPlay() {
   if (mediaRef.value.currentTime < 0.1 || srcVideoEnded.value) {
-    captureStream(true)
+    captureStream()
   }
 }
 
 onMounted(async () => {
-  node.getNodeAudio().start()
-
   if (!srcStatus.value) {
     await getUserMedia()
   }

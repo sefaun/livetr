@@ -27,6 +27,7 @@ export const screenNodeTypes = {
   sourceMedia: 'sourceMedia',
   liveCamera: 'liveCamera',
   background: 'background',
+  backgroundSound: 'backgroundSound',
 } as const
 
 export const nodeData = {

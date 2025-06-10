@@ -59,6 +59,11 @@ export type TBackgroundNodeData = {
   src: string
 }
 
+export type TBackgroundSoundNodeData = {
+  title: string
+  src: string
+}
+
 export type TNode = {
   id: string
   type: TScreenNodeTypes
