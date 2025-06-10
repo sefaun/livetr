@@ -5,7 +5,7 @@
         <div class="min-w-12 min-h-12">
           <audio
             ref="audioPlayerRef"
-            :src="src"
+            :src="(props.data.data as TBackgroundSoundNodeData).src"
             @timeupdate="onTimeUpdate"
             @loadedmetadata="onLoadedMetadata"
             @ended="onEnded"
@@ -14,7 +14,7 @@
             preload="auto"
             class="hidden"
           ></audio>
-          <div class="h-full flex justify-center items-center">
+          <div v-if="audioLoaded" class="h-full flex justify-center items-center">
             <ElIcon v-if="audioPlayableStatus" @click.left="play()" :size="25" class="cursor-pointer">
               <VideoPlay />
             </ElIcon>
@@ -23,6 +23,7 @@
             </ElIcon>
             <ElIcon v-if="!audioStatus" @click.left="rewind()" :size="25" class="cursor-pointer"><Refresh /></ElIcon>
           </div>
+          <img v-else src="@/assets/sound-not-found.png" class="w-12 rounded-md" />
         </div>
         <div class="w-full flex items-center">
           {{ (props.data.data as TBackgroundSoundNodeData).title }}
@@ -80,7 +81,6 @@ import { useFile } from '@/composables/File'
 import { volumeOptions } from '@/enums'
 import { removeDefaultNode } from '@/composables/utils'
 import type { TBackgroundSoundNodeData, TNode } from '@/types'
-import SoundNotFound from '@/assets/sound-not-found.png'
 
 const props = defineProps({
   data: {
@@ -94,13 +94,13 @@ const { t } = useI18n()
 const nodeAudio = useNodeAudio()
 const file = useFile()
 
-const src = ref((props.data.data as TBackgroundSoundNodeData).src)
 const audioPlayerRef = ref<HTMLAudioElement>()
 const audioCurrentTime = ref(0)
 const audioDuration = ref(0)
 const volume = ref(1)
 const audioPlayableStatus = ref(true)
 const isSeeking = ref(false)
+const audioLoaded = ref(false)
 
 const audioStatus = computed(() => audioCurrentTime.value == 0)
 const formatTime = computed(
@@ -174,9 +174,7 @@ function changedVolume(value: number) {
 }
 
 function loaded(value: boolean) {
-  if (!value) {
-    src.value = SoundNotFound
-  }
+  audioLoaded.value = value
 }
 
 function removeNode() {
