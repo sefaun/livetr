@@ -22,12 +22,14 @@ export function useNodeAudio() {
     return volume.value
   }
 
-  function createAudioElementStream(value: HTMLMediaElement) {
-    sourceNode.value = audioContext.createMediaElementSource(value)
-  }
-
-  function createAudioStream(value: MediaStream) {
-    sourceNode.value = audioContext.createMediaStreamSource(value)
+  function createAudioStream(value: HTMLVideoElement | HTMLAudioElement | MediaStream) {
+    try {
+      if (value instanceof HTMLMediaElement || value instanceof HTMLAudioElement) {
+        sourceNode.value = audioContext.createMediaElementSource(value)
+      } else {
+        sourceNode.value = audioContext.createMediaStreamSource(value)
+      }
+    } catch (error) {}
   }
 
   function audioConnect() {
@@ -81,6 +83,7 @@ export function useNodeAudio() {
     destroyAudioAnalyser()
     gainNode.value = null
     analyser.value = null
+    sourceNode.value = null
   }
 
   return {
@@ -90,7 +93,6 @@ export function useNodeAudio() {
     audioConnect,
     audioDisconnect,
     createAudioStream,
-    createAudioElementStream,
     startAudioAnalyser,
     destroyAudioAnalyser,
     start,

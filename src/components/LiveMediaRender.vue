@@ -71,11 +71,7 @@ function setSrcVideoEnded(value: boolean) {
 
 function audioStream(stream: HTMLVideoElement | MediaStream) {
   if (!node.getNodeAudio().getGainNode()) {
-    if (stream instanceof HTMLVideoElement) {
-      node.getNodeAudio().createAudioElementStream(stream)
-    } else {
-      node.getNodeAudio().createAudioStream(stream)
-    }
+    node.getNodeAudio().createAudioStream(stream)
     node.getNodeAudio().start()
   }
 }

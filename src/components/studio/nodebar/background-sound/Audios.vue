@@ -14,7 +14,10 @@
             preload="auto"
             class="hidden"
           ></audio>
-          <div v-if="audioLoaded" class="h-full flex justify-center items-center">
+          <div
+            v-if="audioLoaded"
+            class="h-full flex justify-center items-center bg-pink-400 rounded-md [box-shadow:0_0_5px_pink]"
+          >
             <ElIcon v-if="audioPlayableStatus" @click.left="play()" :size="25" class="cursor-pointer">
               <VideoPlay />
             </ElIcon>
@@ -44,13 +47,14 @@
         </ElPopconfirm>
       </div>
     </div>
-    <div class="flex px-4 gap-4">
+    <div class="flex px-4 gap-4 mt-2">
       <div class="w-full">
         <div class="text-xs">{{ t('time') }}: {{ formatTime }}</div>
         <ElSlider
           v-model="audioCurrentTime"
           :show-tooltip="false"
           :max="audioDuration"
+          :disabled="!audioLoaded"
           @input="onSliderStart($event as number)"
           @change="onSliderEnd($event as number)"
         />
@@ -61,6 +65,7 @@
           :model-value="volume"
           :min="volumeOptions.min"
           :max="volumeOptions.max"
+          :disabled="!audioLoaded"
           :step="0.01"
           :show-tooltip="false"
           @input="changedVolume($event as number)"
@@ -72,7 +77,7 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElButton, ElIcon, ElPopconfirm, ElSlider } from 'element-plus'
 import { Delete, Refresh, VideoPause, VideoPlay } from '@element-plus/icons-vue'
@@ -117,7 +122,7 @@ async function play() {
   audioPlayableStatus.value = false
   await audioPlayerRef.value.play()
   if (!nodeAudio.getGainNode()) {
-    nodeAudio.createAudioElementStream(audioPlayerRef.value)
+    nodeAudio.createAudioStream(audioPlayerRef.value)
     nodeAudio.start()
   }
   nodeAudio.getGainNode().gain.value = volume.value
@@ -164,7 +169,6 @@ function onLoadedMetadata() {
 function onEnded() {
   audioPlayableStatus.value = true
   audioPlayerRef.value.currentTime = 0
-  nodeAudio.destroy()
 }
 
 function changedVolume(value: number) {
@@ -182,4 +186,8 @@ function removeNode() {
   removeDefaultNode(props.data.id)
   file.setDefaultNodes()
 }
+
+onBeforeUnmount(() => {
+  nodeAudio.destroy()
+})
 </script>

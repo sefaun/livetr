@@ -50,7 +50,7 @@ function streamOperations() {
 
   if (!activeSceneIndex) {
     activeSceneIndex = '0'
-    localStorage.setItem(import.meta.env.VITE_STREAM_RESOLUTION, activeSceneIndex)
+    localStorage.setItem(import.meta.env.VITE_ACTIVE_SCENE, activeSceneIndex)
   }
 
   activeScene.value = Number(activeSceneIndex)

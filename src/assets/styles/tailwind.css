@@ -13,6 +13,9 @@
 }
 
 @layer components {
+  .bg-primary {
+    @apply bg-[var(--primary-color)]
+  }
   .bg-dark {
     @apply dark:!bg-[var(--bg-dark-color)]
   }
