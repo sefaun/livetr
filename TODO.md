@@ -1,9 +1,7 @@
 # Yapılacaklar
 
 - node eklendiğinde de kaydet butonu aktif olmalıdır.(şimdilik yapıldı ama daha güzel bir yol bulunmalı.)
-- ses nodu yapılmalı
-- Yazı nodları ile alakalı stil işleri düzenlenmeli
-- birden fazla platforma aynı anda yayın yapabilme özelliği eklenmeli
+- html, css ve js ile kayıt edilen bir tasarımı ekleme işlemi yapılmalı
 
 # Hatalar
 
