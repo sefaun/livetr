@@ -39,5 +39,6 @@
   "fontfamily": "Font Family",
   "background_sound": "Background Sound",
   "sound": "Sound",
-  "time": "Time"
+  "time": "Time",
+  "custom": "Custom"
 }

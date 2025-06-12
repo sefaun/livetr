@@ -7,10 +7,16 @@
           <ElOption
             v-for="item in Object.values(channels)"
             :key="item"
-            :label="item.charAt(0).toLocaleUpperCase() + item.substring(1)"
+            :label="item == channels.custom ? t('custom') : item.charAt(0).toLocaleUpperCase() + item.substring(1)"
             :value="item"
           />
         </ElSelect>
+      </div>
+    </div>
+    <div v-if="channel == channels.custom" class="flex items-center gap-2">
+      <div class="basis-1/4">RTMP URL:</div>
+      <div class="basis-3/4 flex justify-start">
+        <ElInput v-model="rtmpURL" @input="changedRTMP" />
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -49,15 +55,30 @@ import { channelRTMP, channels, fps, resolutions } from '@/enums'
 const { t } = useI18n()
 const live = useLive()
 
+const rtmpURL = ref(live.getLiveOptions().rtmp)
 const key = ref(live.getLiveOptions().rtmpKey)
 const fpsData = ref(live.getLiveOptions().fps)
 const resolution = ref(live.getLiveOptions().resolution)
 
 function changedChannel() {
   localStorage.setItem(import.meta.env.VITE_CHANNEL, channel.value)
+  localStorage.setItem(import.meta.env.VITE_RTMP_URL, channelRTMP[channel.value])
+
+  if (channel.value == channels.custom) {
+    localStorage.setItem(import.meta.env.VITE_RTMP_URL, '')
+    rtmpURL.value = ''
+  }
 
   live.setLiveOptions({
-    rtmp: channelRTMP[channel.value],
+    rtmp: localStorage.getItem(import.meta.env.VITE_RTMP_URL),
+  })
+}
+
+function changedRTMP(value: string) {
+  localStorage.setItem(import.meta.env.VITE_RTMP_URL, value)
+
+  live.setLiveOptions({
+    rtmp: value,
   })
 }
 

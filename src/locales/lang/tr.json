@@ -39,5 +39,6 @@
   "fontfamily": "Yazı Tipi",
   "background_sound": "Arka Plan Sesi",
   "sound": "Ses",
-  "time": "Süre"
+  "time": "Süre",
+  "custom": "Özel"
 }

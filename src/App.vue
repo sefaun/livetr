@@ -36,6 +36,7 @@ function streamOperations() {
   let localFPS = localStorage.getItem(import.meta.env.VITE_STREAM_FPS)
   let localResolution = localStorage.getItem(import.meta.env.VITE_STREAM_RESOLUTION) as TLiveResolution
   let activeSceneIndex = localStorage.getItem(import.meta.env.VITE_ACTIVE_SCENE)
+  const rtmpURL = localStorage.getItem(import.meta.env.VITE_RTMP_URL) ?? ''
   const rtmpKey = localStorage.getItem(import.meta.env.VITE_RTMP_KEY) ?? ''
 
   if (!localFPS) {
@@ -57,7 +58,7 @@ function streamOperations() {
   live.setLiveOptions({
     rtmpKey,
     fps: Number(localFPS),
-    rtmp: channelRTMP[channel.value] ?? '',
+    rtmp: rtmpURL,
     resolution: localResolution,
   })
 }

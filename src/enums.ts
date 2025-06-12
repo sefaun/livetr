@@ -11,11 +11,13 @@ export const localeNames = {
 export const channels = {
   youtube: 'youtube',
   twitch: 'twitch',
+  custom: 'custom',
 } as const
 
 export const channelRTMP = {
-  youtube: import.meta.env.VITE_YOUTUBE_RTMP,
-  twitch: import.meta.env.VITE_TWITCH_RTMP,
+  youtube: 'rtmp://x.rtmp.youtube.com/live2/',
+  twitch: 'rtmp://live.twitch.tv/app/',
+  custom: '',
 } as const
 
 export const fps = [30, 60] as const
