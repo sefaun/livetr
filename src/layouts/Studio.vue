@@ -9,21 +9,26 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount } from 'vue'
 import { useFile } from '@/composables/File'
 import { useAudio } from '@/composables/Audio'
 import StudioNavbar from '@/layouts/studio/Navbar.vue'
 import Preview from '@/components/Preview.vue'
+import { activeScene, studioData } from '@/state'
 
 const file = useFile()
 const audio = useAudio()
 
-onMounted(() => {
-  file.createDefaultDirs()
-  file.getDefaultNodes()
-  file.getStudioData()
-  audio.start()
-})
+file.createDefaultDirs()
+file.getDefaultNodes()
+file.getStudioData()
+
+if (!studioData.value.scene[activeScene.value]) {
+  activeScene.value = studioData.value.scene.length - 1
+  localStorage.setItem(import.meta.env.VITE_ACTIVE_SCENE, activeScene.value.toString())
+}
+
+audio.start()
 
 onBeforeUnmount(async () => {
   await audio.destroy()

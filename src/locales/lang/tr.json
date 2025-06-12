@@ -40,5 +40,6 @@
   "background_sound": "Arka Plan Sesi",
   "sound": "Ses",
   "time": "Süre",
-  "custom": "Özel"
+  "custom": "Özel",
+  "stream_preview": "Canlı Yayını Önizle"
 }

@@ -16,14 +16,32 @@
       </div>
     </div>
   </div>
-  <div :class="preview.getVideoPreviewStatus() ? 'left-1' : 'left-[9999px]'" class="fixed bottom-1 z-10 border">
-    <div class="relative w-full h-full">
-      <video ref="videoPreviewRef" width="1280" height="720" controls></video>
-      <div class="absolute top-1 right-1">
-        <ElButton :icon="Close" @click.stop.left="preview.setVideoPreviewStatus(false)" type="danger" circle></ElButton>
+  <transition
+    name="slide-down"
+    enter-active-class="transition-all duration-700 ease-in-out"
+    leave-active-class="transition-all duration-700 ease-in-out"
+    enter-from-class="-translate-y-full"
+    enter-to-class="translate-y-0"
+    leave-from-class="translate-y-0"
+    leave-to-class="-translate-y-full"
+  >
+    <div
+      v-show="preview.getVideoPreviewStatus()"
+      class="fixed top-0 left-0 w-full h-full bg-black/75 bg-opacity-80 z-10"
+    >
+      <div class="relative w-full h-full flex justify-center">
+        <video ref="videoPreviewRef" width="1280" height="720" controls></video>
+        <div class="absolute top-1 right-1">
+          <ElButton
+            :icon="Close"
+            @click.stop.left="preview.setVideoPreviewStatus(false)"
+            type="danger"
+            circle
+          ></ElButton>
+        </div>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup lang="ts">

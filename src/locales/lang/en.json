@@ -40,5 +40,6 @@
   "background_sound": "Background Sound",
   "sound": "Sound",
   "time": "Time",
-  "custom": "Custom"
+  "custom": "Custom",
+  "stream_preview": "Preview Stream"
 }

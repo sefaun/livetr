@@ -3,6 +3,9 @@
     <div class="text-lg font-bold">{{ t('studio') }}</div>
     <div class="font-bold text-3xl text-[var(--primary-color)]">Livetr</div>
     <div class="flex items-center gap-2">
+      <ElButton :icon="View" @click.left="preview.setVideoPreviewStatus(true)" type="success">
+        {{ t('stream_preview') }}
+      </ElButton>
       <Theme />
       <Language />
       <ElButton :icon="Setting" @click.left="setStreamInformationModal(true)">
@@ -24,13 +27,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ElButton, ElDialog } from 'element-plus'
+import { Setting, View } from '@element-plus/icons-vue'
+import { usePreview } from '@/composables/Preview'
 import Theme from '@/components/Theme.vue'
 import Language from '@/components/Language.vue'
 import LiveOptions from '@/components/studio/navbar/LiveOptions.vue'
 import Live from '@/components/studio/navbar/Live.vue'
-import { ElButton, ElDialog } from 'element-plus'
-import { Setting } from '@element-plus/icons-vue'
 
+const preview = usePreview()
 const { t } = useI18n()
 
 const streamInformationModal = ref(false)
