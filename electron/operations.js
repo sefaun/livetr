@@ -9,7 +9,7 @@ function operations() {
   ipcMain.handle('selectImage', (_event) =>
     dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif'] }],
+      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png'] }],
     })
   )
 
