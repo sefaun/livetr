@@ -46,7 +46,7 @@ function createWindow() {
   if (development) {
     win.loadURL('http://localhost:3001/#/studio')
   } else {
-    win.loadURL(path.join(__dirname, '../dist/index.html/#/studio'))
+    win.loadURL(`file://${path.join(__dirname, '../dist/index.html')}#/studio`)
   }
 
   win.webContents.openDevTools({
