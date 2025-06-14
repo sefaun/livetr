@@ -6,7 +6,3 @@
 # Hatalar
 
 -
-
-# Not
-
-- şuan EventEmitter kullanılmıyor. ilerde kullanılmazsa kaldır.

@@ -7,14 +7,12 @@ import { onBeforeMount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { activeScene, channel } from '@/state'
 import { useTheme } from '@/composables/Theme'
-import { useEventEmitter } from '@/composables/EventEmitter'
 import { useLive } from '@/composables/Live'
-import { channelRTMP, fps, resolutions, localeNames } from '@/enums'
+import { fps, resolutions, localeNames } from '@/enums'
 import type { TTheme, TLocale, TChannels, TLiveResolution } from '@/types'
 
 const { locale } = useI18n()
 const theme = useTheme()
-const eventEmitter = useEventEmitter()
 const live = useLive()
 
 function themeOperations() {
@@ -68,6 +66,5 @@ onBeforeMount(() => {
   themeOperations()
   channelOperations()
   streamOperations()
-  eventEmitter.start()
 })
 </script>
