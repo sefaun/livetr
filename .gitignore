@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Önce tüm store klasörünü ignore et
+/store/*
+store/nodebar.json
+store/studio.json
+!store/nodebar/bigbuckbunny.mp4
+!store/nodebar/test-audio.mp3
+!store/nodebar/test-bg-image.jpg
+!store/nodebar/test-image.png
+!store/scene/default-scene.png
