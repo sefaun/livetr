@@ -70,8 +70,12 @@ export function useLive() {
       return
     }
 
+    const realFfmpegPath = (ffmpegPath as unknown as string).includes('app.asar')
+      ? (ffmpegPath as unknown as string).replace('app.asar', 'app.asar.unpacked')
+      : ffmpegPath
+    ffmpeg.setFfmpegPath(realFfmpegPath as unknown as string)
+
     setLiveStatus(liveConnectionTypes.connecting)
-    ffmpeg.setFfmpegPath(ffmpegPath as unknown as string)
     inputStream = new PassThrough()
     canvasStream.value = canvasPreviewRef.value.captureStream(liveOptions.value.fps)
     destination.value = audio.getAudioContext().createMediaStreamDestination()
@@ -116,7 +120,9 @@ export function useLive() {
   function endStream() {
     setLiveStatus(liveConnectionTypes.connect)
     audio.getAudioGain().disconnect(destination.value)
-    canvasStream.value.getTracks().forEach((track) => track.stop())
+    if (canvasStream.value && canvasStream.value.getTracks()) {
+      canvasStream.value.getTracks().forEach((track) => track.stop())
+    }
 
     canvasStream.value = null
     destination.value = null
@@ -169,14 +175,10 @@ export function useLive() {
         setLiveStatus(liveConnectionTypes.connected)
       })
       .on('end', () => {
-        setLiveStatus(liveConnectionTypes.connect)
-        ElNotification({
-          type: 'info',
-          message: t('stream_ended'),
-        })
+        endStream()
       })
       .on('error', (err) => {
-        setLiveStatus(liveConnectionTypes.connect)
+        endStream()
         ElNotification({
           type: 'error',
           message: err.message,

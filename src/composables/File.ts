@@ -2,10 +2,6 @@ import { useI18n } from 'vue-i18n'
 import { isJSON } from '@/composables/utils'
 import { defaultNodes, studioData } from '@/state'
 import { filePaths, mainFilePath, screenNodeTypes } from '@/enums'
-import DefaultScene from '@/assets/default-scene.png'
-import TestBgImage from '@/assets/test-bg-image.jpg'
-import TestImage from '@/assets/test-image.png'
-import TestVideo from '@/assets/bigbuckbunny.mp4'
 const fs = window.require('node:fs') as typeof import('node:fs')
 const path = window.require('node:path') as typeof import('node:path')
 
@@ -100,26 +96,6 @@ export function useFile() {
       },
       {
         id: window.crypto.randomUUID(),
-        type: screenNodeTypes.text,
-        position: {
-          x: 0,
-          y: 0,
-        },
-        style: {
-          width: 'fit-content',
-          height: 'fit-content',
-        },
-        data: {
-          text: 'Test - 2 🔥',
-          style: {
-            color: '#000000',
-            fontSize: 24,
-            fontFamily: 'Arial',
-          },
-        },
-      },
-      {
-        id: window.crypto.randomUUID(),
         type: screenNodeTypes.image,
         position: {
           x: 0,
@@ -132,7 +108,7 @@ export function useFile() {
         data: {
           title: 'Klasik Resim',
           src: getDirectoryFromMainFolder(filePaths.testImagePng),
-        }
+        },
       },
       {
         id: window.crypto.randomUUID(),
@@ -166,6 +142,19 @@ export function useFile() {
           src: getDirectoryFromMainFolder(filePaths.testBgImagePng),
         },
       },
+      {
+        id: window.crypto.randomUUID(),
+        type: screenNodeTypes.backgroundSound,
+        position: {
+          x: 0,
+          y: 0,
+        },
+        style: {},
+        data: {
+          title: 'Arka Plan Test Sesi',
+          src: getDirectoryFromMainFolder(filePaths.testAudioMp3),
+        },
+      },
     ]
   }
 
@@ -173,7 +162,6 @@ export function useFile() {
     if (!fs.existsSync(getDirectoryFromMainFolder(mainFilePath))) {
       fs.mkdirSync(mainFilePath)
     }
-
     if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.nodebarJson))) {
       fs.writeFileSync(getDirectoryFromMainFolder(filePaths.nodebarJson), JSON.stringify(getDefaultNodeValues()))
     }
@@ -185,18 +173,6 @@ export function useFile() {
     }
     if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.nodebar))) {
       fs.mkdirSync(filePaths.nodebar)
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.defaultScenePng))) {
-      fs.writeFileSync(filePaths.defaultScenePng, fs.readFileSync(getDirectoryFromMainFolder(DefaultScene)))
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.testBgImagePng))) {
-      fs.writeFileSync(filePaths.testBgImagePng, fs.readFileSync(getDirectoryFromMainFolder(TestBgImage)))
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.testImagePng))) {
-      fs.writeFileSync(filePaths.testImagePng, fs.readFileSync(getDirectoryFromMainFolder(TestImage)))
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.testVideoMp4))) {
-      fs.writeFileSync(filePaths.testVideoMp4, fs.readFileSync(getDirectoryFromMainFolder(TestVideo)))
     }
   }
 

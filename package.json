@@ -45,6 +45,12 @@
     "electronVersion": "35.0.1",
     "appId": "com.livetr.id",
     "productName": "Livetr",
+    "extraFiles": [
+      {
+        "from": "store",
+        "to": "store"
+      }
+    ],
     "directories": {
       "output": "release"
     },

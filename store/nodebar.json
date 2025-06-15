@@ -1,0 +1,86 @@
+[
+  {
+    "id": "63de6a9a-b2a3-403f-9ff4-606010735caa",
+    "type": "text",
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "style": {
+      "width": "fit-content",
+      "height": "fit-content"
+    },
+    "data": {
+      "text": "Test - 1 😊",
+      "style": {
+        "color": "#000000",
+        "fontSize": 24,
+        "fontFamily": "Arial"
+      }
+    },
+    "default": true
+  },
+  {
+    "id": "c2cb4947-b7cd-40b9-9993-31b68736571b",
+    "type": "image",
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "style": {
+      "width": "150px",
+      "height": "150px"
+    },
+    "data": {
+      "title": "Klasik Resim",
+      "src": "E:\\Yazilim\\livetr\\store\\nodebar\\test-image.png"
+    },
+    "default": true
+  },
+  {
+    "id": "a7e95b29-e7ef-42be-9fdd-b3ffe9dd9e0b",
+    "type": "video",
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "style": {
+      "width": "150px",
+      "height": "150px"
+    },
+    "data": {
+      "title": "Test Video",
+      "src": "E:\\Yazilim\\livetr\\store\\nodebar\\bigbuckbunny.mp4"
+    },
+    "default": true
+  },
+  {
+    "id": "b598ce12-306e-400c-bb6e-c15179633bdc",
+    "type": "backgroundSound",
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "style": {},
+    "data": {
+      "title": "test-audio.mp3",
+      "src": "E:\\Yazilim\\livetr\\store\\nodebar\\test-audio.mp3"
+    }
+  },
+  {
+    "id": "4245fae2-e08b-4935-81b2-895f6a0e4c76",
+    "type": "background",
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "style": {
+      "width": "100%",
+      "height": "100%"
+    },
+    "data": {
+      "title": "test-bg-image.jpg",
+      "src": "E:\\Yazilim\\livetr\\store\\nodebar\\test-bg-image.jpg"
+    }
+  }
+]

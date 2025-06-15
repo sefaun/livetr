@@ -12,7 +12,7 @@ dist
 release
 dist-ssr
 *.local
-store
+*.production
 
 # Editor directories and files
 .idea

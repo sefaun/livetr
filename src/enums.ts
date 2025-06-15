@@ -3,6 +3,11 @@ import type { TNode, TuseNode } from '@/types'
 
 export const NodeId: InjectionKey<TuseNode> = Symbol('nodeId')
 
+export const mode = {
+  development: 'development',
+  production: 'production',
+} as const
+
 export const localeNames = {
   tr: 'tr',
   en: 'en',
@@ -81,9 +86,10 @@ export const filePaths = {
   studioJson: `${mainFilePath}/studio.json`,
   nodebarJson: `${mainFilePath}/nodebar.json`,
   defaultScenePng: `${mainFilePath}/scene/default-scene.png`,
-  testVideoMp4: `${mainFilePath}/nodebar/bigbuckbunny.mp4`,
-  testBgImagePng: `${mainFilePath}/nodebar/test-bg-image.png`,
+  testBgImagePng: `${mainFilePath}/nodebar/test-bg-image.jpg`,
   testImagePng: `${mainFilePath}/nodebar/test-image.png`,
+  testVideoMp4: `${mainFilePath}/nodebar/bigbuckbunny.mp4`,
+  testAudioMp3: `${mainFilePath}/nodebar/test-audio.mp3`,
 } as const
 
 export const fontFamilies = [
