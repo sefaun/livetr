@@ -1,26 +1,41 @@
-# LiveTr
+<p align="center" width="100%">
+  <img src="./public/icon.png" style="width: 150px" />
+</p>
 
 ## Installation
 
-- npm i
+```sh
+npm install
+```
 
 ## Development
 
 Open 2 terminal
 
-- npm run dev
+```sh
+npm run dev
+```
 
 wait for development host to run
 
-- npm run electron
+```sh
+npm run electron
+```
 
 ## Setup
 
-- npm run build
+```sh
+npm run build
+```
 
 change `"type": "module"` to `"type": "commonjs"` in **package.json**
 
-- npm run setup
+```sh
+npm run setup
+```
+
+## Test
+[Youtube Test Stream](https://www.youtube.com/live/6Y_qa8jRc9Y)
 
 ## Images
 | ![Image-1](./doc/LiveTr-1.png) | ![Image-2](./doc/LiveTr-2.png) |
