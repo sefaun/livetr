@@ -23,11 +23,6 @@ change `"type": "module"` to `"type": "commonjs"` in **package.json**
 - npm run setup
 
 ## Images
-<div style="display:flex; gap: 10px;">
-  <img src="./doc/LiveTr-1.png" style="width: 100%;" />
-  <img src="./doc/LiveTr-2.png" style="width: 100%;" />
-</div>
-<div style="display:flex; gap: 10px; margin-top: 10px;">
-  <img src="./doc/LiveTr-3.png" style="width: 100%;" />
-  <img src="./doc/LiveTr-4.png" style="width: 100%;" />
-</div>
+| ![Image-1](./doc/LiveTr-1.png) | ![Image-2](./doc/LiveTr-2.png) |
+|-------------------------|-------------------------|
+| ![Image-3](./doc/LiveTr-3.png) | ![Image-4](./doc/LiveTr-4.png) |
