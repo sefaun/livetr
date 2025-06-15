@@ -8,7 +8,11 @@
       </ElButton>
       <Theme />
       <Language />
-      <ElButton :icon="Setting" @click.left="setStreamInformationModal(true)">
+      <ElButton
+        :disabled="live.getLiveStatus() != liveConnectionTypes.connect"
+        :icon="Setting"
+        @click.left="setStreamInformationModal(true)"
+      >
         {{ t('stream_settings') }}
       </ElButton>
       <Live />
@@ -30,13 +34,16 @@ import { useI18n } from 'vue-i18n'
 import { ElButton, ElDialog } from 'element-plus'
 import { Setting, View } from '@element-plus/icons-vue'
 import { usePreview } from '@/composables/Preview'
+import { useLive } from '@/composables/Live'
+import { liveConnectionTypes } from '@/enums'
 import Theme from '@/components/Theme.vue'
 import Language from '@/components/Language.vue'
 import LiveOptions from '@/components/studio/navbar/LiveOptions.vue'
 import Live from '@/components/studio/navbar/Live.vue'
 
-const preview = usePreview()
 const { t } = useI18n()
+const preview = usePreview()
+const live = useLive()
 
 const streamInformationModal = ref(false)
 
