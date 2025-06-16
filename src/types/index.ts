@@ -83,4 +83,5 @@ export type TLocalSource = {
   id: string
   name: string
   thumbnail: string
+  aspect_ratio: number
 }
