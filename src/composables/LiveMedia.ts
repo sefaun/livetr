@@ -26,6 +26,7 @@ export function useLiveMedia() {
       id: item.id,
       name: item.name,
       thumbnail: item.thumbnail.toDataURL(),
+      aspect_ratio: item.thumbnail.getAspectRatio(),
     }))
   }
 
