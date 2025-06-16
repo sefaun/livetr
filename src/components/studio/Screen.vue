@@ -10,22 +10,19 @@
   >
     <template v-if="studioData.scene[activeScene]">
       <Node v-for="(node, index) of studioData.scene[activeScene].nodes" :key="node.id" :index="index" :data="node">
-        <NodeText v-if="node.type == screenNodeTypes.text" :data="node"></NodeText>
-        <NodeImage v-if="node.type == screenNodeTypes.image" :data="node"></NodeImage>
-        <NodeVideo v-if="node.type == screenNodeTypes.video" :data="node"></NodeVideo>
-        <NodeSourceMedia v-if="node.type == screenNodeTypes.sourceMedia" :data="node"></NodeSourceMedia>
-        <NodeLiveCamera v-if="node.type == screenNodeTypes.liveCamera" :data="node"></NodeLiveCamera>
-        <NodeBackground v-if="node.type == screenNodeTypes.background" :data="node"></NodeBackground>
+        <component :is="component(node.type)" :data="node" />
       </Node>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useSelection } from '@/composables/Selection'
 import { activeScene, screenRef, studioData } from '@/state'
 import { screenNodeTypes } from '@/enums'
+import type { TScreenNodeTypes } from '@/types'
 import Node from '@/components/studio/Node.vue'
 import NodeText from '@/components/studio/nodes/Text.vue'
 import NodeImage from '@/components/studio/nodes/Image.vue'
@@ -36,4 +33,28 @@ import NodeBackground from '@/components/studio/nodes/Background.vue'
 
 const dragdrop = useDragDrop()
 const selection = useSelection()
+
+const component = computed(() => {
+  return (type: TScreenNodeTypes) => {
+    switch (type) {
+      case screenNodeTypes.text:
+        return NodeText
+
+      case screenNodeTypes.image:
+        return NodeImage
+
+      case screenNodeTypes.video:
+        return NodeVideo
+
+      case screenNodeTypes.sourceMedia:
+        return NodeSourceMedia
+
+      case screenNodeTypes.liveCamera:
+        return NodeLiveCamera
+
+      case screenNodeTypes.background:
+        return NodeBackground
+    }
+  }
+})
 </script>

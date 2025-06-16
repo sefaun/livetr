@@ -22,11 +22,9 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { ref, onBeforeUnmount, onMounted, computed, provide, watch } from 'vue'
-import { cloneDeep } from 'lodash'
 import { useNode } from '@/composables/Node'
 import { useSelection } from '@/composables/Selection'
-import { useScreenChange } from '@/composables/ScreenChange'
-import { nodes, studioData, activeScene } from '@/state'
+import { activeScene, nodes, studioData } from '@/state'
 import { NodeId, screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
 import Resize from '@/components/studio/Resize.vue'
@@ -45,7 +43,6 @@ const props = defineProps({
 })
 
 const selection = useSelection()
-const screenChange = useScreenChange()
 const node = useNode({
   options: props.data,
 })
@@ -53,8 +50,10 @@ provide(NodeId, node)
 
 const nodeRef = ref<HTMLElement>()
 const nodeOptions = node.getNodeOptions()
-let nodeChanged = false
-let backupOptions = cloneDeep(nodeOptions)
+
+watch(node.getNodeOptions(), (val) => {
+  studioData.value.scene[activeScene.value].nodes[props.index] = val
+})
 
 const nonResizeNode = computed(() => nodeOptions.type != screenNodeTypes.background)
 const selectedStatus = computed(() => {
@@ -63,20 +62,6 @@ const selectedStatus = computed(() => {
   }
 
   return false
-})
-
-const saveChangeId = screenChange.onSaveChanges(() => {
-  if (nodeChanged) {
-    studioData.value.scene[activeScene.value].nodes[props.index] = cloneDeep(backupOptions)
-  }
-
-  nodeChanged = false
-})
-
-watch(node.getNodeOptions(), (val) => {
-  screenChange.setScreenChangeStatus(true)
-  nodeChanged = true
-  backupOptions = val
 })
 
 function click(event: MouseEvent) {
@@ -108,7 +93,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  screenChange.removeChangeCallback(saveChangeId)
   delete nodes.value[nodeOptions.id]
 })
 </script>

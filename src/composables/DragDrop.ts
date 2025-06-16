@@ -1,7 +1,6 @@
 import { ref } from 'vue'
 import { cloneDeep } from 'lodash'
 import { useNodeOrder } from '@/composables/NodeOrder'
-import { useScreenChange } from '@/composables/ScreenChange'
 import { nodeData } from '@/enums'
 import { activeScene, studioData } from '@/state'
 import type { TScreenNodeTypes, TNode } from '@/types'
@@ -10,7 +9,6 @@ const dragNode = ref<TNode>()
 
 export function useDragDrop() {
   const nodeOrder = useNodeOrder()
-  const screenChange = useScreenChange()
   const item = 'item' as const
   const nodeItem = 'nodeItem' as const
 
@@ -65,7 +63,6 @@ export function useDragDrop() {
     node.style.zIndex = nodeOrder.getNodeZIndex(nodeContent.type).toString()
 
     studioData.value.scene[activeScene.value].nodes.push(node)
-    screenChange.setScreenChangeStatus(true)
   }
 
   function getDragNode() {

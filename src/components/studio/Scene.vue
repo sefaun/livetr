@@ -46,18 +46,16 @@
 <script setup lang="ts">
 import { nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElButton, ElDivider, ElMessageBox, ElPopconfirm } from 'element-plus'
+import { ElButton, ElDivider, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useFile } from '@/composables/File'
 import { useNodeOrder } from '@/composables/NodeOrder'
 import { useScene } from '@/composables/Scene'
-import { useScreenChange } from '@/composables/ScreenChange'
 import { activeScene, studioData } from '@/state'
 import { filePaths } from '@/enums'
 import SceneThumbnail from '@/components/studio/scene/SceneThumbnail.vue'
 
 const { t } = useI18n()
-const screenChange = useScreenChange()
 const file = useFile()
 const scene = useScene()
 const nodeOrder = useNodeOrder()
@@ -78,27 +76,13 @@ function addScene() {
 function changeScene(index: number) {
   activeScene.value = index
   localStorage.setItem(import.meta.env.VITE_ACTIVE_SCENE, activeScene.value.toString())
-  screenChange.setScreenChangeStatus(false)
 }
 
 function changeSceneConfim(index: number) {
-  if (screenChange.getScreenChangeStatus()) {
-    ElMessageBox.confirm(t('dont_save_you_want_continue'), t('warning'), {
-      confirmButtonText: t('yes'),
-      cancelButtonText: t('no'),
-      type: 'warning',
-    })
-      .then(() => {
-        nodeOrder.resetOrder()
-        screenChange.saveChanges()
-        scene.saveActiveScreen()
-        file.setStudioData()
-        nextTick(() => changeScene(index))
-      })
-      .catch(() => null)
-  } else {
-    changeScene(index)
-  }
+  nodeOrder.resetOrder()
+  scene.saveActiveScreen()
+  file.setStudioData()
+  nextTick(() => changeScene(index))
 }
 
 function removeSelectedScene(uuid: string, index: number) {
