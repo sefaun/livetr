@@ -72,5 +72,8 @@
         "AppImage"
       ]
     }
+  },
+  "engines": {
+    "node": ">= 20.11.0"
   }
 }
