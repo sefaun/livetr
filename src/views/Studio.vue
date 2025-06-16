@@ -16,8 +16,31 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted } from 'vue'
+import { useFile } from '@/composables/File'
+import { useScene } from '@/composables/Scene'
 import Scene from '@/components/studio/Scene.vue'
 import Screen from '@/components/studio/Screen.vue'
 import NodeBar from '@/components/studio/NodeBar.vue'
 import Footer from '@/components/studio/Footer.vue'
+
+const file = useFile()
+const scene = useScene()
+
+let interval: NodeJS.Timeout
+
+function saveDatas() {
+  scene.saveActiveScreen()
+  file.setStudioData()
+}
+
+onMounted(() => {
+  interval = setInterval(() => {
+    saveDatas()
+  }, 5000)
+})
+
+onBeforeUnmount(() => {
+  clearInterval(interval)
+})
 </script>
