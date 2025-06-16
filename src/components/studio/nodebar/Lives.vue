@@ -41,7 +41,7 @@
         createLiveMedia($event, {
           id: source.id,
           name: source.name,
-          aspect_ratio: source.aspect_ratio,
+          aspectRatio: source.aspectRatio,
           type: screenNodeTypes.sourceMedia,
         })
       "
@@ -104,21 +104,20 @@ async function createLiveMedia(
   source: {
     id: string
     name: string
-    aspect_ratio?: number,
+    aspectRatio?: number
     type: TScreenNodeTypes
   }
 ) {
-
   /**
    * Ensures the source object has a valid numeric aspect ratio.
    * Defaults to 4:3 aspect ratio if not already set or invalid.
    */
-  if (typeof source.aspect_ratio !== 'number') {
-    source.aspect_ratio = 4 / 3
+  if (typeof source.aspectRatio !== 'number') {
+    source.aspectRatio = 4 / 3
   }
 
   const height = 300
-  const width = height * source.aspect_ratio
+  const width = height * source.aspectRatio
 
   dragdrop.dragstart(event, {
     type: source.type,
