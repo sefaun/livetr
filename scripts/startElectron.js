@@ -27,6 +27,7 @@ const setCommonJSProcess = exec('npm run set-commonjs', { cwd: packageJsonDir },
   electronProcess = exec('electron .', {
     cwd: packageJsonDir,
     env: {
+      ...process.env,
       NODE_MODE: 'development',
     },
   })
