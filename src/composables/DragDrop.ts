@@ -60,7 +60,9 @@ export function useDragDrop() {
     node.position.y = opts.y
     node.data = nodeContent.data
     node.style = nodeContent.style
-    node.style.zIndex = nodeOrder.getNodeZIndex(nodeContent.type).toString()
+    const index = nodeOrder.getNodeZIndex(nodeContent.type)
+    console.log(index)
+    node.style.zIndex = index.toString()
 
     studioData.value.scene[activeScene.value].nodes.push(node)
   }

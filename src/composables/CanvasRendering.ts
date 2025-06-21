@@ -4,8 +4,30 @@ import { canvasPreviewRef, nodes } from '@/state'
 import { screenNodeTypes } from '@/enums'
 import { fixPositionHeightForCanvas, fixPositionWidthForCanvas } from '@/composables/utils'
 import type { TNode, TTextNodeData } from '@/types'
+const { ipcRenderer } = require('electron') as typeof import('electron')
 
 const ctx = ref<CanvasRenderingContext2D | null>()
+let clampedArray: Uint8ClampedArray
+let rgbaBuffer: Uint8ClampedArray
+let imageData: ImageData
+
+function convertBGRAtoRGBA(buffer) {
+  clampedArray = new Uint8ClampedArray(buffer)
+  rgbaBuffer = new Uint8ClampedArray(clampedArray.length)
+  for (let i = 0; i < clampedArray.length; i += 4) {
+    rgbaBuffer[i] = clampedArray[i + 2] // R
+    rgbaBuffer[i + 1] = clampedArray[i + 1] // G
+    rgbaBuffer[i + 2] = clampedArray[i] // B
+    rgbaBuffer[i + 3] = clampedArray[i + 3] // A
+  }
+  return rgbaBuffer
+}
+
+ipcRenderer.on('frame', (_event, data) => {
+  const { width, height, buffer } = data
+
+  imageData = new ImageData(convertBGRAtoRGBA(buffer), width, height)
+})
 
 export function useCanvasRendering() {
   let screenNodes: {
@@ -88,6 +110,10 @@ export function useCanvasRendering() {
           )
           break
       }
+    }
+
+    if (imageData) {
+      ctx.value.putImageData(imageData, 0, 0)
     }
   }
 

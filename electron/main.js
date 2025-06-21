@@ -1,30 +1,56 @@
 const { app, BrowserWindow } = require('electron/main')
+
 const path = require('node:path')
 const operations = require('./operations')
 
-const development = process.env.NODE_MODE == 'development'
+const development = true //process.env.NODE_MODE == 'development'
+let win
 let splashWindow
-
+app.disableHardwareAcceleration()
 function createSplashWindow() {
   splashWindow = new BrowserWindow({
-    width: 380,
-    height: 140,
+    width: 1000,
+    height: 900,
     frame: false,
     transparent: true,
-    alwaysOnTop: true,
     center: true,
     resizable: false,
+    hasShadow: false,
     webPreferences: {
+      offscreen: true,
+      devTools: development,
       nodeIntegration: true,
       contextIsolation: false,
+      backgroundThrottling: false,
     },
   })
+  splashWindow.webContents.openDevTools({
+    mode: 'detach',
+  })
 
-  splashWindow.loadURL(path.join(__dirname, 'splash.html'))
+  splashWindow.loadURL(
+    'https://dashboard.twitch.tv/widgets/alertbox#eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGVydF9zZXRfaWQiOiJmNTA3NDBjYy1mNzY5LTRiYjUtYTg2ZS1iNWQ5YmMyZTk2MzYiLCJ1c2VyX2lkIjoiNzQ1MzQ5ODA2In0.2_ZGg5A9N7EhOkJu189nXYClOFOrJkTWFfcPWilsRx8'
+  )
+  splashWindow.webContents.on('did-finish-load', () => {
+    splashWindow.webContents.setFrameRate(30) // performans için fps limiti
+  })
+
+  let bitmapBuffer
+  let size
+  splashWindow.webContents.on('paint', (_event, _dirty, image) => {
+    bitmapBuffer = image.toBitmap() // raw RGBA verisi
+    size = image.getSize()
+
+    win.webContents.send('frame', {
+      width: size.width,
+      height: size.height,
+      buffer: bitmapBuffer.buffer, // ArrayBuffer olarak gönder
+    })
+  })
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     title: 'Livetr',
     width: 1500,
     height: 900,
@@ -40,10 +66,11 @@ function createWindow() {
       contextIsolation: false,
       webSecurity: false,
       allowRunningInsecureContent: true,
+      backgroundThrottling: false,
     },
   })
 
-  if (development) {
+  if (true) {
     win.loadURL('http://localhost:3001/#/studio')
   } else {
     win.loadURL(`file://${path.join(__dirname, '../dist/index.html')}#/studio`)
@@ -57,7 +84,7 @@ function createWindow() {
 
   win.on('ready-to-show', () => {
     setTimeout(() => {
-      splashWindow.destroy() // Splash ekranı kapat
+      // splashWindow.destroy() // Splash ekranı kapat
       win.show() // Ana pencereyi göster
     }, 2000)
   })

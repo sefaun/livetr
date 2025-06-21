@@ -4,13 +4,13 @@
   "author": "SEFA UN",
   "description": "This is Livetr Desktop App",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "electron": "node scripts/startElectron.js",
+    "electron": "electron .",
     "setup": "electron-builder",
     "set-commonjs": "node scripts/setCommonJS.js",
     "set-module": "node scripts/setModule.js"
