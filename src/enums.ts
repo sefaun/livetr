@@ -35,6 +35,7 @@ export const screenNodeTypes = {
   liveCamera: 'liveCamera',
   background: 'background',
   backgroundSound: 'backgroundSound',
+  alertWidget: 'alertWidget',
 } as const
 
 export const nodeData = {

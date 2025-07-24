@@ -108,10 +108,30 @@ export function useNodeBar() {
     file.setDefaultNodes()
   }
 
+  async function setAlertWidgetStore(title: string, url: string) {
+    const nodeContent = cloneDeep(nodeData)
+
+    nodeContent.id = window.crypto.randomUUID() as string
+    nodeContent.type = screenNodeTypes.alertWidget
+    nodeContent.data = {
+      title,
+      url,
+      isActive: false,
+    }
+    nodeContent.style = {
+      width: '300px',
+      height: '200px',
+    }
+
+    defaultNodes.value.push(nodeContent)
+    file.setDefaultNodes()
+  }
+
   return {
     setTextStore,
     setImageStore,
     setVideoStore,
     setBackgroundSoundStore,
+    setAlertWidgetStore,
   }
 }

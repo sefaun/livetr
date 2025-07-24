@@ -101,6 +101,7 @@ export function useCanvasRendering() {
         case screenNodeTypes.video:
         case screenNodeTypes.sourceMedia:
         case screenNodeTypes.liveCamera:
+        case screenNodeTypes.alertWidget:
           ctx.value.drawImage(
             element.querySelector('video'),
             fixPositionWidthForCanvas(options.position.x),

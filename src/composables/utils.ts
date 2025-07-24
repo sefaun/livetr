@@ -39,7 +39,7 @@ export function fixPositionHeightForCanvas(height: number) {
 }
 
 export function isMediaNode(type: TScreenNodeTypes) {
-  return type == screenNodeTypes.video || type == screenNodeTypes.sourceMedia || type == screenNodeTypes.liveCamera
+  return type == screenNodeTypes.video || type == screenNodeTypes.sourceMedia || type == screenNodeTypes.liveCamera || type == screenNodeTypes.alertWidget
 }
 
 export function isJSON(value: string): boolean {

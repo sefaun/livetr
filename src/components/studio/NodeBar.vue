@@ -21,6 +21,9 @@
       <ElTabPane :label="t('background_sound')" name="backgroundSound">
         <BackgroundSound />
       </ElTabPane>
+      <ElTabPane :label="t('alert_widgets')" name="alertWidget">
+        <AlertWidget />
+      </ElTabPane>
     </ElTabs>
   </div>
 </template>
@@ -35,6 +38,7 @@ import Image from '@/components/studio/nodebar/Image.vue'
 import Video from '@/components/studio/nodebar/Video.vue'
 import Background from '@/components/studio/nodebar/Background.vue'
 import BackgroundSound from '@/components/studio/nodebar/BackgroundSound.vue'
+import AlertWidget from '@/components/studio/nodebar/AlertWidget.vue'
 
 const { t } = useI18n()
 

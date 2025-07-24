@@ -64,6 +64,12 @@ export type TBackgroundSoundNodeData = {
   src: string
 }
 
+export type TAlertWidgetNodeData = {
+  title: string
+  url: string
+  isActive: boolean
+}
+
 export type TNode = {
   id: string
   type: TScreenNodeTypes
@@ -72,7 +78,7 @@ export type TNode = {
     y: number
   }
   style: Partial<CSSStyleDeclaration>
-  data: TTextNodeData | TImageNodeData | TVideoNodeData | TSourceMediaNodeData | TBackgroundNodeData
+  data: TTextNodeData | TImageNodeData | TVideoNodeData | TSourceMediaNodeData | TBackgroundNodeData | TAlertWidgetNodeData
 }
 
 export type TuseNodeOptions = {

@@ -30,6 +30,7 @@ import NodeVideo from '@/components/studio/nodes/Video.vue'
 import NodeSourceMedia from '@/components/studio/nodes/SourceMedia.vue'
 import NodeLiveCamera from '@/components/studio/nodes/LiveCamera.vue'
 import NodeBackground from '@/components/studio/nodes/Background.vue'
+import NodeAlertWidget from '@/components/studio/nodes/AlertWidget.vue'
 
 const dragdrop = useDragDrop()
 const selection = useSelection()
@@ -54,6 +55,9 @@ const component = computed(() => {
 
       case screenNodeTypes.background:
         return NodeBackground
+
+      case screenNodeTypes.alertWidget:
+        return NodeAlertWidget
     }
   }
 })
