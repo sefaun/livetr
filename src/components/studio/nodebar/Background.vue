@@ -20,10 +20,7 @@
       >
         <div class="w-full flex gap-2">
           <div class="min-w-12 min-h-12">
-            <NodeBarMediaRender
-              :src="(node.data as TBackgroundNodeData).src"
-              class="w-12 h-12 rounded-md"
-            />
+            <MediaRender :src="(node.data as TBackgroundNodeData).src" class="w-12 h-12 rounded-md" />
           </div>
           <div class="w-full flex items-center">
             {{ (node.data as TBackgroundNodeData).title }}
@@ -54,17 +51,15 @@ import { useI18n } from 'vue-i18n'
 import { ElButton, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
-import { useFile } from '@/composables/File'
 import { useNodeBar } from '@/composables/NodeBar'
 import { removeDefaultNode } from '@/composables/utils'
 import { activeScene, defaultNodes, studioData } from '@/state'
 import { screenNodeTypes } from '@/enums'
 import type { TBackgroundNodeData, TNode } from '@/types'
-import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
+import MediaRender from '@/components/MediaRender.vue'
 
 const { t } = useI18n()
 const dragdrop = useDragDrop()
-const file = useFile()
 const nodeBar = useNodeBar()
 
 const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.background))
@@ -86,6 +81,5 @@ function createBackground(event: MouseEvent, node: TNode) {
 
 function removeNode(id: string) {
   removeDefaultNode(id)
-  file.setDefaultNodes()
 }
 </script>

@@ -14,13 +14,19 @@
 
 @layer components {
   .bg-primary {
-    @apply bg-[var(--primary-color)]
+    @apply bg-[var(--primary-color)];
   }
   .bg-dark {
-    @apply dark:!bg-[var(--bg-dark-color)]
+    @apply dark:!bg-[var(--bg-dark-color)];
   }
   .resizer {
     @apply absolute w-[10px] h-[10px] bg-[var(--border-color)] border border-[var(--primary-color)] z-20 cursor-pointer;
+    /* Sahne küçültülse de tutamaçlar tutulabilir boyutta kalır. */
+    scale: calc(1 / var(--stage-scale, 1));
+  }
+  .node-tool {
+    scale: calc(1 / var(--stage-scale, 1));
+    transform-origin: top right;
   }
   .resizer-top-left {
     @apply top-[-5px] left-[-5px] cursor-nwse-resize;

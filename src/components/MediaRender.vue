@@ -1,10 +1,11 @@
 <template>
-  <component v-bind="attrs" :is="props.type" :src="src" :poster="poster" @load="loaded(true)" @error="loaded(false)" />
+  <component v-bind="attrs" :is="props.type" :src="currentSrc" :poster="poster" @error="failed = true" />
 </template>
 
 <script setup lang="ts">
-import { ref, useAttrs } from 'vue'
+import { computed, ref, useAttrs, watch } from 'vue'
 import type { PropType } from 'vue'
+import { platform } from '@/platform'
 import { mediaTypes } from '@/enums'
 import type { TMediaTypes } from '@/types'
 import ImageNotFound from '@/assets/image-not-found.png'
@@ -14,10 +15,11 @@ defineOptions({
   inheritAttrs: false,
 })
 
+/** Resim veya video gösterir; kaynak açılamazsa "bulunamadı" görseli gösterilir. */
 const props = defineProps({
   type: {
     type: String as PropType<TMediaTypes>,
-    default: 'img',
+    default: mediaTypes.img,
   },
   src: {
     type: String,
@@ -27,18 +29,15 @@ const props = defineProps({
 })
 
 const attrs = useAttrs()
-const src = ref(props.src)
-const poster = ref('')
+const failed = ref(false)
 
-function loaded(value: boolean) {
-  if (!value) {
-    if (props.type == mediaTypes.img) {
-      src.value = ImageNotFound
-    }
+watch(
+  () => props.src,
+  () => (failed.value = false)
+)
 
-    if (props.type == mediaTypes.video) {
-      poster.value = VideoNotFound
-    }
-  }
-}
+const currentSrc = computed(() =>
+  failed.value && props.type == mediaTypes.img ? ImageNotFound : platform.toMediaUrl(props.src)
+)
+const poster = computed(() => (failed.value && props.type == mediaTypes.video ? VideoNotFound : undefined))
 </script>

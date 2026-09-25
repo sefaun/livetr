@@ -1,8 +1,9 @@
 <template>
-  <div class="w-full h-[var(--studio-navbar-height)] bg-dark flex items-center justify-between px-4 shadow-md">
+  <div class="w-full h-[var(--studio-navbar-height)] shrink-0 bg-dark flex items-center justify-between px-4 shadow-md">
     <div class="text-lg font-bold">{{ t('studio') }}</div>
     <div class="font-bold text-3xl text-[var(--primary-color)]">Livetr</div>
     <div class="flex items-center gap-2">
+      <LiveStatus />
       <ElButton :icon="View" @click.left="preview.setVideoPreviewStatus(true)" type="success">
         {{ t('stream_preview') }}
       </ElButton>
@@ -39,6 +40,7 @@ import { liveConnectionTypes } from '@/enums'
 import Theme from '@/components/Theme.vue'
 import Language from '@/components/Language.vue'
 import LiveOptions from '@/components/studio/navbar/LiveOptions.vue'
+import LiveStatus from '@/components/studio/navbar/LiveStatus.vue'
 import Live from '@/components/studio/navbar/Live.vue'
 
 const { t } = useI18n()

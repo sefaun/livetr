@@ -23,8 +23,8 @@ import type { TLocale } from '@/types'
 
 const { t, locale } = useI18n()
 
+// Seçilen dil App.vue'de saklanır.
 function changeLocale(value: TLocale): void {
   locale.value = value
-  localStorage.setItem(import.meta.env.VITE_LANG, value)
 }
 </script>

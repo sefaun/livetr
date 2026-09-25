@@ -1,27 +1,41 @@
 <template>
-  <div
-    ref="screenRef"
-    @dragenter.prevent="dragdrop.dragenter"
-    @dragover.prevent="dragdrop.dragover"
-    @dragleave="dragdrop.dragleave"
-    @drop.prevent="dragdrop.drop"
-    @click.stop="selection.clear()"
-    class="relative w-full bg-black border border-[var(--border-color)] dark:border-[--border-dark-color] aspect-video shadow-[0_0_10px_var(--border-color)] dark:shadow-[0_0_10px_var(--border-dark-color)]"
-  >
-    <template v-if="studioData.scene[activeScene]">
-      <Node v-for="(node, index) of studioData.scene[activeScene].nodes" :key="node.id" :index="index" :data="node">
-        <component :is="component(node.type)" :data="node" />
-      </Node>
-    </template>
+  <div ref="containerRef" class="w-full h-full flex justify-center items-start">
+    <div
+      :style="{ width: `${stageSize.width * scale}px`, height: `${stageSize.height * scale}px` }"
+      class="relative shrink-0 bg-black outline outline-1 outline-[var(--border-color)] dark:outline-[--border-dark-color] shadow-[0_0_10px_var(--border-color)] dark:shadow-[0_0_10px_var(--border-dark-color)]"
+    >
+      <!-- Sahne sabit mantıksal boyuttadır; pencere boyutuna göre CSS ile ölçeklenir. -->
+      <div
+        ref="screenRef"
+        :style="{
+          width: `${stageSize.width}px`,
+          height: `${stageSize.height}px`,
+          transform: `scale(${scale})`,
+          '--stage-scale': scale,
+        }"
+        @dragenter.prevent="dragdrop.dragenter"
+        @dragover.prevent="dragdrop.dragover"
+        @dragleave="dragdrop.dragleave"
+        @drop.prevent="dragdrop.drop"
+        @click.stop="selection.clear()"
+        class="absolute top-0 left-0 origin-top-left"
+      >
+        <template v-if="studioData.scene[activeScene]">
+          <Node v-for="node of studioData.scene[activeScene].nodes" :key="node.id" :data="node">
+            <component :is="component(node.type)" :data="node" />
+          </Node>
+        </template>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useSelection } from '@/composables/Selection'
-import { activeScene, screenRef, studioData } from '@/state'
-import { screenNodeTypes } from '@/enums'
+import { activeScene, screenRef, stageScale, studioData } from '@/state'
+import { screenNodeTypes, stageSize } from '@/enums'
 import type { TScreenNodeTypes } from '@/types'
 import Node from '@/components/studio/Node.vue'
 import NodeText from '@/components/studio/nodes/Text.vue'
@@ -33,6 +47,22 @@ import NodeBackground from '@/components/studio/nodes/Background.vue'
 
 const dragdrop = useDragDrop()
 const selection = useSelection()
+
+const containerRef = ref<HTMLElement>()
+const scale = computed(() => stageScale.value)
+let resizeObserver: ResizeObserver
+
+function updateScale() {
+  const container = containerRef.value
+  if (!container) {
+    return
+  }
+
+  const value = Math.min(container.clientWidth / stageSize.width, container.clientHeight / stageSize.height)
+  if (value > 0 && Number.isFinite(value)) {
+    stageScale.value = value
+  }
+}
 
 const component = computed(() => {
   return (type: TScreenNodeTypes) => {
@@ -56,5 +86,15 @@ const component = computed(() => {
         return NodeBackground
     }
   }
+})
+
+onMounted(() => {
+  updateScale()
+  resizeObserver = new ResizeObserver(() => updateScale())
+  resizeObserver.observe(containerRef.value)
+})
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
 })
 </script>

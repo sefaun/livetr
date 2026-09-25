@@ -16,7 +16,7 @@
       >
         <div class="w-full flex gap-2">
           <div class="min-w-12 min-h-12">
-            <NodeBarMediaRender
+            <MediaRender
               :type="mediaTypes.video"
               :src="(node.data as TVideoNodeData).src"
               class="w-12 h-12 rounded-md"
@@ -51,23 +51,20 @@ import { useI18n } from 'vue-i18n'
 import { ElButton, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
-import { useFile } from '@/composables/File'
 import { useNodeBar } from '@/composables/NodeBar'
 import { removeDefaultNode } from '@/composables/utils'
 import { defaultNodes } from '@/state'
 import { mediaTypes, screenNodeTypes } from '@/enums'
 import type { TVideoNodeData } from '@/types'
-import NodeBarMediaRender from '@/components/NodeBarMediaRender.vue'
+import MediaRender from '@/components/MediaRender.vue'
 
 const { t } = useI18n()
 const dragdrop = useDragDrop()
-const file = useFile()
 const nodeBar = useNodeBar()
 
 const nodes = computed(() => defaultNodes.value.filter((item) => item.type == screenNodeTypes.video))
 
 function removeNode(id: string) {
   removeDefaultNode(id)
-  file.setDefaultNodes()
 }
 </script>

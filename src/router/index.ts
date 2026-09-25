@@ -15,6 +15,11 @@ const routes: Array<RouteRecordRaw> = [
       },
     ],
   },
+  {
+    // Web ortamında uygulama kök adresten açılır.
+    path: '/:pathMatch(.*)*',
+    redirect: '/studio',
+  },
 ]
 
 const router = createRouter({

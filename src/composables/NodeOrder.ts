@@ -1,55 +1,74 @@
 import { screenNodeTypes } from '@/enums'
-import { nodes } from '@/state'
-import type { TScreenNodeTypes } from '@/types'
+import { activeScene, studioData } from '@/state'
+import type { TNode, TScreenNodeTypes } from '@/types'
+
+function sceneNodes() {
+  return studioData.value.scene[activeScene.value]?.nodes ?? []
+}
+
+function isBackground(node: TNode) {
+  return node.type == screenNodeTypes.background
+}
+
+export function getZIndex(node: TNode) {
+  const value = Number(node.style?.zIndex)
+  return Number.isFinite(value) ? value : 0
+}
+
+/** Node'ların çizim sırası: arka plan her zaman en altta, diğerleri z-index sırasına göre. */
+export function sortNodesByOrder(nodes: TNode[]) {
+  return nodes
+    .map((node, index) => ({ node, index }))
+    .sort(
+      (a, b) =>
+        Number(!isBackground(a.node)) - Number(!isBackground(b.node)) ||
+        getZIndex(a.node) - getZIndex(b.node) ||
+        a.index - b.index
+    )
+    .map(({ node }) => node)
+}
 
 export function useNodeOrder() {
-  function resetOrder() {
-    let backgroundIndex = 0
-    Object.values(nodes.value)
-      .filter((item) => item.getNodeOptions().type == screenNodeTypes.background)
-      .sort((a, b) => Number(a.getNodeOptions().style.zIndex) - Number(b.getNodeOptions().style.zIndex))
-      .forEach((item, i) => {
-        item.getNodeOptions().style.zIndex = i.toString()
-        backgroundIndex = i
-      })
-
-    Object.values(nodes.value)
-      .sort((a, b) => Number(a.getNodeOptions().style.zIndex) - Number(b.getNodeOptions().style.zIndex))
-      .forEach((item, i) => {
-        if (item.getNodeOptions().type != screenNodeTypes.background) {
-          item.getNodeOptions().style.zIndex = (backgroundIndex + i + 1).toString()
-        }
-      })
-  }
-
+  /** Arka plan dışındaki node'ların en yüksek z-index değeri (hiç yoksa 0). */
   function getMaxOrderValue() {
-    return Math.max(...Object.values(nodes.value).map((item) => Number(item.getNodeOptions().style.zIndex)))
+    return Math.max(
+      0,
+      ...sceneNodes()
+        .filter((node) => !isBackground(node))
+        .map(getZIndex)
+    )
   }
 
-  function getBackgroundMaxOrderValue() {
-    const result = Object.values(nodes.value)
-      .filter((item) => item.getNodeOptions().type == screenNodeTypes.background)
-      .map((item) => Number(item.getNodeOptions().style.zIndex))
+  /** Yeni eklenen node'un z-index değeri: arka plan en altta (0), diğerleri en üstte. */
+  function getNodeZIndex(type: TScreenNodeTypes) {
+    return type == screenNodeTypes.background ? 0 : getMaxOrderValue() + 1
+  }
 
-    if (result.length) {
-      return Math.max(...result)
+  /** Seçilen node'u diğerlerinin üstüne taşır. */
+  function bringToFront(node: TNode) {
+    if (isBackground(node)) {
+      return
     }
 
-    return 0
+    const zIndex = getZIndex(node)
+    const covered = sceneNodes().some((item) => item.id != node.id && !isBackground(item) && getZIndex(item) >= zIndex)
+    if (covered) {
+      node.style.zIndex = (getMaxOrderValue() + 1).toString()
+    }
   }
 
-  function getNodeZIndex(type: TScreenNodeTypes) {
-    if (type == screenNodeTypes.background) {
-      return getBackgroundMaxOrderValue() + 1
-    } else {
-      return getMaxOrderValue() + 1
+  /** z-index değerlerini sırayı bozmadan 1..n aralığına normalize eder. */
+  function resetOrder() {
+    let order = 1
+    for (const node of sortNodesByOrder(sceneNodes())) {
+      node.style.zIndex = isBackground(node) ? '0' : (order++).toString()
     }
   }
 
   return {
     resetOrder,
     getMaxOrderValue,
-    getBackgroundMaxOrderValue,
     getNodeZIndex,
+    bringToFront,
   }
 }

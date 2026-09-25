@@ -5,7 +5,7 @@
         <div class="min-w-12 min-h-12">
           <audio
             ref="audioPlayerRef"
-            :src="(props.data.data as TBackgroundSoundNodeData).src"
+            :src="src"
             @timeupdate="onTimeUpdate"
             @loadedmetadata="onLoadedMetadata"
             @ended="onEnded"
@@ -81,8 +81,9 @@ import { ref, computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElButton, ElIcon, ElPopconfirm, ElSlider } from 'element-plus'
 import { Delete, Refresh, VideoPause, VideoPlay } from '@element-plus/icons-vue'
+import { platform } from '@/platform'
+import { useAudio } from '@/composables/Audio'
 import { useNodeAudio } from '@/composables/NodeAudio'
-import { useFile } from '@/composables/File'
 import { volumeOptions } from '@/enums'
 import { removeDefaultNode } from '@/composables/utils'
 import type { TBackgroundSoundNodeData, TNode } from '@/types'
@@ -90,14 +91,13 @@ import type { TBackgroundSoundNodeData, TNode } from '@/types'
 const props = defineProps({
   data: {
     type: Object as PropType<TNode>,
-    default: {},
     required: true,
   },
 })
 
 const { t } = useI18n()
+const audio = useAudio()
 const nodeAudio = useNodeAudio()
-const file = useFile()
 
 const audioPlayerRef = ref<HTMLAudioElement>()
 const audioCurrentTime = ref(0)
@@ -107,8 +107,9 @@ const audioPlayableStatus = ref(true)
 const isSeeking = ref(false)
 const audioLoaded = ref(false)
 
+const src = computed(() => platform.toMediaUrl((props.data.data as TBackgroundSoundNodeData).src))
 const audioStatus = computed(() => audioCurrentTime.value == 0)
-const audioVolumePercentage = computed(() => ((volume.value * 100) / 1).toFixed())
+const audioVolumePercentage = computed(() => (volume.value * 100).toFixed())
 const formatTime = computed(
   () =>
     `${Math.floor(audioCurrentTime.value / 60)
@@ -118,14 +119,19 @@ const formatTime = computed(
       .padStart(2, '0')}`
 )
 
+/** Arka plan sesi yerel hoparlöre değil, stüdyo ses mikserine (yayına) gider. */
 async function play() {
   audioPlayableStatus.value = false
-  await audioPlayerRef.value.play()
-  if (!nodeAudio.getGainNode()) {
-    nodeAudio.createAudioStream(audioPlayerRef.value)
-    nodeAudio.start()
+  nodeAudio.attach(audioPlayerRef.value)
+  nodeAudio.setGain(volume.value)
+
+  try {
+    await audio.resume()
+    await audioPlayerRef.value.play()
+  } catch (error) {
+    console.warn('[audio] background sound could not be played', error)
+    audioPlayableStatus.value = true
   }
-  nodeAudio.getGainNode().gain.value = volume.value
 }
 
 function pause() {
@@ -173,9 +179,7 @@ function onEnded() {
 
 function changedVolume(value: number) {
   volume.value = value
-  if (nodeAudio.getGainNode()) {
-    nodeAudio.getGainNode().gain.value = value
-  }
+  nodeAudio.setGain(value)
 }
 
 function loaded(value: boolean) {
@@ -184,7 +188,6 @@ function loaded(value: boolean) {
 
 function removeNode() {
   removeDefaultNode(props.data.id)
-  file.setDefaultNodes()
 }
 
 onBeforeUnmount(() => {

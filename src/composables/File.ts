@@ -1,188 +1,88 @@
-import { useI18n } from 'vue-i18n'
-import { isJSON } from '@/composables/utils'
+import i18n from '@/locales/i18n'
+import { platform } from '@/platform'
+import { notify } from '@/composables/Notify'
+import { debounce, errorMessage } from '@/composables/utils'
 import { defaultNodes, studioData } from '@/state'
-import { filePaths, mainFilePath, screenNodeTypes } from '@/enums'
-const fs = window.require('node:fs') as typeof import('node:fs')
-const path = window.require('node:path') as typeof import('node:path')
 
+const { t } = i18n.global
+let lastStudioJson = ''
+let lastNodebarJson = ''
+let saveErrorShown = false
+
+function reportSaveError(error: unknown) {
+  console.error('[store] save failed', error)
+  // Otomatik kayıt sık çalışır; aynı hata için bildirim yağmuru oluşmasın.
+  if (!saveErrorShown) {
+    saveErrorShown = true
+    notify('error', errorMessage(error), { title: t('not_saved'), duration: 0 })
+  }
+}
+
+async function setStudioData() {
+  const json = JSON.stringify(studioData.value)
+  if (json == lastStudioJson) {
+    return
+  }
+
+  lastStudioJson = json
+  try {
+    await platform.store.saveStudio(json)
+    saveErrorShown = false
+  } catch (error) {
+    lastStudioJson = ''
+    reportSaveError(error)
+  }
+}
+
+async function setDefaultNodes() {
+  const json = JSON.stringify(defaultNodes.value)
+  if (json == lastNodebarJson) {
+    return
+  }
+
+  lastNodebarJson = json
+  try {
+    await platform.store.saveNodebar(json)
+    saveErrorShown = false
+  } catch (error) {
+    lastNodebarJson = ''
+    reportSaveError(error)
+  }
+}
+
+const saveStudioLater = debounce(setStudioData, 400)
+const saveDefaultNodesLater = debounce(setDefaultNodes, 400)
+
+/**
+ * Stüdyo verilerinin (sahneler ve node bar öğeleri) yüklenmesi ve kaydedilmesi.
+ * Masaüstünde veriler ana süreç tarafından diske (atomik olarak) yazılır; web ortamında localStorage kullanılır.
+ */
 export function useFile() {
-  const { t } = useI18n()
+  async function loadData() {
+    const snapshot = await platform.store.load()
 
-  function getDirectoryFromMainFolder(way: string) {
-    return path.join(process.cwd(), way)
-  }
+    studioData.value = snapshot.studio
+    defaultNodes.value = snapshot.nodebar
+    lastStudioJson = JSON.stringify(snapshot.studio)
+    lastNodebarJson = JSON.stringify(snapshot.nodebar)
 
-  function getDefaultNodes() {
-    const file = fs.readFileSync(getDirectoryFromMainFolder(filePaths.nodebarJson)).toString()
-    if (!isJSON(file)) {
-      throw new window.Notification(t('wrong_file_content'))
-    }
-
-    defaultNodes.value = JSON.parse(file)
-  }
-
-  function getStudioData() {
-    const file = fs.readFileSync(getDirectoryFromMainFolder(filePaths.studioJson)).toString()
-    if (!isJSON(file)) {
-      throw new window.Notification(t('wrong_file_content'))
-    }
-
-    studioData.value = JSON.parse(file)
-  }
-
-  function setDefaultNodes(notify: boolean = false) {
-    try {
-      fs.writeFileSync(
-        getDirectoryFromMainFolder(filePaths.nodebarJson),
-        JSON.stringify(defaultNodes.value, null, 2),
-        'utf8'
-      )
-
-      if (notify) {
-        new window.Notification(t('saved'))
-      }
-    } catch (error) {
-      if (notify) {
-        new window.Notification(t('not_saved'), {
-          body: (error as Error).message,
-        })
-      }
-      console.log(error)
+    for (const notice of snapshot.notices) {
+      notify('warning', t(notice), { duration: 0 })
     }
   }
 
-  function setStudioData(notify: boolean = false) {
-    try {
-      fs.writeFileSync(
-        getDirectoryFromMainFolder(filePaths.studioJson),
-        JSON.stringify(studioData.value, null, 2),
-        'utf8'
-      )
-
-      if (notify) {
-        new window.Notification(t('saved'))
-      }
-    } catch (error) {
-      if (notify) {
-        new window.Notification(t('not_saved'), {
-          body: (error as Error).message,
-        })
-      }
-      console.log(error)
-    }
-  }
-
-  function getDefaultNodeValues() {
-    return [
-      {
-        id: window.crypto.randomUUID(),
-        type: screenNodeTypes.text,
-        position: {
-          x: 0,
-          y: 0,
-        },
-        style: {
-          width: 'fit-content',
-          height: 'fit-content',
-        },
-        data: {
-          text: 'Test - 1 😊',
-          style: {
-            color: '#000000',
-            fontSize: 24,
-            fontFamily: 'Arial',
-          },
-        },
-      },
-      {
-        id: window.crypto.randomUUID(),
-        type: screenNodeTypes.image,
-        position: {
-          x: 0,
-          y: 0,
-        },
-        style: {
-          width: '150px',
-          height: '150px',
-        },
-        data: {
-          title: 'Klasik Resim',
-          src: getDirectoryFromMainFolder(filePaths.testImagePng),
-        },
-      },
-      {
-        id: window.crypto.randomUUID(),
-        type: screenNodeTypes.video,
-        position: {
-          x: 0,
-          y: 0,
-        },
-        style: {
-          width: '150px',
-          height: '150px',
-        },
-        data: {
-          title: 'Test Video',
-          src: getDirectoryFromMainFolder(filePaths.testVideoMp4),
-        },
-      },
-      {
-        id: window.crypto.randomUUID(),
-        type: screenNodeTypes.background,
-        position: {
-          x: 0,
-          y: 0,
-        },
-        style: {
-          width: '100%',
-          height: '100%',
-        },
-        data: {
-          title: 'Arka Plan',
-          src: getDirectoryFromMainFolder(filePaths.testBgImagePng),
-        },
-      },
-      {
-        id: window.crypto.randomUUID(),
-        type: screenNodeTypes.backgroundSound,
-        position: {
-          x: 0,
-          y: 0,
-        },
-        style: {},
-        data: {
-          title: 'Arka Plan Test Sesi',
-          src: getDirectoryFromMainFolder(filePaths.testAudioMp3),
-        },
-      },
-    ]
-  }
-
-  function createDefaultDirs() {
-    if (!fs.existsSync(getDirectoryFromMainFolder(mainFilePath))) {
-      fs.mkdirSync(mainFilePath)
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.nodebarJson))) {
-      fs.writeFileSync(getDirectoryFromMainFolder(filePaths.nodebarJson), JSON.stringify(getDefaultNodeValues()))
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.studioJson))) {
-      fs.writeFileSync(getDirectoryFromMainFolder(filePaths.studioJson), JSON.stringify(studioData.value))
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.scene))) {
-      fs.mkdirSync(filePaths.scene)
-    }
-    if (!fs.existsSync(getDirectoryFromMainFolder(filePaths.nodebar))) {
-      fs.mkdirSync(filePaths.nodebar)
-    }
+  /** Bekleyen kayıtları hemen yazar (uygulama kapanırken). */
+  function flush() {
+    saveStudioLater.flush()
+    saveDefaultNodesLater.flush()
   }
 
   return {
-    fs,
-    createDefaultDirs,
-    getDirectoryFromMainFolder,
-    getStudioData,
-    getDefaultNodes,
-    setDefaultNodes,
+    loadData,
     setStudioData,
+    setDefaultNodes,
+    saveStudioLater,
+    saveDefaultNodesLater,
+    flush,
   }
 }

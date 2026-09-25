@@ -1,101 +1,131 @@
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import { useAudio } from '@/composables/Audio'
 
+/**
+ * Tek bir medya kaynağının sesini ana miksere bağlar; seviye ölçümü (VU) ve ses düzeyi ayarı sağlar.
+ */
 export function useNodeAudio() {
   const audio = useAudio()
-  const audioContext = audio.getAudioContext()
-  const gainNode = ref<GainNode>()
-  const analyser = ref<AnalyserNode>()
-  const sourceNode = ref<MediaStreamAudioSourceNode | MediaElementAudioSourceNode>()
+  const gainNode = shallowRef<GainNode>()
   const volume = ref(0)
+  const gainValue = ref(1)
+  let sourceNode: MediaStreamAudioSourceNode | MediaElementAudioSourceNode = null
+  let analyser: AnalyserNode = null
   let analyserInterval: ReturnType<typeof setInterval> = null
 
   function getGainNode() {
     return gainNode.value
   }
 
-  function getAnalyser() {
-    return analyser.value
-  }
-
   function getVolume() {
     return volume.value
   }
 
-  function createAudioStream(value: HTMLVideoElement | HTMLAudioElement | MediaStream) {
+  function getGain() {
+    return gainValue.value
+  }
+
+  function hasAudio() {
+    return !!gainNode.value
+  }
+
+  function setGain(value: number) {
+    gainValue.value = value
+    if (gainNode.value) {
+      gainNode.value.gain.value = value
+    }
+  }
+
+  /**
+   * Kaynağın sesini miksere bağlar. Ses izi olmayan akışlarda (ör. mikrofonsuz kamera) false döner.
+   * Bir medya elemanı için createMediaElementSource sadece bir kez çağrılabilir; tekrar çağrılar yok sayılır.
+   */
+  function attach(input: HTMLMediaElement | MediaStream) {
+    if (gainNode.value) {
+      return true
+    }
+
+    const context = audio.getAudioContext()
+    if (!context) {
+      return false
+    }
+
     try {
-      if (value instanceof HTMLMediaElement || value instanceof HTMLAudioElement) {
-        sourceNode.value = audioContext.createMediaElementSource(value)
+      if (input instanceof MediaStream) {
+        if (!input.getAudioTracks().length) {
+          return false
+        }
+
+        sourceNode = context.createMediaStreamSource(input)
       } else {
-        sourceNode.value = audioContext.createMediaStreamSource(value)
+        sourceNode = context.createMediaElementSource(input)
       }
-    } catch (error) {}
-  }
+    } catch (error) {
+      console.warn('[audio] source could not be connected', error)
+      return false
+    }
 
-  function audioConnect() {
-    sourceNode.value.connect(gainNode.value)
-    gainNode.value.connect(analyser.value)
-    gainNode.value.connect(audio.getAudioGain())
-  }
+    const gain = context.createGain()
+    gain.gain.value = gainValue.value
+    analyser = context.createAnalyser()
+    analyser.fftSize = 2048
 
-  function audioDisconnect() {
-    if (sourceNode.value) sourceNode.value.disconnect()
-    if (gainNode.value) gainNode.value.disconnect()
-    if (analyser.value) analyser.value.disconnect()
+    sourceNode.connect(gain)
+    gain.connect(analyser)
+    gain.connect(audio.getAudioGain())
+    gainNode.value = gain
+
+    return true
   }
 
   function startAudioAnalyser() {
-    let sum = 0
-    let val = 0
-    let rms = 0
-
-    analyser.value.fftSize = 2048
-    const dataArray = new Uint8Array(analyser.value.frequencyBinCount)
-
     destroyAudioAnalyser()
-    analyserInterval = setInterval(() => {
-      analyser.value.getByteTimeDomainData(dataArray)
-      sum = 0
+    if (!analyser) {
+      return
+    }
 
-      for (let i = 0; i < dataArray.length; i++) {
-        val = (dataArray[i] - 128) / 128
-        sum += val * val
+    const dataArray = new Uint8Array(analyser.frequencyBinCount)
+    analyserInterval = setInterval(() => {
+      if (!analyser) {
+        return
       }
 
-      rms = Math.sqrt(sum / dataArray.length)
-      volume.value = Math.round(rms * 100)
+      analyser.getByteTimeDomainData(dataArray)
+      let sum = 0
+      for (let i = 0; i < dataArray.length; i++) {
+        const value = (dataArray[i] - 128) / 128
+        sum += value * value
+      }
+
+      volume.value = Math.round(Math.sqrt(sum / dataArray.length) * 100)
     }, 100)
   }
 
   function destroyAudioAnalyser() {
     clearInterval(analyserInterval)
     analyserInterval = null
-  }
-
-  function start() {
-    gainNode.value = audioContext.createGain()
-    analyser.value = audioContext.createAnalyser()
-    audioConnect()
+    volume.value = 0
   }
 
   function destroy() {
-    audioDisconnect()
     destroyAudioAnalyser()
+    sourceNode?.disconnect()
+    gainNode.value?.disconnect()
+    analyser?.disconnect()
+    sourceNode = null
+    analyser = null
     gainNode.value = null
-    analyser.value = null
-    sourceNode.value = null
   }
 
   return {
     getGainNode,
-    getAnalyser,
     getVolume,
-    audioConnect,
-    audioDisconnect,
-    createAudioStream,
+    getGain,
+    hasAudio,
+    setGain,
+    attach,
     startAudioAnalyser,
     destroyAudioAnalyser,
-    start,
     destroy,
   }
 }

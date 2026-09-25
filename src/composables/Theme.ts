@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { ref } from 'vue'
-import type { TTheme } from '@/types'
+import { writeSetting } from '@/settings'
 
 const themeStatus: Ref<boolean> = ref(false)
 
@@ -12,46 +12,10 @@ export function useTheme() {
     return themeStatus.value
   }
 
-  function setThemeStatus(value: boolean): void {
-    themeStatus.value = value
-  }
-
   function setTheme(value: boolean): void {
-    setThemeStatus(value)
-    localStorage.setItem(import.meta.env.VITE_THEME, getLocalStorageData())
-
-    if (value === true) {
-      document.documentElement.classList.add(dark)
-    }
-
-    if (value === false) {
-      document.documentElement.classList.remove(dark)
-    }
-  }
-
-  function setLocalStorageData(value: TTheme) {
-    localStorage.setItem(import.meta.env.VITE_THEME, value)
-  }
-
-  function getLocalStorageData(): string {
-    return themeStatus.value === true ? dark : light
-  }
-
-  function checkLocalStorageTheme() {
-    const theme = localStorage.getItem(import.meta.env.VITE_THEME)
-
-    if (!theme || theme === light) {
-      setLocalStorageData(light)
-      setThemeStatus(false)
-    } else if (theme === dark) {
-      setLocalStorageData(dark)
-      setThemeStatus(true)
-    } else {
-      setLocalStorageData(light)
-      setThemeStatus(false)
-    }
-
-    setTheme(getThemeStatus())
+    themeStatus.value = value
+    writeSetting('theme', value ? dark : light)
+    document.documentElement.classList.toggle(dark, value)
   }
 
   return {
@@ -59,6 +23,5 @@ export function useTheme() {
     light,
     getThemeStatus,
     setTheme,
-    checkLocalStorageTheme,
   }
 }

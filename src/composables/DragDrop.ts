@@ -1,19 +1,22 @@
 import { ref } from 'vue'
-import { cloneDeep } from 'lodash'
 import { useNodeOrder } from '@/composables/NodeOrder'
+import { useSelection } from '@/composables/Selection'
+import { clientToStage, clone } from '@/composables/utils'
 import { nodeData } from '@/enums'
 import { activeScene, studioData } from '@/state'
-import type { TScreenNodeTypes, TNode } from '@/types'
+import type { TNode } from '@/types'
 
 const dragNode = ref<TNode>()
 
 export function useDragDrop() {
   const nodeOrder = useNodeOrder()
+  const selection = useSelection()
   const item = 'item' as const
   const nodeItem = 'nodeItem' as const
 
+  /** Sürüklemeden (tıklayarak) sahneye ekler; arka plan gibi tam ekran öğeler için. */
   function nondragdrop(_event: MouseEvent, node: TNode) {
-    setDragNode(cloneDeep(node))
+    setDragNode(clone(node))
     createNode({
       x: 0,
       y: 0,
@@ -22,7 +25,8 @@ export function useDragDrop() {
 
   function dragstart(event: DragEvent, node: TNode): void {
     if (event.dataTransfer) {
-      setDragNode(cloneDeep(node))
+      setDragNode(clone(node))
+      event.dataTransfer.effectAllowed = 'copy'
       event.dataTransfer.setData(item, nodeItem)
     }
   }
@@ -40,29 +44,35 @@ export function useDragDrop() {
   }
 
   function drop(event: DragEvent): void {
-    if (event.dataTransfer) {
-      if (event.dataTransfer.getData(item) == nodeItem) {
-        createNode({
-          x: event.offsetX,
-          y: event.offsetY,
-        })
-      }
+    if (event.dataTransfer?.getData(item) != nodeItem) {
+      return
     }
+
+    // offsetX/Y bırakılan elemana (ör. başka bir node) göre hesaplanır; sahneye göre konum kullanılır.
+    createNode(clientToStage(event.clientX, event.clientY))
   }
 
   function createNode(opts: { x: number; y: number }) {
-    const node = cloneDeep(nodeData)
     const nodeContent = getDragNode()
+    const scene = studioData.value.scene[activeScene.value]
+    if (!nodeContent || !scene) {
+      return
+    }
 
+    const node = clone(nodeData)
     node.id = window.crypto.randomUUID()
-    node.type = nodeContent.type as TScreenNodeTypes
-    node.position.x = opts.x
-    node.position.y = opts.y
+    node.type = nodeContent.type
+    node.position.x = Math.round(opts.x)
+    node.position.y = Math.round(opts.y)
     node.data = nodeContent.data
-    node.style = nodeContent.style
-    node.style.zIndex = nodeOrder.getNodeZIndex(nodeContent.type).toString()
+    node.style = {
+      ...nodeContent.style,
+      zIndex: nodeOrder.getNodeZIndex(nodeContent.type).toString(),
+    }
 
-    studioData.value.scene[activeScene.value].nodes.push(node)
+    scene.nodes.push(node)
+    selection.set([node.id])
+    setDragNode(null)
   }
 
   function getDragNode() {

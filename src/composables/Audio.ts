@@ -1,16 +1,16 @@
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 
-const audioContext = ref<AudioContext>()
-const audioDestination = ref<MediaStreamAudioDestinationNode>()
-const audioGain = ref<GainNode>()
+const audioContext = shallowRef<AudioContext>()
+const audioGain = shallowRef<GainNode>()
 
+/**
+ * Stüdyonun ses mikseri. Sahnedeki her ses kaynağı (video, kamera mikrofonu, ekran sesi, arka plan müziği)
+ * kendi gain node'u üzerinden bu ana gain'e bağlanır. Yayın ve önizleme, ana gain'e bağlanan
+ * MediaStreamAudioDestinationNode ile sesi alır.
+ */
 export function useAudio() {
   function getAudioContext() {
     return audioContext.value
-  }
-
-  function getAudioDestination() {
-    return audioDestination.value
   }
 
   function getAudioGain() {
@@ -18,31 +18,59 @@ export function useAudio() {
   }
 
   function start() {
-    audioContext.value = new AudioContext()
-    audioDestination.value = audioContext.value.createMediaStreamDestination()
-    audioGain.value = audioContext.value.createGain()
+    if (audioContext.value) {
+      return
+    }
+
+    // Opus ve AAC 48 kHz ile çalışır; yeniden örnekleme ihtiyacı ortadan kalkar.
+    const context = new AudioContext({ sampleRate: 48000 })
+    audioGain.value = context.createGain()
+    audioContext.value = context
+  }
+
+  /** Tarayıcı, kullanıcı etkileşimi olmadan başlatılan AudioContext'i askıya alabilir. */
+  async function resume() {
+    if (audioContext.value?.state == 'suspended') {
+      await audioContext.value.resume()
+    }
+  }
+
+  /** Ana ses miksini bir MediaStream olarak verir (yayın ve önizleme için). */
+  function createStreamDestination() {
+    const destination = audioContext.value.createMediaStreamDestination()
+    audioGain.value.connect(destination)
+    return destination
+  }
+
+  function releaseStreamDestination(destination: MediaStreamAudioDestinationNode) {
+    if (!destination) {
+      return
+    }
+
+    destination.stream.getTracks().forEach((track) => track.stop())
+    try {
+      audioGain.value?.disconnect(destination)
+    } catch (_error) {}
   }
 
   async function destroy() {
-    if (audioContext.value) {
-      if (audioContext.value.state != 'closed') {
-        await audioContext.value.close()
-      }
-    }
-
-    audioDestination.value.disconnect()
-    audioGain.value.disconnect()
-
+    const context = audioContext.value
+    audioGain.value?.disconnect()
     audioContext.value = null
-    audioDestination.value = null
     audioGain.value = null
+
+    if (context && context.state != 'closed') {
+      await context.close()
+    }
   }
 
   return {
     getAudioContext,
-    getAudioDestination,
     getAudioGain,
     start,
+    resume,
+    createStreamDestination,
+    releaseStreamDestination,
     destroy,
   }
 }

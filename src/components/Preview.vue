@@ -4,7 +4,13 @@
     class="fixed bottom-1 z-10 border border-amber-300 pointer-events-none"
   >
     <div class="relative w-full h-full">
-      <canvas ref="canvasPreviewRef" width="1280" height="720"></canvas>
+      <!-- Yayına giden görüntü bu canvas'a, seçilen yayın çözünürlüğünde çizilir. -->
+      <canvas
+        ref="canvasPreviewRef"
+        :width="output.width"
+        :height="output.height"
+        class="block w-[640px] h-auto"
+      ></canvas>
       <div class="absolute top-1 right-1">
         <ElButton
           :icon="Close"
@@ -25,12 +31,9 @@
     leave-from-class="translate-y-0"
     leave-to-class="-translate-y-full"
   >
-    <div
-      v-show="preview.getVideoPreviewStatus()"
-      class="fixed top-0 left-0 w-full h-full bg-black/75 bg-opacity-80 z-10"
-    >
-      <div class="relative w-full h-full flex justify-center">
-        <video ref="videoPreviewRef" width="1280" height="720" controls></video>
+    <div v-show="preview.getVideoPreviewStatus()" class="fixed top-0 left-0 w-full h-full bg-black/75 z-10">
+      <div class="relative w-full h-full flex justify-center items-center p-4">
+        <video ref="videoPreviewRef" controls class="w-[1280px] max-w-full max-h-full aspect-video bg-black"></video>
         <div class="absolute top-1 right-1">
           <ElButton
             :icon="Close"
@@ -45,47 +48,53 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, watch, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { ElButton } from 'element-plus'
 import { Close } from '@element-plus/icons-vue'
 import { canvasPreviewRef, videoPreviewRef } from '@/state'
 import { useCanvasRendering } from '@/composables/CanvasRendering'
 import { useAudio } from '@/composables/Audio'
+import { useLive } from '@/composables/Live'
 import { usePreview } from '@/composables/Preview'
+import { parseResolution } from '@/composables/utils'
 
 const preview = usePreview()
 const audio = useAudio()
+const live = useLive()
 const canvasRendering = useCanvasRendering()
 
-const canvasStream = ref<MediaStream>()
-const destination = ref<MediaStreamAudioDestinationNode>()
+const output = computed(() => parseResolution(live.getLiveOptions().resolution))
 
-function playVideoPreview() {
-  canvasStream.value = canvasPreviewRef.value.captureStream(30)
-  destination.value = audio.getAudioContext().createMediaStreamDestination()
-  const gain = audio.getAudioGain()
+let previewStream: MediaStream = null
+let previewDestination: MediaStreamAudioDestinationNode = null
 
-  gain.connect(destination.value)
+/** Yayına gidecek görüntü ve sesi (canvas + ses mikseri) oynatarak önizler. */
+async function playVideoPreview() {
+  closeVideoPreview()
+  await audio.resume()
 
-  destination.value.stream.getAudioTracks().forEach((track) => {
-    if (track.readyState == 'live') {
-      canvasStream.value.addTrack(track)
-    }
-  })
+  previewStream = canvasPreviewRef.value.captureStream(live.getLiveOptions().fps)
+  previewDestination = audio.createStreamDestination()
+  previewDestination.stream.getAudioTracks().forEach((track) => previewStream.addTrack(track))
 
-  videoPreviewRef.value.srcObject = canvasStream.value
-  videoPreviewRef.value.play()
+  videoPreviewRef.value.srcObject = previewStream
+  videoPreviewRef.value.play().catch(() => {})
 }
 
 function closeVideoPreview() {
-  videoPreviewRef.value.pause()
-  videoPreviewRef.value.srcObject = null
+  if (!previewStream) {
+    return
+  }
 
-  audio.getAudioGain().disconnect(destination.value)
-  canvasStream.value.getTracks().forEach((track) => track.stop())
+  videoPreviewRef.value?.pause()
+  if (videoPreviewRef.value) {
+    videoPreviewRef.value.srcObject = null
+  }
 
-  canvasStream.value = null
-  destination.value = null
+  previewStream.getTracks().forEach((track) => track.stop())
+  audio.releaseStreamDestination(previewDestination)
+  previewStream = null
+  previewDestination = null
 }
 
 watch(
@@ -100,12 +109,12 @@ watch(
 )
 
 onMounted(() => {
-  canvasRendering.setCtx(canvasPreviewRef.value)
-  canvasRendering.render()
+  canvasRendering.start(() => live.getLiveOptions().fps)
   preview.startPreviewListener()
 })
 
 onBeforeUnmount(() => {
+  canvasRendering.stop()
   preview.destroyPreviewListener()
   closeVideoPreview()
 })

@@ -1,12 +1,5 @@
 <template>
-  <video
-    ref="mediaRef"
-    v-bind="attrs"
-    :poster="poster"
-    @load="loaded(true)"
-    @error="loaded(false)"
-    class="w-full h-full"
-  ></video>
+  <video ref="mediaRef" v-bind="attrs" :poster="poster" playsinline class="w-full h-full"></video>
 </template>
 
 <script setup lang="ts">
@@ -18,6 +11,7 @@ defineOptions({
   inheritAttrs: false,
 })
 
+/** Kamera listesindeki küçük önizleme. Sadece görüntü açılır (mikrofon açılmaz). */
 const props = defineProps({
   liveId: {
     type: String,
@@ -29,18 +23,25 @@ const props = defineProps({
 const attrs = useAttrs()
 const liveMedia = useLiveMedia()
 
-let stream: MediaStream
+let stream: MediaStream = null
+let unmounted = false
 const mediaRef = ref<HTMLVideoElement>()
-const poster = ref('')
-
-function loaded(value: boolean) {
-  if (!value) {
-    poster.value = VideoNotFound
-  }
-}
+const poster = ref<string>()
 
 async function getUserMedia() {
-  stream = await liveMedia.getUserMedia(props)
+  try {
+    stream = await liveMedia.getUserMedia({ liveId: props.liveId }, { audio: false, preview: true })
+  } catch (error) {
+    console.warn('[media] camera preview could not be opened', error)
+    poster.value = VideoNotFound
+    return
+  }
+
+  if (unmounted) {
+    stream.getTracks().forEach((track) => track.stop())
+    return
+  }
+
   mediaRef.value.srcObject = stream
 }
 
@@ -49,8 +50,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop())
+  unmounted = true
+  stream?.getTracks().forEach((track) => track.stop())
+  if (mediaRef.value) {
     mediaRef.value.srcObject = null
   }
 })

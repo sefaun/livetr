@@ -1,20 +1,41 @@
 <template>
-  <video ref="mediaRef" v-bind="attrs" @load="loaded(true)" @error="loaded(false)" class="w-full h-full"></video>
+  <video
+    ref="mediaRef"
+    v-bind="attrs"
+    :src="fileSrc"
+    :poster="poster"
+    @loadedmetadata="onLoadedMetadata"
+    @error="onError"
+    playsinline
+    class="w-full h-full"
+  ></video>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, inject, useAttrs } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, inject, useAttrs } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElNotification } from 'element-plus'
+import { platform } from '@/platform'
 import { useLiveMedia } from '@/composables/LiveMedia'
-import { NodeId } from '@/enums'
+import { useLive } from '@/composables/Live'
+import { notify } from '@/composables/Notify'
 import { removeNode } from '@/composables/utils'
+import { NodeId } from '@/enums'
+import VideoNotFound from '@/assets/video-not-found.jpeg'
 
 defineOptions({
   inheritAttrs: false,
 })
 
+/**
+ * Sahnedeki video kaynakları: dosya videosu (src), kamera (liveId) veya ekran/pencere (sourceId).
+ * Kaynağın sesi, node'un ses kanalı üzerinden stüdyo mikserine bağlanır.
+ */
 const props = defineProps({
+  src: {
+    type: String,
+    default: '',
+    required: false,
+  },
   sourceId: {
     type: String,
     default: '',
@@ -32,85 +53,67 @@ const node = inject(NodeId)
 const attrs = useAttrs()
 const { t } = useI18n()
 const liveMedia = useLiveMedia()
+const live = useLive()
 
-let stream: MediaStream
+let stream: MediaStream = null
+let unmounted = false
 const mediaRef = ref<HTMLVideoElement>()
-const srcStatus = ref(attrs.src ? true : false)
-const srcVideoEnded = ref(true)
+const poster = ref<string>()
+const fileSrc = computed(() => (props.src ? platform.toMediaUrl(props.src) : undefined))
 
-function loaded(value: boolean) {
-  if (!value) {
-    ElNotification({
-      type: 'error',
-      message: t('wrong_video_content'),
-    })
-    removeNode(node.getNodeOptions().id)
+function onLoadedMetadata() {
+  poster.value = undefined
+  if (props.src) {
+    node.getNodeAudio().attach(mediaRef.value)
   }
 }
 
-async function getUserMedia() {
-  try {
-    stream = await liveMedia.getUserMedia(props)
-  } catch (error) {
-    ElNotification({
-      type: 'error',
-      message: t('stream_not_found'),
-    })
+function onError() {
+  if (!props.src) {
+    return
+  }
 
-    removeNode(node.getNodeOptions().id)
+  // Dosya bulunamasa da node silinmez; kullanıcı düzeltebilir ya da kendisi kaldırabilir.
+  poster.value = VideoNotFound
+  notify('error', `${t('wrong_video_content')}: ${props.src}`)
+}
+
+async function openLiveSource() {
+  try {
+    stream = await liveMedia.getUserMedia(
+      { liveId: props.liveId, sourceId: props.sourceId },
+      { fps: live.getLiveOptions().fps }
+    )
+  } catch (error) {
+    console.warn('[media] live source could not be opened', error)
+    if (!unmounted) {
+      // Pencere kapanmış ya da cihaz çıkarılmış olabilir.
+      notify('error', t('stream_not_found'))
+      removeNode(node.getNodeOptions().id)
+    }
+    return
+  }
+
+  if (unmounted) {
+    stream.getTracks().forEach((track) => track.stop())
     return
   }
 
   mediaRef.value.srcObject = stream
-  audioStream(stream)
+  node.getNodeAudio().attach(stream)
 }
 
-function setSrcVideoEnded(value: boolean) {
-  srcVideoEnded.value = value
-}
-
-function audioStream(stream: HTMLVideoElement | MediaStream) {
-  if (!node.getNodeAudio().getGainNode()) {
-    node.getNodeAudio().createAudioStream(stream)
-    node.getNodeAudio().start()
-  }
-}
-
-async function captureStream() {
-  audioStream(mediaRef.value)
-  setSrcVideoEnded(false)
-}
-
-function ended() {
-  setSrcVideoEnded(true)
-}
-
-function firstPlay() {
-  if (mediaRef.value.currentTime < 0.1 || srcVideoEnded.value) {
-    captureStream()
-  }
-}
-
-onMounted(async () => {
-  if (!srcStatus.value) {
-    await getUserMedia()
-  }
-
-  if (srcStatus.value) {
-    mediaRef.value.addEventListener('play', firstPlay)
-    mediaRef.value.addEventListener('ended', ended)
+onMounted(() => {
+  if (!props.src) {
+    openLiveSource()
   }
 })
 
 onBeforeUnmount(() => {
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop())
+  unmounted = true
+  stream?.getTracks().forEach((track) => track.stop())
+  if (mediaRef.value) {
     mediaRef.value.srcObject = null
-  }
-
-  if (srcStatus.value) {
-    mediaRef.value.removeEventListener('play', firstPlay)
-    mediaRef.value.removeEventListener('ended', ended)
   }
 })
 </script>

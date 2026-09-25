@@ -1,28 +1,18 @@
 <template>
-  <video
-    v-if="sourceStatus && props.live"
-    ref="videoThumbnailRef"
+  <canvas
+    v-if="props.live"
+    ref="liveCanvasRef"
     v-bind="attrs"
-    @load="loaded(true)"
-    @error="loaded(false)"
-    autoplay
-    muted
-  ></video>
-  <img
-    v-if="sourceStatus && !props.live && srcSource"
-    v-bind="attrs"
-    :src="srcSource"
-    @load="loaded(true)"
-    @error="loaded(false)"
-  />
-  <img v-if="!sourceStatus" v-bind="attrs" :src="ImageNotFound" @load="loaded(true)" @error="loaded(false)" />
+    :width="thumbnailSize.width"
+    :height="thumbnailSize.height"
+  ></canvas>
+  <img v-else v-bind="attrs" :src="imageSrc" @error="imageSrc = ImageNotFound" />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, useAttrs, watch, nextTick } from 'vue'
-import { useFile } from '@/composables/File'
-import { canvasPreviewRef, studioData } from '@/state'
-import { filePaths } from '@/enums'
+import { nextTick, onBeforeUnmount, ref, useAttrs, watch } from 'vue'
+import { useScene, thumbnailSize } from '@/composables/Scene'
+import { canvasPreviewRef } from '@/state'
 import ImageNotFound from '@/assets/image-not-found.png'
 import DefaultScene from '@/assets/default-scene.png'
 
@@ -36,53 +26,47 @@ const props = defineProps({
     default: false,
     required: true,
   },
-  index: {
-    type: Number,
+  sceneId: {
+    type: String,
     required: true,
   },
 })
 
 const attrs = useAttrs()
-const file = useFile()
+const scene = useScene()
 
-let sourceStatus = true
-const videoThumbnailRef = ref<HTMLVideoElement>()
-const srcSource = ref('')
+const liveCanvasRef = ref<HTMLCanvasElement>()
+const imageSrc = ref<string>(DefaultScene)
+let timer: ReturnType<typeof setInterval> = null
 
-watch([() => props.live, () => props.index], () => {
-  nextTick(() => {
-    if (props.live) {
-      renderVideo()
-    } else {
-      renderImage()
-    }
-  })
-})
-
-function loaded(value: boolean) {
-  sourceStatus = value
-}
-
-function renderImage() {
-  const path = file.getDirectoryFromMainFolder(filePaths.scene) + `/${studioData.value.scene[props.index].sceneId}.png`
-  const exist = file.fs.existsSync(path)
-
-  if (exist) {
-    srcSource.value = `data:image/png;base64,${file.fs.readFileSync(path, 'base64')}`
-  } else {
-    srcSource.value = DefaultScene
+/**
+ * Aktif sahne yayın canvas'ından küçültülerek kopyalanır.
+ * (Ayrı bir captureStream açmak her karede tam çözünürlükte görüntü kopyalamak demektir.)
+ */
+function drawLive() {
+  const source = canvasPreviewRef.value
+  const target = liveCanvasRef.value
+  if (source && target) {
+    target.getContext('2d').drawImage(source, 0, 0, target.width, target.height)
   }
 }
 
-function renderVideo() {
-  videoThumbnailRef.value.srcObject = canvasPreviewRef.value.captureStream(30)
-}
+async function update() {
+  clearInterval(timer)
+  timer = null
 
-onMounted(() => {
   if (props.live) {
-    renderVideo()
-  } else {
-    renderImage()
+    drawLive()
+    timer = setInterval(drawLive, 200)
+    return
   }
+
+  imageSrc.value = (await scene.getThumbnail(props.sceneId)) ?? DefaultScene
+}
+
+watch([() => props.live, () => props.sceneId], () => nextTick(update), { immediate: true })
+
+onBeforeUnmount(() => {
+  clearInterval(timer)
 })
 </script>

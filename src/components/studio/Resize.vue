@@ -1,93 +1,93 @@
 <template>
-  <div class="resizer resizer-top-left"></div>
-  <div class="resizer resizer-top"></div>
-  <div class="resizer resizer-top-right"></div>
-  <div class="resizer resizer-right"></div>
-  <div class="resizer resizer-bottom-right"></div>
-  <div class="resizer resizer-bottom"></div>
-  <div class="resizer resizer-bottom-left"></div>
-  <div class="resizer resizer-left"></div>
+  <div
+    v-for="handle of handles"
+    :key="handle"
+    :class="`resizer resizer-${handle}`"
+    @mousedown.stop.prevent.left="startResize($event, handle)"
+  ></div>
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted } from 'vue'
-import { screenRef } from '@/state'
+import { inject, onBeforeUnmount } from 'vue'
+import { stageScale } from '@/state'
 import { NodeId } from '@/enums'
+import { clampToStage } from '@/composables/utils'
+
+const handles = ['top-left', 'top', 'top-right', 'right', 'bottom-right', 'bottom', 'bottom-left', 'left'] as const
+type THandle = (typeof handles)[number]
+
+/** Node'un küçültülebileceği en küçük boyut (mantıksal piksel). */
+const MIN_SIZE = 16
 
 const node = inject(NodeId)
 
-let resizers: NodeListOf<HTMLElement>
-let originalWidth = 0
-let originalHeight = 0
-let originalX = 0
-let originalY = 0
-let originalMouseX = 0
-let originalMouseY = 0
-let activeResizer: HTMLElement | null = null
+let start: {
+  handle: THandle
+  clientX: number
+  clientY: number
+  width: number
+  height: number
+  x: number
+  y: number
+} = null
 
-function nodeResize() {
-  resizers = node.getNodeElement().querySelectorAll('.resizer')
+function startResize(event: MouseEvent, handle: THandle) {
+  const element = node.getNodeElement()
+  const options = node.getNodeOptions()
 
-  resizers.forEach((resizer) => {
-    resizer.addEventListener('mousedown', function (event: MouseEvent) {
-      event.stopPropagation()
-      event.preventDefault()
+  start = {
+    handle,
+    clientX: event.clientX,
+    clientY: event.clientY,
+    width: element.offsetWidth,
+    height: element.offsetHeight,
+    x: options.position.x,
+    y: options.position.y,
+  }
 
-      activeResizer = resizer
-
-      originalWidth = node.getNodeElement().getBoundingClientRect().width
-      originalHeight = node.getNodeElement().getBoundingClientRect().height
-      originalX = node.getNodeOptions().position.x
-      originalY = node.getNodeOptions().position.y
-      originalMouseX = event.pageX
-      originalMouseY = event.pageY
-
-      screenRef.value.addEventListener('mousemove', resizing)
-      window.addEventListener('mouseup', stopResize, true)
-    })
-  })
+  window.addEventListener('mousemove', resizing)
+  window.addEventListener('mouseup', stopResize, true)
 }
 
 function resizing(event: MouseEvent) {
-  if (!activeResizer) return
-
-  if (activeResizer.classList.contains('resizer-bottom-right')) {
-    node.getNodeOptions().style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
-    node.getNodeOptions().style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
-  } else if (activeResizer.classList.contains('resizer-bottom-left')) {
-    node.getNodeOptions().style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
-    node.getNodeOptions().style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
-    node.getNodeOptions().position.x = originalX + (event.pageX - originalMouseX)
-  } else if (activeResizer.classList.contains('resizer-top-right')) {
-    node.getNodeOptions().style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
-    node.getNodeOptions().style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
-    node.getNodeOptions().position.y = originalY + (event.pageY - originalMouseY)
-  } else if (activeResizer.classList.contains('resizer-top-left')) {
-    node.getNodeOptions().style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
-    node.getNodeOptions().style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
-    node.getNodeOptions().position.y = originalY + (event.pageY - originalMouseY)
-    node.getNodeOptions().position.x = originalX + (event.pageX - originalMouseX)
-  } else if (activeResizer.classList.contains('resizer-top')) {
-    node.getNodeOptions().style.height = originalHeight - (event.pageY - originalMouseY) + 'px'
-    node.getNodeOptions().position.y = originalY + (event.pageY - originalMouseY)
-  } else if (activeResizer.classList.contains('resizer-bottom')) {
-    node.getNodeOptions().style.height = originalHeight + (event.pageY - originalMouseY) + 'px'
-  } else if (activeResizer.classList.contains('resizer-left')) {
-    node.getNodeOptions().style.width = originalWidth - (event.pageX - originalMouseX) + 'px'
-    node.getNodeOptions().position.x = originalX + (event.pageX - originalMouseX)
-  } else if (activeResizer.classList.contains('resizer-right')) {
-    node.getNodeOptions().style.width = originalWidth + (event.pageX - originalMouseX) + 'px'
+  if (!start) {
+    return
   }
+
+  const scale = stageScale.value || 1
+  const dx = (event.clientX - start.clientX) / scale
+  const dy = (event.clientY - start.clientY) / scale
+  const options = node.getNodeOptions()
+
+  let width = start.width
+  let height = start.height
+
+  if (start.handle.includes('right')) width = start.width + dx
+  if (start.handle.includes('left')) width = start.width - dx
+  if (start.handle.includes('bottom')) height = start.height + dy
+  if (start.handle.includes('top')) height = start.height - dy
+
+  width = Math.round(Math.max(MIN_SIZE, width))
+  height = Math.round(Math.max(MIN_SIZE, height))
+
+  // Sol/üst kenardan boyutlandırırken karşı kenar sabit kalır.
+  const x = start.handle.includes('left') ? start.x + start.width - width : start.x
+  const y = start.handle.includes('top') ? start.y + start.height - height : start.y
+  const position = clampToStage(x, y, width, height)
+
+  options.position.x = position.x
+  options.position.y = position.y
+  options.style.width = `${width}px`
+  options.style.height = `${height}px`
 }
 
-function stopResize(event: MouseEvent) {
-  event.stopPropagation()
-  screenRef.value.removeEventListener('mousemove', resizing)
+function stopResize() {
+  start = null
+  window.removeEventListener('mousemove', resizing)
   window.removeEventListener('mouseup', stopResize, true)
-  activeResizer = null
 }
 
-onMounted(() => {
-  nodeResize()
+onBeforeUnmount(() => {
+  stopResize()
 })
 </script>

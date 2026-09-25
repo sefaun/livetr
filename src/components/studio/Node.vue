@@ -2,18 +2,17 @@
   <div
     ref="nodeRef"
     class="absolute w-full h-full select-none"
-    :class="[selectedStatus && nonResizeNode ? 'border-2 border-[var(--primary-color)] resize-both resizable' : '']"
-    :style="{ left: `${node.getNodeOptions().position.x}px`, top: `${node.getNodeOptions().position.y}px`, ...node.getNodeOptions().style as any }"
+    :class="[selectedStatus && resizable ? 'outline outline-2 outline-[var(--primary-color)]' : '']"
+    :style="nodeStyle"
     @mousedown.stop.left="mouseDown"
-    @mouseup.stop.left="mouseUp"
-    @click="click"
-    @contextmenu.prevent.stop="node.contextMenu"
+    @click.stop="node.click"
+    @contextmenu.prevent.stop
     @dragstart.prevent.stop
     @dragenter.prevent.stop
     @dragover.prevent.stop
     @dragleave.prevent.stop
   >
-    <Resize v-if="nodeRef && selectedStatus && nonResizeNode" />
+    <Resize v-if="nodeRef && selectedStatus && resizable" />
     <slot />
     <NodeTool v-if="selectedStatus" />
   </div>
@@ -21,78 +20,61 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { ref, onBeforeUnmount, onMounted, computed, provide, watch } from 'vue'
+import { ref, onBeforeUnmount, onMounted, computed, provide } from 'vue'
 import { useNode } from '@/composables/Node'
 import { useSelection } from '@/composables/Selection'
-import { activeScene, nodes, studioData } from '@/state'
+import { getZIndex } from '@/composables/NodeOrder'
+import { nodeRegistry } from '@/state'
 import { NodeId, screenNodeTypes } from '@/enums'
 import type { TNode } from '@/types'
 import Resize from '@/components/studio/Resize.vue'
 import NodeTool from '@/components/studio/NodeTool.vue'
 
 const props = defineProps({
-  index: {
-    type: Number,
-    required: true,
-  },
   data: {
     type: Object as PropType<TNode>,
-    default: {},
     required: true,
   },
 })
 
 const selection = useSelection()
+// Node, sahne verisindeki nesnenin kendisi üzerinde çalışır; ayrı bir kopya ve senkronizasyon gerekmez.
 const node = useNode({
   options: props.data,
 })
 provide(NodeId, node)
 
 const nodeRef = ref<HTMLElement>()
-const nodeOptions = node.getNodeOptions()
-
-watch(node.getNodeOptions(), (val) => {
-  studioData.value.scene[activeScene.value].nodes[props.index] = val
-})
-
-const nonResizeNode = computed(() => nodeOptions.type != screenNodeTypes.background)
-const selectedStatus = computed(() => {
-  if (selection.get().find((item) => item == nodeOptions.id)) {
-    return true
-  }
-
-  return false
-})
-
-function click(event: MouseEvent) {
-  event.stopPropagation()
-  node.click(event)
-}
+const isBackground = computed(() => props.data.type == screenNodeTypes.background)
+// Metin boyutu içeriğe göre belirlenir, arka plan tüm sahneyi kaplar; ikisi de elle boyutlandırılmaz.
+const resizable = computed(() => !isBackground.value && props.data.type != screenNodeTypes.text)
+const selectedStatus = computed(() => selection.get().includes(props.data.id))
+const nodeStyle = computed(() => ({
+  ...(props.data.style as Record<string, string>),
+  left: `${props.data.position.x}px`,
+  top: `${props.data.position.y}px`,
+  // Arka plan her zaman diğer öğelerin altında kalır (yayın canvas'ındaki çizim sırasıyla aynı).
+  zIndex: isBackground.value ? '0' : Math.max(1, getZIndex(props.data)).toString(),
+}))
 
 function mouseDown(event: MouseEvent) {
-  if (nodeOptions.type == screenNodeTypes.background) {
+  if (isBackground.value) {
     return
   }
 
   node.mouseDown(event)
 }
 
-function mouseUp(event: MouseEvent) {
-  if (nodeOptions.type == screenNodeTypes.background) {
-    return
-  }
-
-  node.mouseUp(event)
-}
-
 onMounted(() => {
   node.setNodeElement(nodeRef.value)
-  selection.clear()
-  selection.add(nodeOptions.id)
-  nodes.value[nodeOptions.id] = node
+  nodeRegistry.set(props.data.id, node)
 })
 
 onBeforeUnmount(() => {
-  delete nodes.value[nodeOptions.id]
+  if (nodeRegistry.get(props.data.id) == node) {
+    nodeRegistry.delete(props.data.id)
+  }
+
+  node.destroy()
 })
 </script>

@@ -1,5 +1,5 @@
-import { useNode } from '@/composables/Node'
-import { channels, localeNames, mediaTypes, screenNodeTypes, liveConnectionTypes, resolutions } from '@/enums'
+import type { useNode } from '@/composables/Node'
+import type { channels, localeNames, mediaTypes, screenNodeTypes, liveConnectionTypes, resolutions, fps } from '@/enums'
 
 export type ValueOf<T> = T[keyof T]
 
@@ -10,13 +10,17 @@ export type TChannels = ValueOf<typeof channels>
 export type TScreenNodeTypes = ValueOf<typeof screenNodeTypes>
 export type TLiveConnectionTypes = ValueOf<typeof liveConnectionTypes>
 export type TLiveResolution = ValueOf<typeof resolutions>
+export type TFps = (typeof fps)[number]
 export type TuseNode = ReturnType<typeof useNode>
 
 export type TLiveOptions = {
+  /** Özel (custom) kanal için RTMP sunucu adresi. YouTube/Twitch adresleri sabittir. */
   rtmp: string
-  fps: number
+  fps: TFps
   rtmpKey: string
   resolution: TLiveResolution
+  /** Yayınla birlikte yerel kayıt alınır. */
+  record: boolean
 }
 
 export type TTextNodeDataStyle = {
@@ -27,11 +31,7 @@ export type TTextNodeDataStyle = {
 
 export type TTextNodeData = {
   text: string
-  style: {
-    fontSize: number
-    fontFamily: string
-    color: string
-  }
+  style: TTextNodeDataStyle
 }
 
 export type TImageNodeData = {
@@ -67,21 +67,31 @@ export type TBackgroundSoundNodeData = {
 export type TNode = {
   id: string
   type: TScreenNodeTypes
+  /** Sahnenin mantıksal koordinat sisteminde (stageSize) konum. */
   position: {
     x: number
     y: number
   }
   style: Partial<CSSStyleDeclaration>
-  data: TTextNodeData | TImageNodeData | TVideoNodeData | TSourceMediaNodeData | TBackgroundNodeData
+  data:
+    | TTextNodeData
+    | TImageNodeData
+    | TVideoNodeData
+    | TSourceMediaNodeData
+    | TLiveCameraNodeData
+    | TBackgroundNodeData
+    | TBackgroundSoundNodeData
+}
+
+export type TScene = {
+  sceneId: string
+  nodes: TNode[]
+}
+
+export type TStudioData = {
+  scene: TScene[]
 }
 
 export type TuseNodeOptions = {
   options: TNode
-}
-
-export type TLocalSource = {
-  id: string
-  name: string
-  thumbnail: string
-  aspectRatio: number
 }

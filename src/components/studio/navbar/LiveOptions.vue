@@ -1,9 +1,15 @@
 <template>
   <div class="space-y-2">
+    <ElAlert v-if="!isDesktop" :title="t('desktop_only')" type="warning" :closable="false" show-icon class="!mb-3" />
     <div class="flex items-center gap-2">
       <div class="basis-1/4">{{ t('channel') }}:</div>
       <div class="basis-3/4 flex justify-start">
-        <ElSelect v-model="channel" :placeholder="t('select_channel')" @change="changedChannel()" class="!w-36">
+        <ElSelect
+          :model-value="channel"
+          :placeholder="t('select_channel')"
+          @change="changedChannel($event)"
+          class="!w-36"
+        >
           <ElOption
             v-for="item in Object.values(channels)"
             :key="item"
@@ -14,9 +20,12 @@
       </div>
     </div>
     <div v-if="channel == channels.custom" class="flex items-center gap-2">
-      <div class="basis-1/4">RTMP URL:</div>
-      <div class="basis-3/4 flex justify-start">
-        <ElInput v-model="rtmpURL" @input="changedRTMP" />
+      <div class="basis-1/4">{{ t('server_url') }}:</div>
+      <div class="basis-3/4 flex flex-col justify-start">
+        <ElInput v-model="rtmpURL" @input="changedRTMP" placeholder="rtmp://" />
+        <div v-if="rtmpURL.trim() && !isValidServerUrl(rtmpURL)" class="text-xs text-red-500 mt-1">
+          {{ t('invalid_rtmp_url') }}
+        </div>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -29,7 +38,7 @@
       <div class="basis-1/4">{{ t('resolution') }}:</div>
       <div class="basis-3/4 flex justify-start">
         <ElSelect v-model="resolution" @change="changedResolution()" class="!w-36">
-          <ElOption v-for="[key, value] in Object.entries(resolutions)" :key="key" :label="key" :value="value" />
+          <ElOption v-for="[name, value] in Object.entries(resolutions)" :key="name" :label="name" :value="value" />
         </ElSelect>
       </div>
     </div>
@@ -41,16 +50,26 @@
         </ElSelect>
       </div>
     </div>
+    <div class="flex items-center gap-2">
+      <div class="basis-1/4">{{ t('record_stream') }}:</div>
+      <div class="basis-3/4 flex items-center justify-start gap-2">
+        <ElSwitch v-model="record" :disabled="!isDesktop" @change="changedRecord()" />
+        <span class="text-xs opacity-75">{{ t('record_stream_hint') }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElInput, ElSelect, ElOption } from 'element-plus'
+import { ElAlert, ElInput, ElOption, ElSelect, ElSwitch } from 'element-plus'
+import { isDesktop } from '@/platform'
 import { useLive } from '@/composables/Live'
+import { isValidServerUrl } from '@/composables/utils'
 import { channel } from '@/state'
-import { channelRTMP, channels, fps, resolutions } from '@/enums'
+import { channels, fps, resolutions } from '@/enums'
+import type { TChannels } from '@/types'
 
 const { t } = useI18n()
 const live = useLive()
@@ -59,50 +78,39 @@ const rtmpURL = ref(live.getLiveOptions().rtmp)
 const key = ref(live.getLiveOptions().rtmpKey)
 const fpsData = ref(live.getLiveOptions().fps)
 const resolution = ref(live.getLiveOptions().resolution)
+const record = ref(live.getLiveOptions().record)
 
-function changedChannel() {
-  localStorage.setItem(import.meta.env.VITE_CHANNEL, channel.value)
-  localStorage.setItem(import.meta.env.VITE_RTMP_URL, channelRTMP[channel.value])
-
-  if (channel.value == channels.custom) {
-    localStorage.setItem(import.meta.env.VITE_RTMP_URL, '')
-    rtmpURL.value = ''
-  }
-
-  live.setLiveOptions({
-    rtmp: localStorage.getItem(import.meta.env.VITE_RTMP_URL),
-  })
+function changedChannel(value: TChannels) {
+  live.setChannel(value)
 }
 
 function changedRTMP(value: string) {
-  localStorage.setItem(import.meta.env.VITE_RTMP_URL, value)
-
   live.setLiveOptions({
-    rtmp: value,
+    rtmp: value.trim(),
   })
 }
 
 function changedFPS() {
-  localStorage.setItem(import.meta.env.VITE_STREAM_FPS, fpsData.value.toString())
-
   live.setLiveOptions({
     fps: fpsData.value,
   })
 }
 
 function changedKey() {
-  localStorage.setItem(import.meta.env.VITE_RTMP_KEY, key.value)
-
   live.setLiveOptions({
-    rtmpKey: key.value,
+    rtmpKey: key.value.trim(),
   })
 }
 
 function changedResolution() {
-  localStorage.setItem(import.meta.env.VITE_STREAM_RESOLUTION, resolution.value)
-
   live.setLiveOptions({
     resolution: resolution.value,
+  })
+}
+
+function changedRecord() {
+  live.setLiveOptions({
+    record: record.value,
   })
 }
 </script>

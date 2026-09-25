@@ -1,12 +1,7 @@
 import type { InjectionKey } from 'vue'
-import type { TNode, TuseNode } from '@/types'
+import type { TLiveResolution, TNode, TuseNode } from '@/types'
 
 export const NodeId: InjectionKey<TuseNode> = Symbol('nodeId')
-
-export const mode = {
-  development: 'development',
-  production: 'production',
-} as const
 
 export const localeNames = {
   tr: 'tr',
@@ -56,6 +51,7 @@ export const liveConnectionTypes = {
   connect: 'connect',
   connecting: 'connecting',
   connected: 'connected',
+  disconnecting: 'disconnecting',
 } as const
 
 export const volumeOptions = {
@@ -71,26 +67,40 @@ export const resolutions = {
   '160p': '284:160',
 } as const
 
-export const ffmpegBitrateOptions = {
-  [resolutions['1080p']]: ['-b:v 6000k', '-maxrate 6000k', '-bufsize 12000k'],
-  [resolutions['720p']]: ['-b:v 4500k', '-maxrate 4500k', '-bufsize 9000k'],
-  [resolutions['480p']]: ['-b:v 2500k', '-maxrate 2500k', '-bufsize 5000k'],
-  [resolutions['360p']]: ['-b:v 1000k', '-maxrate 1000k', '-bufsize 2000k'],
-  [resolutions['160p']]: ['-b:v 300k', '-maxrate 300k', '-bufsize 600k'],
+/** Çözünürlüğe göre yayının görüntü bitrate'i (kbps). Twitch ve YouTube önerileriyle uyumludur. */
+export const videoBitrates: Record<TLiveResolution, number> = {
+  [resolutions['1080p']]: 6000,
+  [resolutions['720p']]: 4500,
+  [resolutions['480p']]: 2500,
+  [resolutions['360p']]: 1000,
+  [resolutions['160p']]: 300,
+}
+
+/** Yayının ses bitrate'i (kbps, AAC). */
+export const audioBitrate = 128
+
+/**
+ * Editördeki sahne alanının mantıksal boyutu. Node konum ve boyutları bu koordinat sisteminde tutulur;
+ * sahne pencere boyutuna göre CSS ile ölçeklenir, yayın canvas'ına da bu oranla çizilir.
+ */
+export const stageSize = {
+  width: 960,
+  height: 540,
 } as const
 
-export const mainFilePath = 'store' as const
-export const filePaths = {
-  scene: `${mainFilePath}/scene`,
-  nodebar: `${mainFilePath}/nodebar`,
-  studioJson: `${mainFilePath}/studio.json`,
-  nodebarJson: `${mainFilePath}/nodebar.json`,
-  defaultScenePng: `${mainFilePath}/scene/default-scene.png`,
-  testBgImagePng: `${mainFilePath}/nodebar/test-bg-image.jpg`,
-  testImagePng: `${mainFilePath}/nodebar/test-image.png`,
-  testVideoMp4: `${mainFilePath}/nodebar/bigbuckbunny.mp4`,
-  testAudioMp3: `${mainFilePath}/nodebar/test-audio.mp3`,
-} as const
+/** Metin node'larında satır yüksekliği (editör ve yayın canvas'ı aynı değeri kullanır). */
+export const textLineHeight = 1.2
+
+/**
+ * MediaRecorder ile ffmpeg'e aktarılan ara kodlama için tercih sırası.
+ * ffmpeg bu akışı yayın platformlarının istediği H.264/AAC formatına dönüştürür.
+ */
+export const recorderMimeTypes = [
+  'video/webm;codecs=vp8,opus',
+  'video/webm;codecs=vp9,opus',
+  'video/webm;codecs=h264,opus',
+  'video/webm',
+] as const
 
 export const fontFamilies = [
   { name: 'Arial', value: 'Arial, Helvetica, sans-serif' },

@@ -1,24 +1,25 @@
-import type { Ref } from 'vue'
-import { ref } from 'vue'
-import { cloneDeep } from 'lodash'
-import { screenRef } from '@/state'
+import { shallowRef } from 'vue'
+import { stageScale } from '@/state'
 import { useSelection } from '@/composables/Selection'
 import { useNodeAudio } from '@/composables/NodeAudio'
 import { useNodeOrder } from '@/composables/NodeOrder'
-import { activeStyles, passiveStyles } from '@/composables/utils'
-import type { TNode, TuseNodeOptions } from '@/types'
+import { activeStyles, clampToStage, passiveStyles } from '@/composables/utils'
+import type { TuseNodeOptions } from '@/types'
 
+/**
+ * Sahnedeki bir node'un davranışları (seçme, sürükleme, ses).
+ * `options` sahne verisindeki (studioData) nesnenin kendisidir; değişiklikler doğrudan kaydedilen veriye yansır.
+ */
 export function useNode(data: TuseNodeOptions) {
   const nodeAudio = useNodeAudio()
   const selection = useSelection()
   const nodeOrder = useNodeOrder()
-  const nodeElement: Ref<HTMLElement> = ref()
-  const options: Ref<TNode> = ref(cloneDeep(data.options))
-  let startPosition = { x: 0, y: 0 }
-  let shiftPosition = { x: 0, y: 0 }
+  const nodeElement = shallowRef<HTMLElement>()
+  const options = data.options
+  let dragStart: { clientX: number; clientY: number; x: number; y: number; width: number; height: number } = null
 
   function getNodeOptions() {
-    return options.value
+    return options
   }
 
   function getNodeElement() {
@@ -29,65 +30,65 @@ export function useNode(data: TuseNodeOptions) {
     return nodeAudio
   }
 
-  function setNodeOptions(data: Partial<TNode>) {
-    options.value = Object.assign({}, options.value, data)
-  }
-
-  function setNodePosition(pageX: number, pageY: number): void {
-    options.value.position.x = pageX - shiftPosition.x
-    options.value.position.y = pageY - shiftPosition.y
-  }
-
-  function setStartingPoints(x: number, y: number): void {
-    startPosition.x = x
-    startPosition.y = y
+  function setNodeElement(element: HTMLElement) {
+    nodeElement.value = element
   }
 
   function select() {
-    selection.clear()
-    selection.add(options.value.id)
+    selection.set([options.id])
   }
 
   function click(_event: MouseEvent) {
     select()
   }
 
-  function updateNodeZIndex() {
-    options.value.style.zIndex = nodeOrder.getNodeZIndex(options.value.type).toString()
-  }
-
   function mouseDown(event: MouseEvent) {
     activeStyles()
     select()
-    updateNodeZIndex()
+    nodeOrder.bringToFront(options)
 
-    setStartingPoints(event.clientX, event.clientY)
-    shiftPosition.x = startPosition.x - nodeElement.value.getBoundingClientRect().left
-    shiftPosition.y = startPosition.y - nodeElement.value.getBoundingClientRect().top
-    setNodePosition(
-      event.pageX - screenRef.value.getBoundingClientRect().left,
-      event.pageY - screenRef.value.getBoundingClientRect().top
-    )
-    screenRef.value.addEventListener('mousemove', mouseMove)
+    dragStart = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      x: options.position.x,
+      y: options.position.y,
+      width: nodeElement.value?.offsetWidth ?? 0,
+      height: nodeElement.value?.offsetHeight ?? 0,
+    }
+
+    // Fare node'un dışına çıkıp bırakılsa bile sürükleme doğru şekilde biter.
+    window.addEventListener('mousemove', mouseMove)
+    window.addEventListener('mouseup', mouseUp)
   }
 
   function mouseMove(event: MouseEvent) {
+    if (!dragStart) {
+      return
+    }
+
     event.preventDefault()
-    setNodePosition(
-      event.clientX - screenRef.value.getBoundingClientRect().left,
-      event.clientY - screenRef.value.getBoundingClientRect().top
-    )
+    const scale = stageScale.value || 1
+    const x = dragStart.x + (event.clientX - dragStart.clientX) / scale
+    const y = dragStart.y + (event.clientY - dragStart.clientY) / scale
+
+    const position = clampToStage(x, y, dragStart.width, dragStart.height)
+    options.position.x = position.x
+    options.position.y = position.y
   }
 
-  function mouseUp(_event: MouseEvent) {
+  function mouseUp(_event?: MouseEvent) {
     passiveStyles()
-    screenRef.value.removeEventListener('mousemove', mouseMove)
+    dragStart = null
+    window.removeEventListener('mousemove', mouseMove)
+    window.removeEventListener('mouseup', mouseUp)
   }
 
-  function contextMenu(_event: MouseEvent) {}
+  function destroy() {
+    if (dragStart) {
+      mouseUp()
+    }
 
-  function setNodeElement(element: HTMLElement) {
-    nodeElement.value = element
+    nodeAudio.destroy()
   }
 
   return {
@@ -96,10 +97,7 @@ export function useNode(data: TuseNodeOptions) {
     getNodeAudio,
     click,
     mouseDown,
-    mouseMove,
-    mouseUp,
-    contextMenu,
     setNodeElement,
-    setNodeOptions,
+    destroy,
   }
 }

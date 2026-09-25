@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import { cloneDeep } from 'lodash'
 
 const selections = ref<string[]>([])
 
@@ -9,7 +8,7 @@ export function useSelection() {
   }
 
   function set(value: string[]) {
-    selections.value = cloneDeep(value)
+    selections.value = [...value]
   }
 
   function add(value: string) {

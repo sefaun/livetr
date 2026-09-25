@@ -43,35 +43,33 @@
     </div>
   </div>
   <ElDialog v-model="styleDialogStatus" :title="t('style_settings')" :close-on-click-modal="false" width="400px">
-    <TextStyle v-if="styleDialogStatus" @styleChange="styleChange" />
+    <TextStyle v-if="styleDialogStatus" :textStyle="styles" @styleChange="styleChange" />
   </ElDialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { cloneDeep } from 'lodash'
-import { ElButton, ElDialog, ElInput, ElNotification, ElPopconfirm } from 'element-plus'
+import { ElButton, ElDialog, ElInput, ElPopconfirm } from 'element-plus'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useNodeBar } from '@/composables/NodeBar'
-import { useFile } from '@/composables/File'
-import { removeDefaultNode } from '@/composables/utils'
+import { notify } from '@/composables/Notify'
+import { clone, removeDefaultNode } from '@/composables/utils'
 import { defaultNodes } from '@/state'
-import { screenNodeTypes } from '@/enums'
+import { fontFamilies, screenNodeTypes } from '@/enums'
 import type { TTextNodeData, TTextNodeDataStyle } from '@/types'
 import TextStyle from '@/components/studio/node-tool/TextStyle.vue'
 
 const { t } = useI18n()
 const dragdrop = useDragDrop()
 const nodeBar = useNodeBar()
-const file = useFile()
 
 const styleDialogStatus = ref(false)
 const text = ref('')
-const styles = ref({
+const styles = ref<TTextNodeDataStyle>({
   color: '#FFFFFF',
-  fontFamily: 'Arial',
+  fontFamily: fontFamilies[0].value,
   fontSize: 24,
 })
 
@@ -79,14 +77,11 @@ const nodes = computed(() => defaultNodes.value.filter((item) => item.type == sc
 
 function addNewText() {
   if (text.value.trim() == '') {
-    ElNotification({
-      message: t('content_empty'),
-      type: 'warning',
-    })
+    notify('warning', t('content_empty'))
     return
   }
 
-  nodeBar.setTextStore(cloneDeep({ text: text.value, style: styles.value }))
+  nodeBar.setTextStore(clone({ text: text.value, style: styles.value }))
 
   text.value = ''
   setStyleDialogStatus(false)
@@ -94,7 +89,6 @@ function addNewText() {
 
 function removeNode(id: string) {
   removeDefaultNode(id)
-  file.setDefaultNodes()
 }
 
 function styleChange(data: TTextNodeDataStyle) {
