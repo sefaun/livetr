@@ -12,6 +12,17 @@ Livetr is a desktop live streaming studio. Build scenes from cameras, screen/win
 npm install
 ```
 
+## Project Structure
+
+| Folder     | Description                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| `src`      | Studio interface (Vue + TypeScript), runs in the Electron window or in a browser                       |
+| `electron` | Electron main process and preload bridge (TypeScript `.mts`), compiled to `dist-electron` with esbuild |
+| `shared`   | Types and IPC contract shared by the interface and the Electron main process                           |
+| `scripts`  | Development and build scripts (TypeScript `.mts`, run with `tsx`)                                      |
+
+`npm run build` type-checks everything (`vue-tsc -b`), builds the interface to `dist` and the Electron code to `dist-electron`.
+
 ## Development
 
 ### Desktop (Electron)
@@ -26,7 +37,7 @@ npm run dev
 npm run electron
 ```
 
-`npm run electron` waits for the development server (`http://localhost:3001`), so the commands can be started in any order.
+`npm run electron` compiles the Electron code and waits for the development server (`http://localhost:3001`), so the commands can be started in any order. Restart it after changing files in `electron`.
 
 ### Web
 

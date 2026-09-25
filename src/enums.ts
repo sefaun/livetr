@@ -1,4 +1,5 @@
 import type { InjectionKey } from 'vue'
+import { screenNodeTypes } from '@shared/model'
 import type { TLiveResolution, TNode, TuseNode } from '@/types'
 
 export const NodeId: InjectionKey<TuseNode> = Symbol('nodeId')
@@ -22,15 +23,7 @@ export const channelRTMP = {
 
 export const fps = [30, 60] as const
 
-export const screenNodeTypes = {
-  text: 'text',
-  image: 'image',
-  video: 'video',
-  sourceMedia: 'sourceMedia',
-  liveCamera: 'liveCamera',
-  background: 'background',
-  backgroundSound: 'backgroundSound',
-} as const
+export { screenNodeTypes } from '@shared/model'
 
 export const nodeData = {
   id: '',

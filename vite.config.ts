@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
     },
   },
   //for element-plus sass
@@ -23,7 +24,7 @@ export default defineConfig({
   server: {
     port: 3001,
     watch: {
-      ignored: ['store/**'],
+      ignored: ['store/**', 'dist-electron/**', 'release/**'],
     },
   },
 })

@@ -1,16 +1,18 @@
-const { spawn } = require('node:child_process')
-const { EventEmitter } = require('node:events')
-const fs = require('node:fs')
-const path = require('node:path')
-const {
-  ffmpegExists,
-  normalizeStreamConfig,
+import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import { EventEmitter } from 'node:events'
+import fs from 'node:fs'
+import path from 'node:path'
+import type { TStreamConfig, TStreamEndedEvent, TStreamEvent, TStreamStartResult, TStreamState } from '../shared/ipc.js'
+import {
   buildFfmpegArgs,
   createProgressParser,
-  extractErrorMessage,
   createSecretMasker,
+  extractErrorMessage,
+  ffmpegExists,
+  normalizeStreamConfig,
   recordingFileName,
-} = require('./ffmpeg.cjs')
+  type TProgress,
+} from './ffmpeg.mjs'
 
 /** Bağlantı kurulup ilk kare gönderilene kadar beklenecek süre. */
 const CONNECT_TIMEOUT_MS = 30000
@@ -26,32 +28,84 @@ const MAX_BUFFERED_BYTES = 256 * 1024 * 1024
 const CONGESTION_SECONDS = 3
 const MAX_LOG_LINES = 60
 
+export type TLogger = Pick<Console, 'info' | 'warn' | 'error'>
+
+type TStreamManagerOptions = {
+  ffmpegPath: string | null
+  recordingsDir: string
+  log?: TLogger
+}
+
+type TSession = {
+  child: ChildProcessWithoutNullStreams
+  config: TStreamConfig
+  recordPath: string | null
+  mask: (text: unknown) => string
+  stopping: boolean
+  failure: string | null
+  closed: boolean
+  logLines: string[]
+  stderrBuffer: string
+  writtenBytes: number
+  startedAt: number
+  liveAt: number
+  lastWriteAt: number
+  lastProgressAt: number
+  lastOutTimeMs: number
+  lastFrame: number
+  lastFrameAt: number
+  currentFps: number
+  congested: boolean
+  timer: NodeJS.Timeout | null
+  stopTimer: NodeJS.Timeout | null
+  exited: Promise<void>
+  resolveExited: () => void
+}
+
+type TStreamManagerEvents = {
+  event: [event: TStreamEvent]
+}
+
+/** IPC ile gelen veri parçasını Buffer'a çevirir (ArrayBuffer, TypedArray ya da Buffer olabilir). */
+function toBuffer(chunk: unknown): Buffer | null {
+  if (Buffer.isBuffer(chunk)) {
+    return chunk
+  }
+
+  if (ArrayBuffer.isView(chunk)) {
+    return Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+  }
+
+  if (chunk instanceof ArrayBuffer) {
+    return Buffer.from(chunk)
+  }
+
+  return null
+}
+
 /**
  * ffmpeg sürecini yönetir: başlatma, veri aktarımı (backpressure takibi), ilerleme istatistikleri,
  * hata tespiti ve düzgün kapatma. Renderer yeniden yüklense ya da kapansa bile süreç ana süreçte kontrol altındadır.
- *
- * Olaylar (`event`):
- *  - { type: 'state', state: 'starting' | 'live' | 'stopping' | 'idle' }
- *  - { type: 'stats', stats }
- *  - { type: 'warning', code: 'congested' | 'recovered' }
- *  - { type: 'ended', reason: 'stopped' | 'error', message?, details?, recordPath? }
  */
-class StreamManager extends EventEmitter {
-  constructor({ ffmpegPath, recordingsDir, log = console }) {
+export class StreamManager extends EventEmitter<TStreamManagerEvents> {
+  private readonly ffmpegPath: string | null
+  private readonly recordingsDir: string
+  private readonly log: TLogger
+  private session: TSession | null = null
+  private state: TStreamState = 'idle'
+
+  constructor({ ffmpegPath, recordingsDir, log = console }: TStreamManagerOptions) {
     super()
     this.ffmpegPath = ffmpegPath
     this.recordingsDir = recordingsDir
     this.log = log
-    this.process = null
-    this.state = 'idle'
-    this.session = null
   }
 
-  isActive() {
-    return this.process != null
+  isActive(): boolean {
+    return this.session != null
   }
 
-  setState(state) {
+  private setState(state: TStreamState): void {
     if (this.state != state) {
       this.state = state
       this.emit('event', { type: 'state', state })
@@ -61,8 +115,8 @@ class StreamManager extends EventEmitter {
   /**
    * ffmpeg'i başlatır. Veri, `write()` ile gönderilmeye başlanmalıdır.
    */
-  start(rawConfig) {
-    if (this.process) {
+  start(rawConfig: unknown): TStreamStartResult {
+    if (this.session) {
       throw new Error('A stream is already running')
     }
 
@@ -71,52 +125,52 @@ class StreamManager extends EventEmitter {
     }
 
     const config = normalizeStreamConfig(rawConfig)
-    let recordPath = null
+    let recordPath: string | null = null
     if (config.record) {
       fs.mkdirSync(this.recordingsDir, { recursive: true })
       recordPath = path.join(this.recordingsDir, recordingFileName())
     }
 
-    const args = buildFfmpegArgs(config, { recordPath })
-    const child = spawn(this.ffmpegPath, args, { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true })
+    const child = spawn(this.ffmpegPath, buildFfmpegArgs(config, { recordPath }), { windowsHide: true })
 
-    const session = {
+    let resolveExited: () => void = () => {}
+    const exited = new Promise<void>((resolve) => (resolveExited = resolve))
+    const now = Date.now()
+    const session: TSession = {
       child,
       config,
       recordPath,
+      mask: createSecretMasker(config.url),
       stopping: false,
       failure: null,
+      closed: false,
       logLines: [],
       stderrBuffer: '',
       writtenBytes: 0,
-      startedAt: Date.now(),
+      startedAt: now,
       liveAt: 0,
+      lastWriteAt: now,
       lastProgressAt: 0,
       lastOutTimeMs: -1,
-      congested: false,
-      lastWriteAt: Date.now(),
       lastFrame: 0,
       lastFrameAt: 0,
       currentFps: 0,
-      mask: createSecretMasker(config.url),
+      congested: false,
       timer: null,
       stopTimer: null,
-      closed: false,
-      resolveExited: null,
-      exited: null,
+      exited,
+      resolveExited,
     }
-    session.exited = new Promise((resolve) => (session.resolveExited = resolve))
 
-    this.process = child
     this.session = session
     this.setState('starting')
-    this.log.info?.(`[stream] ffmpeg started (${config.width}x${config.height}@${config.fps}, ${config.videoBitrate}k)`)
+    this.log.info(`[stream] ffmpeg started (${config.width}x${config.height}@${config.fps}, ${config.videoBitrate}k)`)
 
     child.stdout.on(
       'data',
       createProgressParser((stats) => this.onProgress(session, stats))
     )
-    child.stderr.on('data', (chunk) => this.onStderr(session, chunk))
+    child.stderr.on('data', (chunk: Buffer) => this.onStderr(session, chunk))
     // ffmpeg kapandıktan sonra yapılan yazmalar EPIPE üretir; asıl hata 'close' olayında raporlanır.
     child.stdin.on('error', () => {})
     child.on('error', (error) => {
@@ -136,22 +190,17 @@ class StreamManager extends EventEmitter {
   /**
    * MediaRecorder'dan gelen WebM parçasını ffmpeg'e yazar.
    */
-  write(chunk) {
+  write(chunk: unknown): void {
     const session = this.session
-    if (!session || session.stopping || !chunk) {
+    if (!session || session.stopping) {
       return
     }
 
+    const buffer = toBuffer(chunk)
     const stdin = session.child.stdin
-    if (!stdin.writable) {
+    if (!buffer || !stdin.writable) {
       return
     }
-
-    const buffer = Buffer.isBuffer(chunk)
-      ? chunk
-      : ArrayBuffer.isView(chunk)
-        ? Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength)
-        : Buffer.from(chunk)
 
     session.writtenBytes += buffer.length
     session.lastWriteAt = Date.now()
@@ -166,7 +215,7 @@ class StreamManager extends EventEmitter {
    * Yayını düzgün şekilde sonlandırır: girdi kapatılır, ffmpeg kalan veriyi kodlayıp platforma iletir ve çıkar.
    * Belirlenen sürede çıkmazsa süreç zorla sonlandırılır.
    */
-  stop() {
+  stop(): Promise<void> {
     const session = this.session
     if (!session) {
       return Promise.resolve()
@@ -184,23 +233,23 @@ class StreamManager extends EventEmitter {
       }
 
       session.stopTimer = setTimeout(() => {
-        this.log.warn?.('[stream] ffmpeg did not exit in time, killing it')
+        this.log.warn('[stream] ffmpeg did not exit in time, killing it')
         session.child.kill('SIGKILL')
       }, STOP_TIMEOUT_MS)
     }
 
-    return session.exited.then(() => undefined)
+    return session.exited
   }
 
   /** Uygulama kapanırken beklemeden süreci sonlandırır. */
-  kill() {
+  kill(): void {
     if (this.session) {
       this.session.stopping = true
       this.session.child.kill('SIGKILL')
     }
   }
 
-  onProgress(session, stats) {
+  private onProgress(session: TSession, stats: TProgress): void {
     if (session != this.session) {
       return
     }
@@ -224,8 +273,7 @@ class StreamManager extends EventEmitter {
       this.setState('live')
     }
 
-    const stdin = session.child.stdin
-    const bufferedBytes = stdin.writableLength
+    const bufferedBytes = session.child.stdin.writableLength
     const elapsedSeconds = Math.max(1, (now - session.startedAt) / 1000)
     const inputBytesPerSecond = session.writtenBytes / elapsedSeconds
     const bufferedSeconds = inputBytesPerSecond > 0 ? bufferedBytes / inputBytesPerSecond : 0
@@ -250,10 +298,10 @@ class StreamManager extends EventEmitter {
     })
   }
 
-  onStderr(session, chunk) {
+  private onStderr(session: TSession, chunk: Buffer): void {
     session.stderrBuffer += chunk.toString()
     const lines = session.stderrBuffer.split(/\r?\n/)
-    session.stderrBuffer = lines.pop()
+    session.stderrBuffer = lines.pop() ?? ''
 
     for (const line of lines) {
       if (!line.trim()) {
@@ -266,12 +314,12 @@ class StreamManager extends EventEmitter {
       }
 
       if (process.env.NODE_MODE == 'development') {
-        this.log.info?.(`[ffmpeg] ${session.mask(line)}`)
+        this.log.info(`[ffmpeg] ${session.mask(line)}`)
       }
     }
   }
 
-  watchdog(session) {
+  private watchdog(session: TSession): void {
     if (session != this.session || session.stopping) {
       return
     }
@@ -286,61 +334,60 @@ class StreamManager extends EventEmitter {
     }
   }
 
-  fail(session, message) {
+  private fail(session: TSession, message: string): void {
     if (session != this.session || session.failure) {
       return
     }
 
     session.failure = message
     session.stopping = true
-    this.log.error?.(`[stream] ${message}`)
+    this.log.error(`[stream] ${message}`)
     session.child.stdin.destroy()
     if (session.child.pid != null) {
       session.child.kill('SIGKILL')
     }
   }
 
-  onClose(session, code, signal) {
+  private onClose(session: TSession, code: number | null, signal: NodeJS.Signals | null): void {
     if (session.closed) {
       return
     }
 
     session.closed = true
-    clearInterval(session.timer)
-    clearTimeout(session.stopTimer)
+    if (session.timer) {
+      clearInterval(session.timer)
+    }
+    if (session.stopTimer) {
+      clearTimeout(session.stopTimer)
+    }
 
     if (session.stderrBuffer.trim()) {
       session.logLines.push(session.stderrBuffer)
     }
 
-    const details = session.mask(session.logLines.slice(-15).join('\n'))
-    const userStopped = session.stopping && !session.failure
-    let event
+    const recordPath = session.recordPath && fs.existsSync(session.recordPath) ? session.recordPath : null
+    let event: TStreamEndedEvent
 
-    if (userStopped) {
-      event = { type: 'ended', reason: 'stopped', recordPath: session.recordPath }
+    if (session.stopping && !session.failure) {
+      event = { type: 'ended', reason: 'stopped', recordPath }
     } else {
       const message =
         session.failure ||
         extractErrorMessage(session.logLines) ||
         `ffmpeg exited unexpectedly (${signal ? `signal ${signal}` : `code ${code}`})`
+
       event = {
         type: 'ended',
         reason: 'error',
         message: session.mask(message),
-        details,
-        recordPath: session.recordPath,
+        details: session.mask(session.logLines.slice(-15).join('\n')),
+        recordPath,
       }
     }
 
-    this.log.info?.(`[stream] ffmpeg exited (code: ${code}, signal: ${signal}, reason: ${event.reason})`)
-
-    if (session.recordPath && !fs.existsSync(session.recordPath)) {
-      event.recordPath = null
-    }
+    this.log.info(`[stream] ffmpeg exited (code: ${code}, signal: ${signal}, reason: ${event.reason})`)
 
     if (this.session == session) {
-      this.process = null
       this.session = null
     }
 
@@ -349,5 +396,3 @@ class StreamManager extends EventEmitter {
     session.resolveExited()
   }
 }
-
-module.exports = { StreamManager }

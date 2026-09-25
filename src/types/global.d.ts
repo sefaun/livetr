@@ -1,4 +1,4 @@
-import type { TDesktopApi } from '@/platform/types'
+import type { TDesktopApi } from '@shared/ipc'
 
 declare global {
   interface Window {

@@ -1,20 +1,28 @@
-const { app, BrowserWindow, dialog, screen, session, shell } = require('electron')
-const path = require('node:path')
-const { pathToFileURL } = require('node:url')
-const { createStore } = require('./store.cjs')
-const { StreamManager } = require('./stream.cjs')
-const { resolveFfmpegPath } = require('./ffmpeg.cjs')
-const { registerIpcHandlers } = require('./ipc.cjs')
-const i18n = require('./i18n.cjs')
+import { app, BrowserWindow, dialog, screen, session, shell } from 'electron'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { resolveFfmpegPath } from './ffmpeg.mjs'
+import * as i18n from './i18n.mjs'
+import { registerIpcHandlers } from './ipc.mjs'
+import { createStore } from './store.mjs'
+import { StreamManager } from './stream.mjs'
+import type { TEventChannel, TEventChannels } from '../shared/ipc.js'
 
+/** Derlenmiş dosyaların bulunduğu klasör (dist-electron). */
+const currentDir = import.meta.dirname
 const development = process.env.NODE_MODE == 'development'
 const devServerUrl = process.env.LIVETR_DEV_SERVER_URL || 'http://localhost:3001'
-const indexHtml = path.join(__dirname, '../dist/index.html')
+const indexHtml = path.join(currentDir, '../dist/index.html')
 const appId = 'com.livetr.id'
 const SPLASH_MIN_MS = 1500
 
 /** Uygulamanın kendi sayfası dışında hiçbir izin verilmez; kamera/mikrofon ve ekran yakalama gereklidir. */
-const allowedPermissions = new Set(['media', 'display-capture', 'fullscreen', 'clipboard-sanitized-write'])
+const allowedPermissions: ReadonlySet<string> = new Set([
+  'media',
+  'display-capture',
+  'fullscreen',
+  'clipboard-sanitized-write',
+])
 
 // Pencere küçültülse, arkada kalsa ya da başka bir pencerenin altında kalsa bile
 // canvas çizimi, zamanlayıcılar ve kodlama tam hızda devam etmeli; aksi hâlde yayın donar.
@@ -24,13 +32,13 @@ app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
 // Ses motoru (AudioContext) ve videolar kullanıcı etkileşimi beklemeden çalışabilmeli.
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
-let mainWindow = null
-let splashWindow = null
+let mainWindow: BrowserWindow | null = null
+let splashWindow: BrowserWindow | null = null
 let splashShownAt = 0
 let closeConfirmed = false
 let quitRequested = false
 
-function resolveDataDir() {
+function resolveDataDir(): string {
   if (process.env.LIVETR_DATA_DIR) {
     return path.resolve(process.env.LIVETR_DATA_DIR)
   }
@@ -40,7 +48,7 @@ function resolveDataDir() {
 }
 
 /** electron-builder "extraFiles" ile kopyalanan örnek medyaların bulunduğu klasör. */
-function resolveBundledStoreDir() {
+function resolveBundledStoreDir(): string {
   if (!app.isPackaged) {
     return path.join(app.getAppPath(), 'store')
   }
@@ -50,7 +58,7 @@ function resolveBundledStoreDir() {
     : path.join(path.dirname(process.execPath), 'store')
 }
 
-function resolveRecordingsDir() {
+function resolveRecordingsDir(): string {
   try {
     return path.join(app.getPath('videos'), 'Livetr')
   } catch (_error) {
@@ -72,13 +80,16 @@ const stream = new StreamManager({
   recordingsDir: resolveRecordingsDir(),
 })
 
-stream.on('event', (event) => {
+/** Ana pencereye tiplenmiş olay gönderir (sözleşme: shared/ipc.ts). */
+function sendToRenderer<K extends TEventChannel>(channel: K, ...args: TEventChannels[K]): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('stream:event', event)
+    mainWindow.webContents.send(channel, ...args)
   }
-})
+}
 
-function isAppUrl(url) {
+stream.on('event', (event) => sendToRenderer('stream:event', event))
+
+function isAppUrl(url: string): boolean {
   try {
     if (development) {
       return new URL(url).origin == new URL(devServerUrl).origin
@@ -90,9 +101,9 @@ function isAppUrl(url) {
   }
 }
 
-function createSplashWindow() {
+function createSplashWindow(): void {
   splashShownAt = Date.now()
-  splashWindow = new BrowserWindow({
+  const splash = new BrowserWindow({
     width: 380,
     height: 140,
     frame: false,
@@ -103,11 +114,16 @@ function createSplashWindow() {
     skipTaskbar: true,
   })
 
-  splashWindow.loadFile(path.join(__dirname, 'splash.html'))
-  splashWindow.on('closed', () => (splashWindow = null))
+  splash.loadFile(path.join(currentDir, 'splash.html'))
+  splash.on('closed', () => {
+    if (splashWindow == splash) {
+      splashWindow = null
+    }
+  })
+  splashWindow = splash
 }
 
-function closeSplashWindow() {
+function closeSplashWindow(): void {
   if (splashWindow && !splashWindow.isDestroyed()) {
     splashWindow.destroy()
   }
@@ -115,10 +131,10 @@ function closeSplashWindow() {
   splashWindow = null
 }
 
-function createMainWindow() {
+function createMainWindow(): void {
   const { workAreaSize } = screen.getPrimaryDisplay()
 
-  mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     title: 'Livetr',
     width: Math.min(1500, workAreaSize.width),
     height: Math.min(900, workAreaSize.height),
@@ -126,9 +142,9 @@ function createMainWindow() {
     minHeight: Math.min(680, workAreaSize.height),
     show: false,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, development ? '../public/icon.png' : '../dist/icon.png'),
+    icon: path.join(currentDir, development ? '../public/icon.png' : '../dist/icon.png'),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
+      preload: path.join(currentDir, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -141,8 +157,7 @@ function createMainWindow() {
       spellcheck: false,
     },
   })
-
-  const win = mainWindow
+  mainWindow = win
 
   if (development) {
     win.loadURL(`${devServerUrl}/#/studio`)
