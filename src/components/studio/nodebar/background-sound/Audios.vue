@@ -5,6 +5,7 @@
         <div class="min-w-12 min-h-12">
           <audio
             ref="audioPlayerRef"
+            :crossorigin="mediaCrossOrigin(src)"
             :src="src"
             @timeupdate="onTimeUpdate"
             @loadedmetadata="onLoadedMetadata"
@@ -82,6 +83,7 @@ import { useI18n } from 'vue-i18n'
 import { ElButton, ElIcon, ElPopconfirm, ElSlider } from 'element-plus'
 import { Delete, Refresh, VideoPause, VideoPlay } from '@element-plus/icons-vue'
 import { platform } from '@/platform'
+import { mediaCrossOrigin } from '@/platform/url'
 import { useAudio } from '@/composables/Audio'
 import { useNodeAudio } from '@/composables/NodeAudio'
 import { volumeOptions } from '@/enums'

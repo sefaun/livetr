@@ -3,7 +3,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   base: './',
   plugins: [vue(), tailwindcss()],
@@ -13,18 +12,10 @@ export default defineConfig({
       '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
     },
   },
-  //for element-plus sass
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: 'modern-compiler',
-      },
-    },
-  },
   server: {
     port: 3001,
     watch: {
-      ignored: ['store/**', 'dist-electron/**', 'release/**'],
+      ignored: ['**/store/**', '**/dist-electron/**', '**/release/**'],
     },
   },
 })

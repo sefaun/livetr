@@ -2,6 +2,7 @@
   <video
     ref="mediaRef"
     v-bind="attrs"
+    :crossorigin="mediaCrossOrigin(fileSrc)"
     :src="fileSrc"
     :poster="poster"
     @loadedmetadata="onLoadedMetadata"
@@ -15,6 +16,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, inject, useAttrs } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { platform } from '@/platform'
+import { mediaCrossOrigin } from '@/platform/url'
 import { useLiveMedia } from '@/composables/LiveMedia'
 import { useLive } from '@/composables/Live'
 import { notify } from '@/composables/Notify'
@@ -63,13 +65,13 @@ const fileSrc = computed(() => (props.src ? platform.toMediaUrl(props.src) : und
 
 function onLoadedMetadata() {
   poster.value = undefined
-  if (props.src) {
+  if (props.src && !unmounted) {
     node.getNodeAudio().attach(mediaRef.value)
   }
 }
 
 function onError() {
-  if (!props.src) {
+  if (!props.src || unmounted) {
     return
   }
 
@@ -111,8 +113,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   unmounted = true
-  stream?.getTracks().forEach((track) => track.stop())
-  if (mediaRef.value) {
+  if (stream) {
+    stream.getTracks().forEach((track) => track.stop())
+    // Dosya videosunda srcObject'e dokunulmaz; atama, videonun baştan yüklenmesini tetikler.
     mediaRef.value.srcObject = null
   }
 })

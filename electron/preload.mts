@@ -10,14 +10,6 @@ import type {
   TSendChannels,
 } from '../shared/ipc.js'
 
-/**
- * Renderer'a açılan masaüstü API'si (window.livetr).
- * Renderer'da Node.js erişimi yoktur; dosya, diyalog, ekran yakalama ve ffmpeg işlemleri bu köprü üzerinden
- * ana süreçte yapılır. Kanallar ve tipler shared/ipc.ts sözleşmesinden gelir.
- *
- * Not: Pencere sandbox içinde çalıştığı için bu dosya CommonJS (preload.cjs) olarak derlenir.
- */
-
 function invoke<K extends TInvokeChannel>(channel: K, ...args: TInvokeArgs<K>): Promise<TInvokeResult<K>> {
   return ipcRenderer.invoke(channel, ...args)
 }

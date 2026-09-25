@@ -4,11 +4,11 @@ import { pathToFileURL } from 'node:url'
 import { resolveFfmpegPath } from './ffmpeg.mjs'
 import * as i18n from './i18n.mjs'
 import { registerIpcHandlers } from './ipc.mjs'
+import { handleMediaProtocol, registerMediaScheme } from './media-protocol.mjs'
 import { createStore } from './store.mjs'
 import { StreamManager } from './stream.mjs'
 import type { TEventChannel, TEventChannels } from '../shared/ipc.js'
 
-/** Derlenmiş dosyaların bulunduğu klasör (dist-electron). */
 const currentDir = import.meta.dirname
 const development = process.env.NODE_MODE == 'development'
 const devServerUrl = process.env.LIVETR_DEV_SERVER_URL || 'http://localhost:3001'
@@ -16,7 +16,6 @@ const indexHtml = path.join(currentDir, '../dist/index.html')
 const appId = 'com.livetr.id'
 const SPLASH_MIN_MS = 1500
 
-/** Uygulamanın kendi sayfası dışında hiçbir izin verilmez; kamera/mikrofon ve ekran yakalama gereklidir. */
 const allowedPermissions: ReadonlySet<string> = new Set([
   'media',
   'display-capture',
@@ -24,13 +23,13 @@ const allowedPermissions: ReadonlySet<string> = new Set([
   'clipboard-sanitized-write',
 ])
 
-// Pencere küçültülse, arkada kalsa ya da başka bir pencerenin altında kalsa bile
-// canvas çizimi, zamanlayıcılar ve kodlama tam hızda devam etmeli; aksi hâlde yayın donar.
+// Pencere küçültülse ya da arkada kalsa bile canvas çizimi ve zamanlayıcılar yavaşlamamalı; aksi hâlde yayın donar.
 app.commandLine.appendSwitch('disable-renderer-backgrounding')
 app.commandLine.appendSwitch('disable-background-timer-throttling')
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
-// Ses motoru (AudioContext) ve videolar kullanıcı etkileşimi beklemeden çalışabilmeli.
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
+
+registerMediaScheme()
 
 let mainWindow: BrowserWindow | null = null
 let splashWindow: BrowserWindow | null = null
@@ -43,11 +42,9 @@ function resolveDataDir(): string {
     return path.resolve(process.env.LIVETR_DATA_DIR)
   }
 
-  // Geliştirme ortamında veriler proje içindeki store klasöründe tutulur (önceki davranış).
   return app.isPackaged ? path.join(app.getPath('userData'), 'store') : path.join(app.getAppPath(), 'store')
 }
 
-/** electron-builder "extraFiles" ile kopyalanan örnek medyaların bulunduğu klasör. */
 function resolveBundledStoreDir(): string {
   if (!app.isPackaged) {
     return path.join(app.getAppPath(), 'store')
@@ -69,7 +66,7 @@ function resolveRecordingsDir(): string {
 const store = createStore({
   dataDir: resolveDataDir(),
   bundledStoreDir: resolveBundledStoreDir(),
-  // Eski sürümler verileri çalışma klasörüne (process.cwd()/store) yazıyordu.
+  // Eski sürümler verileri çalışma klasörüne yazıyordu.
   legacyDirs: app.isPackaged
     ? [path.join(path.dirname(process.execPath), 'store'), path.join(process.cwd(), 'store')]
     : [],
@@ -80,7 +77,6 @@ const stream = new StreamManager({
   recordingsDir: resolveRecordingsDir(),
 })
 
-/** Ana pencereye tiplenmiş olay gönderir (sözleşme: shared/ipc.ts). */
 function sendToRenderer<K extends TEventChannel>(channel: K, ...args: TEventChannels[K]): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, ...args)
@@ -148,10 +144,6 @@ function createMainWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      // Sahnede kullanıcının seçtiği yerel dosyalar (file://) gösterilir ve yayın canvas'ına çizilir.
-      // Web güvenliği açık olursa bu dosyalar geliştirme sunucusundan yüklenemez ve canvas "tainted" olur.
-      webSecurity: false,
-      // Pencere arka plandayken de yayın canvas'ı ve zamanlayıcılar yavaşlatılmamalı.
       backgroundThrottling: false,
       devTools: development,
       spellcheck: false,
@@ -178,7 +170,7 @@ function createMainWindow(): void {
     )
   })
 
-  // Pencereye dosya sürüklenip bırakıldığında ya da bir bağlantıya tıklandığında uygulama sayfası değişmemeli.
+  // Pencereye bırakılan dosya ya da tıklanan bağlantı uygulama sayfasının yerini almamalı.
   win.webContents.on('will-navigate', (event, url) => {
     if (!isAppUrl(url)) {
       event.preventDefault()
@@ -193,7 +185,7 @@ function createMainWindow(): void {
     return { action: 'deny' }
   })
 
-  // Sayfa yenilenirse ya da çökerse yayını besleyen kaynak ortadan kalkar; ffmpeg düzgünce kapatılır.
+  // Sayfa yenilenirse yayını besleyen kaynak ortadan kalkar.
   win.webContents.on('did-start-navigation', (event) => {
     if (event.isMainFrame && !event.isSameDocument) {
       stream.stop()
@@ -250,7 +242,7 @@ function createMainWindow(): void {
     if (response == 0) {
       closeConfirmed = true
       stream.stop().finally(() => {
-        // Uygulamadan çıkılıyorsa (ör. macOS'ta Cmd+Q) çıkış tamamlanır, yoksa sadece pencere kapanır.
+        // macOS'ta Cmd+Q ile çıkılıyorsa çıkış tamamlanır, yoksa sadece pencere kapanır.
         if (quitRequested) {
           app.quit()
         } else if (!win.isDestroyed()) {
@@ -270,7 +262,6 @@ function createMainWindow(): void {
 }
 
 if (!app.requestSingleInstanceLock()) {
-  // Aynı veriler üzerinde iki uygulama çalışmamalı (dosyalar ve yayın çakışır).
   app.quit()
 } else {
   app.on('second-instance', () => {
@@ -284,7 +275,6 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   app.whenReady().then(() => {
-    // Masaüstü bildirimlerinde uygulama adı gösterilecek.
     if (process.platform == 'win32') {
       app.setAppUserModelId(appId)
     }
@@ -292,6 +282,8 @@ if (!app.requestSingleInstanceLock()) {
     session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
       callback(allowedPermissions.has(permission))
     })
+
+    handleMediaProtocol()
 
     registerIpcHandlers({
       getMainWindow: () => mainWindow,
@@ -323,11 +315,9 @@ if (!app.requestSingleInstanceLock()) {
 
   let storeFlushed = false
   app.on('will-quit', (event) => {
-    // Her ihtimale karşı: uygulama kapanırken arkada ffmpeg süreci bırakılmaz.
     stream.kill()
 
-    // Pencere kapanırken gönderilen son kayıtların diske yazılması beklenir.
-    // will-quit engellendikten sonra app.quit() tekrar çalışmadığı için (pencereler zaten kapalı) app.exit() kullanılır.
+    // Son kayıtlar diske yazılınca çıkılır; will-quit engellendikten sonra app.quit() tekrar çalışmaz.
     if (!storeFlushed) {
       event.preventDefault()
       storeFlushed = true

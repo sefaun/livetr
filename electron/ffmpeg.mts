@@ -2,15 +2,8 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import type { TStreamConfig, TStreamStats } from '../shared/ipc.js'
 
-/**
- * Canlı yayın için ffmpeg ile ilgili saf (yan etkisiz) yardımcılar.
- * Stüdyo; canvas + ses mikserini MediaRecorder ile WebM (VP8/Opus) olarak kodlar ve stdin'den ffmpeg'e aktarır.
- * ffmpeg bu akışı Twitch/YouTube'un beklediği formata (H.264 + AAC, FLV, sabit FPS, 2 sn keyframe) dönüştürür.
- */
-
 type TRange = readonly [min: number, max: number]
 
-/** Renderer'dan gelen değerler için kabul edilen aralıklar. */
 export const limits = {
   width: [128, 3840],
   height: [72, 2160],
@@ -21,15 +14,10 @@ export const limits = {
 
 const allowedProtocols: ReadonlySet<string> = new Set(['rtmp:', 'rtmps:'])
 
-/** ffmpeg `-progress` çıktısından elde edilen değerler (yayın tamponu bilgileri hariç). */
 export type TProgress = Omit<TStreamStats, 'bufferedBytes' | 'bufferedSeconds' | 'liveSince'>
 
 const require = createRequire(import.meta.url)
 
-/**
- * ffmpeg binary yolunu bulur. Paketlenmiş uygulamada binary asar dışına (app.asar.unpacked) çıkarılır.
- * LIVETR_FFMPEG_PATH ile farklı bir ffmpeg kullanılabilir.
- */
 export function resolveFfmpegPath(): string | null {
   const customPath = process.env.LIVETR_FFMPEG_PATH
   if (customPath) {
@@ -38,12 +26,12 @@ export function resolveFfmpegPath(): string | null {
 
   let binaryPath: string | null
   try {
-    // ffmpeg-static bir CommonJS modülüdür ve binary yolunu (platform desteklenmiyorsa null) dışa aktarır.
     binaryPath = require('ffmpeg-static') as string | null
   } catch (_error) {
     return null
   }
 
+  // Paketlenmiş uygulamada binary, asar arşivinin dışında (app.asar.unpacked) bulunur.
   return binaryPath ? binaryPath.replace(/app\.asar([\\/])/, 'app.asar.unpacked$1') : null
 }
 
@@ -68,10 +56,6 @@ function toInteger(value: unknown, [min, max]: TRange, name: string): number {
   return Math.round(number)
 }
 
-/**
- * Renderer'dan gelen yayın ayarlarını doğrular ve normalize eder.
- * IPC üzerinden gelen veri çalışma zamanında tip garantisi taşımadığı için `unknown` olarak alınır.
- */
 export function normalizeStreamConfig(config: unknown): TStreamConfig {
   if (!config || typeof config != 'object') {
     throw new Error('Missing stream configuration')
@@ -105,17 +89,11 @@ export function normalizeStreamConfig(config: unknown): TStreamConfig {
   }
 }
 
-/**
- * tee muxer'ın slave tanımındaki değerleri kaçışlar (av_get_token kuralları).
- * Tek tırnak içindeki her karakter olduğu gibi alınır; tırnağın kendisi '\'' şeklinde yazılır.
- */
+/** tee muxer çıktı adresini av_get_token kurallarına göre tek tırnakla kaçışlar. */
 export function escapeTeeValue(value: string): string {
   return `'${value.replace(/'/g, "'\\''")}'`
 }
 
-/**
- * ffmpeg argümanlarını üretir.
- */
 export function buildFfmpegArgs(config: TStreamConfig, options: { recordPath?: string | null } = {}): string[] {
   const gop = config.fps * 2
   const recordPath = config.record ? options.recordPath : null
@@ -129,7 +107,6 @@ export function buildFfmpegArgs(config: TStreamConfig, options: { recordPath?: s
     '1',
     '-progress',
     'pipe:1',
-    // Girdi: MediaRecorder'ın ürettiği canlı Matroska/WebM akışı.
     '-f',
     'matroska',
     '-i',
@@ -138,7 +115,7 @@ export function buildFfmpegArgs(config: TStreamConfig, options: { recordPath?: s
     '0:v:0',
     '-map',
     '0:a:0?',
-    // Görüntü: H.264, sabit FPS, platformların istediği 2 saniyelik keyframe aralığı ve CBR benzeri bitrate.
+    // Twitch/YouTube 2 saniyelik keyframe aralığı ve sabit bitrate bekler.
     '-c:v',
     'libx264',
     '-preset',
@@ -159,7 +136,6 @@ export function buildFfmpegArgs(config: TStreamConfig, options: { recordPath?: s
     `${config.videoBitrate}k`,
     '-bufsize',
     `${config.videoBitrate * 2}k`,
-    // Ses: AAC-LC stereo 48 kHz.
     '-c:a',
     'aac',
     '-b:a',
@@ -171,7 +147,7 @@ export function buildFfmpegArgs(config: TStreamConfig, options: { recordPath?: s
   ]
 
   if (recordPath) {
-    // Tek kodlama, iki çıktı: yayın (FLV) + yerel kayıt (MPEG-TS). Kayıt hatası yayını durdurmaz.
+    // Tek kodlamayla yayın + yerel kayıt; kayıt hatası yayını durdurmaz.
     args.push(
       '-flags',
       '+global_header',
@@ -207,9 +183,6 @@ function toStats(block: Readonly<Record<string, string>>): TProgress {
   }
 }
 
-/**
- * `-progress pipe:1` çıktısını satır satır işler ve her blok tamamlandığında callback'i çağırır.
- */
 export function createProgressParser(onProgress: (stats: TProgress) => void): (chunk: Buffer | string) => void {
   let buffer = ''
   let block: Record<string, string> = {}
@@ -236,9 +209,6 @@ export function createProgressParser(onProgress: (stats: TProgress) => void): (c
   }
 }
 
-/**
- * ffmpeg stderr satırlarından kullanıcıya gösterilecek en anlamlı hata mesajını seçer.
- */
 export function extractErrorMessage(lines: readonly string[]): string {
   const cleaned = lines
     .map((line) => line.replace(/^\[[^\]]+ @ [^\]]+\]\s*/, '').trim())
@@ -251,10 +221,6 @@ export function extractErrorMessage(lines: readonly string[]): string {
   return message.replace(/^\[(error|fatal|panic|warning)\]\s*/, '')
 }
 
-/**
- * Yayın anahtarı gizli bilgidir; hata mesajlarında ve loglarda gösterilmez.
- * Sunucu adresi (protokol, sunucu ve uygulama adı) korunur, geri kalanı maskelenir.
- */
 export function createSecretMasker(url: string): (text: unknown) => string {
   let masked = url
   const secrets = [url]

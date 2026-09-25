@@ -6,7 +6,6 @@ import type { TNode, TNodeStyle, TScene, TScreenNodeTypes, TStudioData } from '.
 import type { TStoreNotice, TStoreSnapshot } from '../shared/ipc.js'
 import type { TLogger } from './stream.mjs'
 
-/** Uygulamayla birlikte gelen örnek medyalar (store/nodebar). */
 export const sampleFiles = {
   image: 'test-image.png',
   video: 'bigbuckbunny.mp4',
@@ -34,7 +33,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value == 'object' && value != null && !Array.isArray(value)
 }
 
-/** Sadece metin değerli stil özelliklerini alır. */
 function toNodeStyle(value: unknown): TNodeStyle {
   const style: TNodeStyle = {}
   if (isRecord(value)) {
@@ -48,7 +46,6 @@ function toNodeStyle(value: unknown): TNodeStyle {
   return style
 }
 
-/** Node verisini türüne göre denetler: metin, dosya medyası (src) ya da canlı kaynak (id). */
 function toNodeData(type: TScreenNodeTypes, value: Record<string, unknown>): TNode['data'] | null {
   switch (type) {
     case screenNodeTypes.text: {
@@ -79,10 +76,7 @@ function toNodeData(type: TScreenNodeTypes, value: Record<string, unknown>): TNo
   }
 }
 
-/**
- * Diskten okunan (ya da renderer'dan gelen) değerin geçerli bir node olup olmadığını denetler ve normalize eder.
- * Geçersiz öğeler atlanır; böylece tek bir bozuk kayıt tüm sahnenin yüklenmesini engellemez.
- */
+/** Geçersiz öğeler atlanır; tek bir bozuk kayıt tüm sahnenin yüklenmesini engellemez. */
 function toNode(value: unknown): TNode | null {
   if (!isRecord(value) || typeof value.id != 'string' || !isScreenNodeType(value.type)) {
     return null
@@ -137,11 +131,6 @@ export function parseNodebar(content: string): TNode[] {
   return toNodes(data)
 }
 
-/**
- * Stüdyo verilerini (sahneler, node bar öğeleri, sahne küçük resimleri) diskte tutar.
- * Yazmalar dosya başına sıraya alınır ve atomik yapılır (önce geçici dosya, sonra rename);
- * böylece uygulama yazma sırasında kapanırsa JSON dosyaları bozulmaz.
- */
 export function createStore({ dataDir, bundledStoreDir, legacyDirs = [], log = console }: TStoreOptions) {
   const paths = {
     root: dataDir,
@@ -210,7 +199,6 @@ export function createStore({ dataDir, bundledStoreDir, legacyDirs = [], log = c
     await fsp.copyFile(from, to)
   }
 
-  /** Eski sürümlerin çalışma klasöründe tuttuğu verileri yeni veri klasörüne bir kez taşır. */
   async function migrateLegacyData(): Promise<void> {
     if (await exists(paths.studioJson)) {
       return
@@ -306,10 +294,6 @@ export function createStore({ dataDir, bundledStoreDir, legacyDirs = [], log = c
     ]
   }
 
-  /**
-   * JSON dosyasını okur. Dosya yoksa varsayılan içerik oluşturulur;
-   * bozuksa yedeği alınıp varsayılan içerik yüklenir ve `notices` listesine bilgi eklenir.
-   */
   async function readJson<T>(
     file: string,
     parse: (content: string) => T,
@@ -412,7 +396,6 @@ export function createStore({ dataDir, bundledStoreDir, legacyDirs = [], log = c
     await enqueue(file, () => fsp.rm(file, { force: true }))
   }
 
-  /** Bekleyen tüm yazmaların bitmesini bekler (uygulama kapanırken). */
   async function flush(): Promise<void> {
     await Promise.allSettled([...queues.values()])
   }

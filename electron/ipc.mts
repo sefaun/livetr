@@ -39,11 +39,6 @@ type TIpcDependencies = {
   setLocale: (locale: string) => void
 }
 
-/**
- * Renderer ile ana süreç arasındaki tüm IPC kanalları burada tanımlanır (sözleşme: shared/ipc.ts).
- * Sadece ana pencereden gelen istekler kabul edilir. Argümanların tipi derleme zamanında sözleşmeden gelir;
- * çalışma zamanında renderer'a güvenilmediği için veriler ayrıca doğrulanır.
- */
 export function registerIpcHandlers({ getMainWindow, store, stream, setLocale }: TIpcDependencies): void {
   function isTrusted(event: IpcMainEvent | IpcMainInvokeEvent): boolean {
     const window = getMainWindow()

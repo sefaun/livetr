@@ -14,17 +14,12 @@ import {
   type TProgress,
 } from './ffmpeg.mjs'
 
-/** Bağlantı kurulup ilk kare gönderilene kadar beklenecek süre. */
 const CONNECT_TIMEOUT_MS = 30000
-/** Canlıyken ffmpeg bu süre boyunca ilerleme bildirmezse yayın takılmış kabul edilir (ağ kopması vb.). */
 const STALL_TIMEOUT_MS = 20000
-/** Kapatma sırasında ffmpeg'in tamponu boşaltıp çıkması için tanınan süre. */
 const STOP_TIMEOUT_MS = 8000
-/** Kapatırken bu kadar veri hâlâ bekliyorsa beklenmez, girdi hemen kapatılır. */
+/** Kapatırken bundan fazla veri bekliyorsa gönderilmesi beklenmez. */
 const STOP_DISCARD_BYTES = 4 * 1024 * 1024
-/** ffmpeg'e yazılmayı bekleyen veri bu sınırı aşarsa (bellek koruması) yayın durdurulur. */
 const MAX_BUFFERED_BYTES = 256 * 1024 * 1024
-/** Bekleyen veri bu kadar saniyelik yayına denk gelirse kullanıcı uyarılır. */
 const CONGESTION_SECONDS = 3
 const MAX_LOG_LINES = 60
 
@@ -66,7 +61,6 @@ type TStreamManagerEvents = {
   event: [event: TStreamEvent]
 }
 
-/** IPC ile gelen veri parçasını Buffer'a çevirir (ArrayBuffer, TypedArray ya da Buffer olabilir). */
 function toBuffer(chunk: unknown): Buffer | null {
   if (Buffer.isBuffer(chunk)) {
     return chunk
@@ -83,10 +77,6 @@ function toBuffer(chunk: unknown): Buffer | null {
   return null
 }
 
-/**
- * ffmpeg sürecini yönetir: başlatma, veri aktarımı (backpressure takibi), ilerleme istatistikleri,
- * hata tespiti ve düzgün kapatma. Renderer yeniden yüklense ya da kapansa bile süreç ana süreçte kontrol altındadır.
- */
 export class StreamManager extends EventEmitter<TStreamManagerEvents> {
   private readonly ffmpegPath: string | null
   private readonly recordingsDir: string
@@ -112,9 +102,6 @@ export class StreamManager extends EventEmitter<TStreamManagerEvents> {
     }
   }
 
-  /**
-   * ffmpeg'i başlatır. Veri, `write()` ile gönderilmeye başlanmalıdır.
-   */
   start(rawConfig: unknown): TStreamStartResult {
     if (this.session) {
       throw new Error('A stream is already running')
@@ -187,9 +174,6 @@ export class StreamManager extends EventEmitter<TStreamManagerEvents> {
     return { recordPath }
   }
 
-  /**
-   * MediaRecorder'dan gelen WebM parçasını ffmpeg'e yazar.
-   */
   write(chunk: unknown): void {
     const session = this.session
     if (!session || session.stopping) {
@@ -211,10 +195,6 @@ export class StreamManager extends EventEmitter<TStreamManagerEvents> {
     }
   }
 
-  /**
-   * Yayını düzgün şekilde sonlandırır: girdi kapatılır, ffmpeg kalan veriyi kodlayıp platforma iletir ve çıkar.
-   * Belirlenen sürede çıkmazsa süreç zorla sonlandırılır.
-   */
   stop(): Promise<void> {
     const session = this.session
     if (!session) {
@@ -241,7 +221,6 @@ export class StreamManager extends EventEmitter<TStreamManagerEvents> {
     return session.exited
   }
 
-  /** Uygulama kapanırken beklemeden süreci sonlandırır. */
   kill(): void {
     if (this.session) {
       this.session.stopping = true
@@ -260,7 +239,7 @@ export class StreamManager extends EventEmitter<TStreamManagerEvents> {
       session.lastProgressAt = now
     }
 
-    // ffmpeg'in bildirdiği fps başlangıçtan beri ortalamadır; son saniyedeki gerçek kare hızı hesaplanır.
+    // ffmpeg'in bildirdiği fps başlangıçtan beri ortalamadır; anlık kare hızı ayrıca hesaplanır.
     if (session.lastFrameAt && now > session.lastFrameAt) {
       const fps = ((stats.frame - session.lastFrame) * 1000) / (now - session.lastFrameAt)
       session.currentFps = session.currentFps ? session.currentFps * 0.5 + fps * 0.5 : fps

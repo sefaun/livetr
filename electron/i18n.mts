@@ -1,5 +1,3 @@
-/** Ana süreçte gösterilen diyalog metinleri. Dil, renderer'dan (arayüz dili) bildirilir. */
-
 const en = {
   liveQuitTitle: 'You are live',
   liveQuitDetail: 'Closing Livetr will end the live stream.',
@@ -13,7 +11,6 @@ const en = {
 
 type TMessageKey = keyof typeof en
 
-/** Her dil, İngilizcedeki tüm anahtarları içermek zorundadır (eksik çeviri derleme hatasıdır). */
 const messages = {
   en,
   tr: {

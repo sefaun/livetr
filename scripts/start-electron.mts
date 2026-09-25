@@ -3,14 +3,9 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { buildElectron } from './build-electron.mts'
 
-/**
- * Geliştirme ortamında Electron kodunu derler ve uygulamayı Vite geliştirme sunucusuna bağlı olarak başlatır.
- * `npm run dev` ile sunucu açılana kadar bekler; iki komut herhangi bir sırayla çalıştırılabilir.
- * `npm run electron -- <argümanlar>` ile verilen ek argümanlar Electron'a iletilir.
- */
 const root = path.resolve(import.meta.dirname, '..')
 const devServerUrl = process.env.LIVETR_DEV_SERVER_URL || 'http://localhost:3001'
-// Node.js içinden `require('electron')`, Electron çalıştırılabilir dosyasının yolunu döner.
+// Node.js'te `require('electron')` Electron'un çalıştırılabilir dosya yolunu döner.
 const electronPath = createRequire(import.meta.url)('electron') as string
 
 async function waitForDevServer(timeoutMs = 60000): Promise<boolean> {
@@ -60,7 +55,6 @@ electronProcess.on('exit', (code) => {
   process.exit(code ?? 0)
 })
 
-// ctrl+c ile durdurma işlemini yakalar.
 process.on('SIGINT', () => {
   electronProcess.kill('SIGINT')
 })

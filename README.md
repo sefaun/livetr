@@ -6,7 +6,7 @@ Livetr is a desktop live streaming studio. Build scenes from cameras, screen/win
 
 ## Installation
 
-**Node.js ≥ v20.11.0** must be installed on your computer.
+**Node.js ≥ v22.12.0** must be installed on your computer.
 
 ```sh
 npm install

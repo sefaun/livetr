@@ -1,8 +1,3 @@
-/**
- * Stüdyo verilerinin (sahneler ve node bar öğeleri) kalıcı modeli.
- * Hem renderer (Vue) hem Electron ana süreci kullanır; DOM ya da Node.js tiplerine bağımlı değildir.
- */
-
 export const screenNodeTypes = {
   text: 'text',
   image: 'image',
@@ -15,7 +10,7 @@ export const screenNodeTypes = {
 
 export type TScreenNodeTypes = (typeof screenNodeTypes)[keyof typeof screenNodeTypes]
 
-/** Node'un CSS stili. Boyutlar mantıksal piksel ('150px'), yüzde ya da 'fit-content'; zIndex metin olarak tutulur. */
+/** Boyutlar sahnenin mantıksal pikseli ('150px'), yüzde ya da 'fit-content' olabilir. */
 export type TNodeStyle = {
   width?: string
   height?: string
@@ -34,13 +29,13 @@ export type TTextNodeData = {
   style: TTextNodeDataStyle
 }
 
-/** Dosyadan gelen medya: resim, video, arka plan ve arka plan sesi. `src` yerel dosya yolu ya da URL'dir. */
+/** `src`: yerel dosya yolu ya da URL. */
 export type TMediaNodeData = {
   title: string
   src: string
 }
 
-/** Canlı kaynak: kamera (`id` = deviceId) ya da ekran/pencere (`id` = desktopCapturer kaynak kimliği). */
+/** `id`: kamera için deviceId, ekran/pencere için desktopCapturer kaynak kimliği. */
 export type TLiveSourceNodeData = {
   id: string
   title: string
@@ -56,7 +51,6 @@ export type TLiveCameraNodeData = TLiveSourceNodeData
 export type TNode = {
   id: string
   type: TScreenNodeTypes
-  /** Sahnenin mantıksal koordinat sisteminde konum. */
   position: {
     x: number
     y: number

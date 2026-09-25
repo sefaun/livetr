@@ -2,7 +2,7 @@
   <div class="w-full flex flex-1 min-h-0">
     <div class="w-[155px] shrink-0 overflow-y-auto p-2"><Scene /></div>
     <div
-      class="flex-1 min-w-0 border-x-2 border-[var(--border-color)] dark:border-[--border-dark-color] p-3 overflow-clip"
+      class="flex-1 min-w-0 border-x-2 border-[var(--border-color)] dark:border-(--border-dark-color) p-3 overflow-clip"
     >
       <Screen />
     </div>
@@ -11,7 +11,7 @@
     </div>
   </div>
   <div
-    class="w-full h-[var(--studio-footer-height)] shrink-0 border-t-2 border-[var(--border-color)] dark:border-[--border-dark-color] p-2 overflow-x-auto"
+    class="w-full h-[var(--studio-footer-height)] shrink-0 border-t-2 border-[var(--border-color)] dark:border-(--border-dark-color) p-2 overflow-x-auto"
   >
     <Footer />
   </div>

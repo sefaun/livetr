@@ -1,11 +1,19 @@
 <template>
-  <component v-bind="attrs" :is="props.type" :src="currentSrc" :poster="poster" @error="failed = true" />
+  <component
+    v-bind="attrs"
+    :is="props.type"
+    :crossorigin="mediaCrossOrigin(currentSrc)"
+    :src="currentSrc"
+    :poster="poster"
+    @error="failed = true"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, ref, useAttrs, watch } from 'vue'
 import type { PropType } from 'vue'
 import { platform } from '@/platform'
+import { mediaCrossOrigin } from '@/platform/url'
 import { mediaTypes } from '@/enums'
 import type { TMediaTypes } from '@/types'
 import ImageNotFound from '@/assets/image-not-found.png'

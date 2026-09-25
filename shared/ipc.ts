@@ -1,8 +1,3 @@
-/**
- * Renderer ile Electron ana süreci arasındaki IPC sözleşmesi.
- * Kanal adları, argümanları ve dönüş tipleri tek yerde tanımlanır; ana süreç (ipcMain), preload (ipcRenderer)
- * ve renderer aynı tipleri kullandığı için sözleşme dışı bir çağrı derleme zamanında hata verir.
- */
 import type { TNode, TStudioData } from './model.js'
 
 export type TMediaKind = 'image' | 'video' | 'audio'
@@ -47,7 +42,6 @@ export type TStreamState = 'idle' | 'starting' | 'live' | 'stopping'
 
 export type TStreamStats = {
   frame: number
-  /** Son saniyelerdeki gerçek kare hızı. */
   fps: number
   /** kbps; yerel kayıt açıkken ffmpeg raporlamaz (0). */
   bitrate: number
@@ -78,7 +72,6 @@ export type TStreamEvent =
   | { type: 'warning'; code: TStreamWarning }
   | TStreamEndedEvent
 
-/** `ipcRenderer.invoke` / `ipcMain.handle` kanalları. */
 export type TInvokeChannels = {
   'store:load': { args: []; result: TStoreSnapshot }
   'store:save-studio': { args: [content: string]; result: void }
@@ -92,13 +85,11 @@ export type TInvokeChannels = {
   'stream:stop': { args: []; result: void }
 }
 
-/** `ipcRenderer.send` / `ipcMain.on` kanalları (cevap beklenmez). */
 export type TSendChannels = {
   'stream:write': [chunk: ArrayBuffer]
   'app:set-locale': [locale: string]
 }
 
-/** Ana süreçten renderer'a (`webContents.send`) gönderilen olaylar. */
 export type TEventChannels = {
   'stream:event': [event: TStreamEvent]
 }
@@ -109,9 +100,6 @@ export type TInvokeResult<K extends TInvokeChannel> = TInvokeChannels[K]['result
 export type TSendChannel = keyof TSendChannels
 export type TEventChannel = keyof TEventChannels
 
-/**
- * Preload betiğinin `window.livetr` olarak açtığı masaüstü API'si.
- */
 export type TDesktopApi = {
   platform: string
   store: {

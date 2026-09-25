@@ -2,11 +2,10 @@
   <div ref="containerRef" class="w-full h-full flex justify-center items-start">
     <div
       :style="{ width: `${stageSize.width * scale}px`, height: `${stageSize.height * scale}px` }"
-      class="relative shrink-0 bg-black outline outline-1 outline-[var(--border-color)] dark:outline-[--border-dark-color] shadow-[0_0_10px_var(--border-color)] dark:shadow-[0_0_10px_var(--border-dark-color)]"
+      class="relative shrink-0 bg-black outline outline-1 outline-[var(--border-color)] dark:outline-(--border-dark-color) shadow-[0_0_10px_var(--border-color)] dark:shadow-[0_0_10px_var(--border-dark-color)]"
     >
-      <!-- Sahne sabit mantıksal boyuttadır; pencere boyutuna göre CSS ile ölçeklenir. -->
       <div
-        ref="screenRef"
+        :ref="setScreenRef"
         :style="{
           width: `${stageSize.width}px`,
           height: `${stageSize.height}px`,
@@ -32,6 +31,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import type { ComponentPublicInstance } from 'vue'
 import { useDragDrop } from '@/composables/DragDrop'
 import { useSelection } from '@/composables/Selection'
 import { activeScene, screenRef, stageScale, studioData } from '@/state'
@@ -51,6 +51,10 @@ const selection = useSelection()
 const containerRef = ref<HTMLElement>()
 const scale = computed(() => stageScale.value)
 let resizeObserver: ResizeObserver
+
+function setScreenRef(element: Element | ComponentPublicInstance | null) {
+  screenRef.value = element as HTMLElement
+}
 
 function updateScale() {
   const container = containerRef.value
